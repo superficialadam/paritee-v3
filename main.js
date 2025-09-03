@@ -17,20 +17,34 @@ window.addEventListener('load', function() {
   console.log('Available methods:', Object.keys(anime));
   
   // Destructure the anime.js functions from the global object
-  const { animate, utils } = anime;
+  const { animate, utils, onScroll, createTimeline } = anime;
   
-  // Hero text bounce animation
-  animate('#hero h1', {
-    y: [
-      { to: -30, duration: 600, ease: 'outExpo' },
-      { to: 0, duration: 800, ease: 'outBounce' }
-    ],
-    scale: [
-      { to: 1.1, duration: 600 },
-      { to: 1, duration: 800 }
-    ],
-    loop: true,
-    delay: 1500
+  // Set initial state for hero text
+  utils.set('#hero h1', {
+    opacity: 0,
+    x: -200,
+    filter: 'blur(20px)'
+  });
+  
+  // Create timeline animation for hero text
+  const heroTimeline = createTimeline({
+    onComplete: function() {
+      console.log('Hero animation complete, revealing sections');
+      // Show all sections after hero animation completes
+      const sections = document.querySelectorAll('.section:not(#hero)');
+      sections.forEach(section => {
+        section.style.display = 'flex';
+      });
+    }
+  });
+  
+  // Add hero text slide-in and blur-to-sharp animation
+  heroTimeline.add('#hero h1', {
+    opacity: [0, 1],
+    x: [-200, 0],
+    filter: ['blur(20px)', 'blur(0px)'],
+    duration: 5000,
+    ease: 'outExpo'
   });
   
   // Get all section headings except hero
@@ -39,42 +53,23 @@ window.addEventListener('load', function() {
   // Set initial state for section headings
   utils.set(sectionHeadings, {
     opacity: 0,
-    y: 50
+    x: -100
   });
   
-  // Create Intersection Observer for fade-in animations
-  const observerOptions = {
-    threshold: 0.3,
-    rootMargin: '0px'
-  };
-  
-  const animatedElements = new Set();
-  
-  const fadeInObserver = new IntersectionObserver(function(entries) {
-    entries.forEach(function(entry) {
-      if (entry.isIntersecting && !animatedElements.has(entry.target)) {
-        animatedElements.add(entry.target);
-        
-        console.log('Animating section:', entry.target.textContent);
-        
-        // Animate the heading when it comes into view
-        animate(entry.target, {
-          opacity: [0, 1],
-          y: [50, 0],
-          duration: 1000,
-          ease: 'outExpo'
-        });
-        
-        // Stop observing this element
-        fadeInObserver.unobserve(entry.target);
-      }
+  // Create scroll-triggered slide-in animations for each section heading
+  sectionHeadings.forEach(function(heading) {
+    console.log('Setting up scroll animation for:', heading.textContent);
+    
+    animate(heading, {
+      opacity: [0, 1],
+      x: [-100, 0],
+      duration: 1000,
+      ease: 'outExpo',
+      autoplay: onScroll({
+        target: heading,
+        threshold: [0, 0.3]
+      })
     });
-  }, observerOptions);
-  
-  // Start observing all section headings
-  sectionHeadings.forEach(function(h1) {
-    fadeInObserver.observe(h1);
-    console.log('Now observing:', h1.textContent);
   });
   
   console.log('All animations initialized!');
