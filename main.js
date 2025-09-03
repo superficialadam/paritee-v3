@@ -381,12 +381,10 @@ window.addEventListener('load', function () {
     window.addEventListener('scroll', updateCirclesOnScroll);
     // Start the continuous animation loop
     animateCircles();
-  }, 5000); // Wait for hero animation to complete
+  }, 8000); // Wait for full theme animation to complete (3s idle + ~5s animation)
 
   // Background theme transition timeline (this is the main hero animation)
   const themeTimeline = createTimeline({
-    duration: 5000,
-    ease: 'inOutQuad',
     onComplete: function () {
       console.log('Theme timeline complete, playing hero heading animation');
       // Play the hero heading animation after theme timeline completes
@@ -394,99 +392,112 @@ window.addEventListener('load', function () {
     }
   });
   
-  // Animate background gradient to much brighter mode by fading in the light background
+  // 3 second idle state (nothing happens)
+  const idleTime = 3000;
+  
+  // Circle 2 expands and lightens first (lead circle)
+  themeTimeline.add('.circle-2', {
+    x: [0, -100],
+    y: [0, 50],
+    scale: [1, 1.8], // Expand more than its final size first
+    duration: 1500,
+    ease: 'outExpo'
+  }, idleTime);
+
+  themeTimeline.add('.circle-2 circle', {
+    fill: ['#3B167A', '#E8D8FF'],
+    duration: 1500,
+    ease: 'outExpo'
+  }, idleTime);
+  
+  // Then scale down to final size while others start animating
+  themeTimeline.add('.circle-2', {
+    scale: [1.8, 0.8], // Settle to final size
+    duration: 2000,
+    ease: 'inOutSine'
+  }, idleTime + 1500);
+  
+  // Background and other elements follow after circle 2 starts
+  const followDelay = idleTime + 800; // Start 800ms after circle 2
+  
+  // Animate background gradient to much brighter mode
   themeTimeline.add('.bg-light', {
     opacity: [0, 1],
-    duration: 5000,
+    duration: 3500,
     ease: 'inOutSine'
-  }, 0);
+  }, followDelay);
 
-  // Animate only main heading text colors to dark for light mode (not prism layers)
+  // Animate main heading text colors to dark for light mode
   themeTimeline.add('.heading-main', {
     color: ['#333333', '#1A1A2E'],
-    duration: 5000,
+    duration: 3500,
     ease: 'inOutSine'
-  }, 0);
+  }, followDelay);
 
   // Transition hero main heading text to dark
   themeTimeline.add('#hero .heading-main', {
     color: ['#333333', '#1A1A2E'],
-    duration: 5000,
+    duration: 3500,
     ease: 'inOutSine'
-  }, 0);
+  }, followDelay);
 
   // Animate circle 1 - move, scale and color change
   themeTimeline.add('.circle-1', {
     x: [0, 150],
     y: [0, 100],
     scale: [1, 1.3],
-    duration: 5000,
+    duration: 3000,
     ease: 'inOutQuad'
-  }, 0);
+  }, followDelay + 200);
 
   themeTimeline.add('.circle-1 circle', {
     fill: ['#0E2683', '#C8DDFF'],
-    duration: 5000,
+    duration: 3000,
     ease: 'inOutSine'
-  }, 0);
-
-  // Animate circle 2 - move, scale and color change
-  themeTimeline.add('.circle-2', {
-    x: [0, -100],
-    y: [0, 50],
-    scale: [1, 0.8],
-    duration: 5000,
-    ease: 'inOutQuad'
-  }, 0);
-
-  themeTimeline.add('.circle-2 circle', {
-    fill: ['#3B167A', '#E8D8FF'],
-    duration: 5000,
-    ease: 'inOutSine'
-  }, 0);
+  }, followDelay + 200);
 
   // Animate circle 3 - move, scale and color change
   themeTimeline.add('.circle-3', {
     x: [0, -80],
     y: [0, -120],
     scale: [1, 1.2],
-    duration: 5000,
+    duration: 3000,
     ease: 'inOutQuad'
-  }, 0);
+  }, followDelay + 400);
 
   themeTimeline.add('.circle-3 circle', {
     fill: ['#0E2683', '#C8DDFF'],
-    duration: 5000,
+    duration: 3000,
     ease: 'inOutSine'
-  }, 0);
+  }, followDelay + 400);
 
   // Animate circle 4 - move, scale and color change
   themeTimeline.add('.circle-4', {
     x: [0, 200],
     y: [0, -80],
     scale: [1, 1.1],
-    duration: 5000,
+    duration: 3000,
     ease: 'inOutQuad'
-  }, 0);
+  }, followDelay + 600);
 
   themeTimeline.add('.circle-4 circle', {
     fill: ['#3B167A', '#E8D8FF'],
-    duration: 5000,
+    duration: 3000,
     ease: 'inOutSine'
-  }, 0);
+  }, followDelay + 600);
 
   // Animate circle 5 - move, scale and color change
   themeTimeline.add('.circle-5', {
     x: [0, -150],
     y: [0, -100],
     scale: [1, 0.9],
-    duration: 5000,
+    duration: 3000,
     ease: 'inOutQuad'
-  }, 0);
+  }, followDelay + 800);
 
   themeTimeline.add('.circle-5 circle', {
     fill: ['#0E2683', '#C8DDFF'],
-    duration: 5000,
+    duration: 3000,
     ease: 'inOutSine'
-  }, 0);
+  }, followDelay + 800);
 });
