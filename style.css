@@ -49,7 +49,7 @@ body {
 
 .bg-circles svg {
   position: absolute;
-  filter: blur(150px);
+  filter: blur(50px);
 }
 
 .bg-circles .circle-1 {
