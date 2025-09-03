@@ -111,29 +111,50 @@ window.addEventListener('load', function () {
     let prismTime = 700;
     let prismStart = window.innerWidth - 300;
 
-    // Animate cyan layer
+    // Animate cyan layer - movement only (blur stays at 18)
     headingTimeline.add(prismHeadings[0], {
       opacity: [0, 1],
       x: [prismStart, 0],
       duration: prismTime,
       ease: 'outSine'
     }, 0);
+    
+    // Remove blur AFTER movement completes for cyan
+    headingTimeline.add(prismHeadings[0], {
+      filter: ['url(#motion-blur-18)', 'url(#motion-blur-0)'],
+      duration: 300,
+      ease: 'outExpo'
+    }, prismTime);
 
-    // Animate purple layer with slight delay
+    // Animate purple layer - movement only (blur stays at 18)
     headingTimeline.add(prismHeadings[1], {
       opacity: [0, 1],
       x: [prismStart + 2, 0],
       duration: prismTime,
       ease: 'outSine'
     }, 30);
+    
+    // Remove blur AFTER movement completes for purple
+    headingTimeline.add(prismHeadings[1], {
+      filter: ['url(#motion-blur-18)', 'url(#motion-blur-0)'],
+      duration: 300,
+      ease: 'outExpo'
+    }, prismTime + 30);
 
-    // Animate yellow layer with more delay
+    // Animate yellow layer - movement only (blur stays at 18)
     headingTimeline.add(prismHeadings[2], {
       opacity: [0, 1],
       x: [prismStart + 12, 0],
       duration: prismTime,
       ease: 'outSine'
     }, 50);
+    
+    // Remove blur AFTER movement completes for yellow
+    headingTimeline.add(prismHeadings[2], {
+      filter: ['url(#motion-blur-18)', 'url(#motion-blur-0)'],
+      duration: 300,
+      ease: 'outExpo'
+    }, prismTime + 50);
 
     // Quickly fade in the dark grey text after prism settles
     headingTimeline.add(mainHeading, {

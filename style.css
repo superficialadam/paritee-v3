@@ -129,7 +129,7 @@ body {
   position: absolute;
   opacity: 0;
   mix-blend-mode: screen;
-  filter: url(#motion-blur-x);
+  filter: url(#motion-blur-18);
 }
 
 .heading-prism.cyan {
