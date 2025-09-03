@@ -128,7 +128,8 @@ body {
 .heading-prism {
   position: absolute;
   opacity: 0;
-  mix-blend-mode: normal;
+  mix-blend-mode: screen;
+  filter: url(#motion-blur-x);
 }
 
 .heading-prism.cyan {

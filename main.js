@@ -86,35 +86,40 @@ window.addEventListener('load', function () {
 
     console.log('Setting up prism animation for:', mainHeading.textContent);
 
+    let scrollThresholdValue = 0.3; // Default threshold
+    let headingTravelTime = 1000;
+    let headingStartPos = window.innerWidth - 300;
+
     // Create timeline for this heading's animation
     const headingTimeline = createTimeline({
       autoplay: onScroll({
         target: container,
-        threshold: [0, 0.3]
+        threshold: [0, scrollThresholdValue],
+        repeat: true,
       })
     });
 
     // Animate cyan layer
     headingTimeline.add(prismHeadings[0], {
       opacity: [0, 1],
-      x: [window.innerWidth, 0],
-      duration: 3000,
+      x: [headingStartPos, 0],
+      duration: headingTravelTime,
       ease: 'outSine'
     }, 0);
 
     // Animate purple layer with slight delay
     headingTimeline.add(prismHeadings[1], {
       opacity: [0, 1],
-      x: [window.innerWidth + 30, 0],
-      duration: 3000,
+      x: [headingStartPos + 3, 0],
+      duration: headingTravelTime,
       ease: 'outSine'
     }, 100);
 
     // Animate yellow layer with more delay
     headingTimeline.add(prismHeadings[2], {
       opacity: [0, 1],
-      x: [window.innerWidth + 60, 0],
-      duration: 3000,
+      x: [headingStartPos + 1, 0],
+      duration: headingTravelTime,
       ease: 'outSine'
     }, 200);
 
@@ -122,8 +127,8 @@ window.addEventListener('load', function () {
     headingTimeline.add(mainHeading, {
       opacity: [0, 1],
       duration: 300,
-      ease: 'linear'
-    }, 2800);
+      ease: 'outSine'
+    }, headingTravelTime);
   });
 
   console.log('All animations initialized!');

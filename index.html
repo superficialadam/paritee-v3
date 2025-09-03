@@ -12,6 +12,14 @@
     <link rel="stylesheet" href="style.css">
   </head>
   <body>
+    <!-- SVG Filters -->
+    <svg style="position: absolute; width: 0; height: 0;">
+      <defs>
+        <filter id="motion-blur-x">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="8 0" />
+        </filter>
+      </defs>
+    </svg>
     <!-- Background gradients -->
     <div class="bg-dark"></div>
     <div class="bg-light"></div>
