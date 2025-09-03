@@ -104,11 +104,11 @@ window.addEventListener('load', function () {
           headingTimeline.restart();
         }
       });
-    }, { threshold: 0.3 });
+    }, { threshold: 0.1 });
 
     observer.observe(container);
 
-    let prismTime = 700;
+    let prismTime = 600;
     let prismStart = window.innerWidth - 300;
 
     // Animate cyan layer - movement only (blur stays at 18)
@@ -118,7 +118,7 @@ window.addEventListener('load', function () {
       duration: prismTime,
       ease: 'outSine'
     }, 0);
-    
+
     // Remove blur AFTER movement completes for cyan
     headingTimeline.add(prismHeadings[0], {
       filter: ['url(#motion-blur-18)', 'url(#motion-blur-0)'],
@@ -133,7 +133,7 @@ window.addEventListener('load', function () {
       duration: prismTime,
       ease: 'outSine'
     }, 30);
-    
+
     // Remove blur AFTER movement completes for purple
     headingTimeline.add(prismHeadings[1], {
       filter: ['url(#motion-blur-18)', 'url(#motion-blur-0)'],
@@ -148,7 +148,7 @@ window.addEventListener('load', function () {
       duration: prismTime,
       ease: 'outSine'
     }, 50);
-    
+
     // Remove blur AFTER movement completes for yellow
     headingTimeline.add(prismHeadings[2], {
       filter: ['url(#motion-blur-18)', 'url(#motion-blur-0)'],
