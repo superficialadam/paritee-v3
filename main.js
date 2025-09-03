@@ -80,55 +80,64 @@ window.addEventListener('load', function () {
   });
 
   // Create scroll-triggered prism animations for each section
-  headingContainers.forEach(function (container) {
+  headingContainers.forEach(function(container) {
     const prismHeadings = container.querySelectorAll('.heading-prism');
     const mainHeading = container.querySelector('.heading-main');
-
+    
     console.log('Setting up prism animation for:', mainHeading.textContent);
-
-    let scrollThresholdValue = 0.3; // Default threshold
-    let headingTravelTime = 1000;
-    let headingStartPos = window.innerWidth - 300;
-
-    // Create timeline for this heading's animation
+    
+    // Create timeline for this heading's animation that resets when out of view
     const headingTimeline = createTimeline({
-      autoplay: onScroll({
-        target: container,
-        threshold: [0, scrollThresholdValue],
-        repeat: true,
-      })
+      autoplay: false
     });
-
+    
+    // Create scroll observer that plays/resets the timeline
+    const observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          // Reset to start positions before playing
+          utils.set(prismHeadings[0], { opacity: 0, x: window.innerWidth });
+          utils.set(prismHeadings[1], { opacity: 0, x: window.innerWidth + 30 });
+          utils.set(prismHeadings[2], { opacity: 0, x: window.innerWidth + 60 });
+          utils.set(mainHeading, { opacity: 0 });
+          // Play the timeline
+          headingTimeline.restart();
+        }
+      });
+    }, { threshold: 0.3 });
+    
+    observer.observe(container);
+    
     // Animate cyan layer
     headingTimeline.add(prismHeadings[0], {
       opacity: [0, 1],
-      x: [headingStartPos, 0],
-      duration: headingTravelTime,
+      x: [window.innerWidth, 0],
+      duration: 3000,
       ease: 'outSine'
     }, 0);
-
+    
     // Animate purple layer with slight delay
     headingTimeline.add(prismHeadings[1], {
       opacity: [0, 1],
-      x: [headingStartPos + 3, 0],
-      duration: headingTravelTime,
+      x: [window.innerWidth + 30, 0],
+      duration: 3000,
       ease: 'outSine'
     }, 100);
-
+    
     // Animate yellow layer with more delay
     headingTimeline.add(prismHeadings[2], {
       opacity: [0, 1],
-      x: [headingStartPos + 1, 0],
-      duration: headingTravelTime,
+      x: [window.innerWidth + 60, 0],
+      duration: 3000,
       ease: 'outSine'
     }, 200);
-
+    
     // Quickly fade in the dark grey text after prism settles
     headingTimeline.add(mainHeading, {
       opacity: [0, 1],
       duration: 300,
       ease: 'outSine'
-    }, headingTravelTime);
+    }, 2800);
   });
 
   console.log('All animations initialized!');
@@ -143,32 +152,32 @@ window.addEventListener('load', function () {
       circle5: { x: 0, y: 0, scale: 1, opacity: 0.3, fill: '#0E2683' }
     },
     section1: {
-      circle1: { x: 100, y: 50, scale: 1.2, opacity: 0.5, fill: '#2A45B8' },
-      circle2: { x: -50, y: 100, scale: 0.9, opacity: 0.4, fill: '#5C2F9A' },
-      circle3: { x: -100, y: -50, scale: 1.3, opacity: 0.3, fill: '#1A35A0' },
-      circle4: { x: 150, y: -100, scale: 1.1, opacity: 0.5, fill: '#6B3AAA' },
-      circle5: { x: -120, y: -80, scale: 0.8, opacity: 0.25, fill: '#3A55C8' }
+      circle1: { x: 300, y: -200, scale: 2.0, opacity: 0.6, fill: '#2A45B8' },
+      circle2: { x: -250, y: 350, scale: 0.4, opacity: 0.3, fill: '#5C2F9A' },
+      circle3: { x: -400, y: -150, scale: 1.8, opacity: 0.2, fill: '#1A35A0' },
+      circle4: { x: 450, y: -300, scale: 0.6, opacity: 0.5, fill: '#6B3AAA' },
+      circle5: { x: -350, y: -250, scale: 1.5, opacity: 0.35, fill: '#3A55C8' }
     },
     section2: {
-      circle1: { x: -80, y: 120, scale: 0.8, opacity: 0.6, fill: '#4A65D8' },
-      circle2: { x: 100, y: -50, scale: 1.4, opacity: 0.25, fill: '#7C4FBA' },
-      circle3: { x: 50, y: 100, scale: 1.0, opacity: 0.45, fill: '#2A55B0' },
-      circle4: { x: -120, y: 80, scale: 0.9, opacity: 0.35, fill: '#8B5ACA' },
-      circle5: { x: 80, y: -120, scale: 1.2, opacity: 0.4, fill: '#5A75E8' }
+      circle1: { x: -300, y: 400, scale: 0.3, opacity: 0.7, fill: '#4A65D8' },
+      circle2: { x: 400, y: -200, scale: 2.5, opacity: 0.15, fill: '#7C4FBA' },
+      circle3: { x: 200, y: 300, scale: 0.5, opacity: 0.55, fill: '#2A55B0' },
+      circle4: { x: -450, y: 250, scale: 1.7, opacity: 0.25, fill: '#8B5ACA' },
+      circle5: { x: 300, y: -400, scale: 2.2, opacity: 0.3, fill: '#5A75E8' }
     },
     section3: {
-      circle1: { x: 150, y: -80, scale: 1.5, opacity: 0.3, fill: '#6A85F8' },
-      circle2: { x: -100, y: -100, scale: 1.1, opacity: 0.5, fill: '#9C6FDA' },
-      circle3: { x: -50, y: 150, scale: 0.7, opacity: 0.6, fill: '#4A75D0' },
-      circle4: { x: 200, y: 50, scale: 1.3, opacity: 0.25, fill: '#AB7AEA' },
-      circle5: { x: -150, y: 100, scale: 1.0, opacity: 0.5, fill: '#7A95FF' }
+      circle1: { x: 500, y: -300, scale: 0.8, opacity: 0.4, fill: '#6A85F8' },
+      circle2: { x: -400, y: -350, scale: 2.0, opacity: 0.35, fill: '#9C6FDA' },
+      circle3: { x: -200, y: 450, scale: 0.3, opacity: 0.7, fill: '#4A75D0' },
+      circle4: { x: 600, y: 150, scale: 2.3, opacity: 0.2, fill: '#AB7AEA' },
+      circle5: { x: -500, y: 300, scale: 1.6, opacity: 0.45, fill: '#7A95FF' }
     },
     section4: {
-      circle1: { x: -120, y: -120, scale: 1.1, opacity: 0.4, fill: '#8AA5FF' },
-      circle2: { x: 80, y: 80, scale: 1.2, opacity: 0.35, fill: '#BC8FFA' },
-      circle3: { x: 120, y: -80, scale: 1.4, opacity: 0.5, fill: '#6A95F0' },
-      circle4: { x: -80, y: -50, scale: 0.8, opacity: 0.6, fill: '#CB9AFF' },
-      circle5: { x: 50, y: 120, scale: 0.9, opacity: 0.45, fill: '#9AB5FF' }
+      circle1: { x: -450, y: -400, scale: 1.9, opacity: 0.5, fill: '#8AA5FF' },
+      circle2: { x: 350, y: 350, scale: 0.5, opacity: 0.4, fill: '#BC8FFA' },
+      circle3: { x: 450, y: -250, scale: 2.8, opacity: 0.3, fill: '#6A95F0' },
+      circle4: { x: -300, y: -200, scale: 0.3, opacity: 0.8, fill: '#CB9AFF' },
+      circle5: { x: 200, y: 400, scale: 1.4, opacity: 0.35, fill: '#9AB5FF' }
     }
   };
   
