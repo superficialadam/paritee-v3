@@ -35,18 +35,24 @@ window.addEventListener('load', function () {
   window.addEventListener('wheel', blockScroll, { passive: false });
   window.addEventListener('touchmove', blockScroll, { passive: false });
 
-  // Set initial state for hero text
-  utils.set('#hero h1', {
-    opacity: 0,
-    x: -200,
-    filter: 'blur(20px)'
-  });
+  // Set initial state for hero prism headings
+  const heroContainer = document.querySelector('#hero .heading-container');
+  const heroPrismHeadings = heroContainer.querySelectorAll('.heading-prism');
+  const heroMainHeading = heroContainer.querySelector('.heading-main');
+  
+  utils.set(heroPrismHeadings[0], { opacity: 0, x: window.innerWidth }); // cyan
+  utils.set(heroPrismHeadings[1], { opacity: 0, x: window.innerWidth + 30 }); // purple
+  utils.set(heroPrismHeadings[2], { opacity: 0, x: window.innerWidth + 60 }); // yellow
+  utils.set(heroMainHeading, { opacity: 0 });
 
-  // Create timeline animation for hero text
-  const heroTimeline = createTimeline({
+
+  
+  // Create heading animation timeline for hero
+  const heroHeadingTimeline = createTimeline({
+    autoplay: false,
     onComplete: function () {
-      console.log('Hero animation complete, enabling scroll');
-      // Enable scrolling after hero animation completes
+      console.log('Hero heading animation complete, enabling scroll');
+      // Enable scrolling after all hero animations complete
       scrollBlocked = false;
       // Remove event listeners
       window.removeEventListener('scroll', blockScroll);
@@ -54,15 +60,62 @@ window.addEventListener('load', function () {
       window.removeEventListener('touchmove', blockScroll);
     }
   });
-
-  // Add hero text slide-in and blur-to-sharp animation
-  heroTimeline.add('#hero h1', {
+  
+  // Add prism animations for hero section (same as section-1)
+  let heroPrismTime = 600;
+  let heroPrismStart = window.innerWidth - 300;
+  
+  // Animate cyan layer - movement only (blur stays at 18)
+  heroHeadingTimeline.add(heroPrismHeadings[0], {
     opacity: [0, 1],
-    x: [-200, 0],
-    filter: ['blur(20px)', 'blur(0px)'],
-    duration: 5000,
+    x: [heroPrismStart, 0],
+    duration: heroPrismTime,
+    ease: 'outSine'
+  }, 0);
+  
+  // Remove blur AFTER movement completes for cyan
+  heroHeadingTimeline.add(heroPrismHeadings[0], {
+    filter: ['url(#motion-blur-18)', 'url(#motion-blur-0)'],
+    duration: 300,
     ease: 'outExpo'
-  });
+  }, heroPrismTime);
+  
+  // Animate purple layer - movement only (blur stays at 18)
+  heroHeadingTimeline.add(heroPrismHeadings[1], {
+    opacity: [0, 1],
+    x: [heroPrismStart + 2, 0],
+    duration: heroPrismTime,
+    ease: 'outSine'
+  }, 30);
+  
+  // Remove blur AFTER movement completes for purple
+  heroHeadingTimeline.add(heroPrismHeadings[1], {
+    filter: ['url(#motion-blur-18)', 'url(#motion-blur-0)'],
+    duration: 300,
+    ease: 'outExpo'
+  }, heroPrismTime + 30);
+  
+  // Animate yellow layer - movement only (blur stays at 18)
+  heroHeadingTimeline.add(heroPrismHeadings[2], {
+    opacity: [0, 1],
+    x: [heroPrismStart + 12, 0],
+    duration: heroPrismTime,
+    ease: 'outSine'
+  }, 50);
+  
+  // Remove blur AFTER movement completes for yellow
+  heroHeadingTimeline.add(heroPrismHeadings[2], {
+    filter: ['url(#motion-blur-18)', 'url(#motion-blur-0)'],
+    duration: 300,
+    ease: 'outExpo'
+  }, heroPrismTime + 50);
+  
+  // Quickly fade in the dark grey text after prism settles
+  heroHeadingTimeline.add(heroMainHeading, {
+    opacity: [0, 1],
+    duration: 200,
+    ease: 'outSine'
+  }, heroPrismTime);
 
   // Get all section heading containers except hero
   const headingContainers = document.querySelectorAll('.section:not(#hero) .heading-container');
@@ -330,12 +383,17 @@ window.addEventListener('load', function () {
     animateCircles();
   }, 5000); // Wait for hero animation to complete
 
-  // Background theme transition timeline
+  // Background theme transition timeline (this is the main hero animation)
   const themeTimeline = createTimeline({
     duration: 5000,
-    ease: 'inOutQuad'
+    ease: 'inOutQuad',
+    onComplete: function () {
+      console.log('Theme timeline complete, playing hero heading animation');
+      // Play the hero heading animation after theme timeline completes
+      heroHeadingTimeline.play();
+    }
   });
-
+  
   // Animate background gradient to much brighter mode by fading in the light background
   themeTimeline.add('.bg-light', {
     opacity: [0, 1],
@@ -350,9 +408,9 @@ window.addEventListener('load', function () {
     ease: 'inOutSine'
   }, 0);
 
-  // Keep hero text white initially then transition to dark
-  themeTimeline.add('#hero h1', {
-    color: ['#ffffff', '#1A1A2E'],
+  // Transition hero main heading text to dark
+  themeTimeline.add('#hero .heading-main', {
+    color: ['#333333', '#1A1A2E'],
     duration: 5000,
     ease: 'inOutSine'
   }, 0);

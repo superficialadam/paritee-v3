@@ -103,14 +103,7 @@ body {
   padding-left: 5rem;
 }
 
-#hero {
-  justify-content: center;
-  padding-left: 0;
-}
 
-#hero h1 {
-  text-align: center;
-}
 
 .heading-container {
   position: relative;
@@ -156,9 +149,7 @@ body {
 
 
 
-#hero h1 {
-  color: #ffffff;
-}
+
 
 @media (max-width: 768px) {
   .section h1 {
