@@ -157,7 +157,7 @@ window.addEventListener('load', function () {
           headingTimeline.restart();
         }
       });
-    }, { threshold: 0.1 });
+    }, { threshold: 0.3 });
 
     observer.observe(container);
 
@@ -229,32 +229,32 @@ window.addEventListener('load', function () {
       circle5: { x: -150, y: -100, scale: 0.9, opacity: 0.3, fill: '#C8DDFF' }
     },
     section1: {
-      circle1: { x: -2000, y: 1200, scale: 3.0, opacity: 0.6, fill: '#2A45B8' },
-      circle2: { x: 2500, y: -1500, scale: 0.2, opacity: 0.3, fill: '#5C2F9A' },
-      circle3: { x: 1800, y: 1600, scale: 2.5, opacity: 0.2, fill: '#1A35A0' },
-      circle4: { x: -2200, y: -1800, scale: 0.4, opacity: 0.5, fill: '#6B3AAA' },
-      circle5: { x: 2100, y: 900, scale: 1.8, opacity: 0.35, fill: '#3A55C8' }
+      circle1: { x: -2000, y: 1200, scale: 3.0, opacity: 0.6, fill: '#B8C5E8' },
+      circle2: { x: 2500, y: -1500, scale: 0.2, opacity: 0.3, fill: '#C8B8D8' },
+      circle3: { x: 1800, y: 1600, scale: 2.5, opacity: 0.2, fill: '#A8B8E0' },
+      circle4: { x: -2200, y: -1800, scale: 0.4, opacity: 0.5, fill: '#D0C0E0' },
+      circle5: { x: 2100, y: 900, scale: 1.8, opacity: 0.35, fill: '#B0C0E8' }
     },
     section2: {
-      circle1: { x: 2300, y: -1700, scale: 0.3, opacity: 0.7, fill: '#4A65D8' },
-      circle2: { x: -2400, y: 1400, scale: 3.5, opacity: 0.15, fill: '#7C4FBA' },
-      circle3: { x: -1600, y: -1900, scale: 0.6, opacity: 0.55, fill: '#2A55B0' },
-      circle4: { x: 2600, y: 1100, scale: 2.2, opacity: 0.25, fill: '#8B5ACA' },
-      circle5: { x: -1900, y: -1300, scale: 2.8, opacity: 0.3, fill: '#5A75E8' }
+      circle1: { x: 2300, y: -1700, scale: 0.3, opacity: 0.7, fill: '#C0D0F0' },
+      circle2: { x: -2400, y: 1400, scale: 3.5, opacity: 0.15, fill: '#D8C8E8' },
+      circle3: { x: -1600, y: -1900, scale: 0.6, opacity: 0.55, fill: '#B0C0E0' },
+      circle4: { x: 2600, y: 1100, scale: 2.2, opacity: 0.25, fill: '#E0D0F0' },
+      circle5: { x: -1900, y: -1300, scale: 2.8, opacity: 0.3, fill: '#C8D0F0' }
     },
     section3: {
-      circle1: { x: -2500, y: -2000, scale: 1.2, opacity: 0.4, fill: '#6A85F8' },
-      circle2: { x: 2200, y: 1800, scale: 2.5, opacity: 0.35, fill: '#9C6FDA' },
-      circle3: { x: 1700, y: -1600, scale: 0.3, opacity: 0.7, fill: '#4A75D0' },
-      circle4: { x: -2800, y: 800, scale: 3.0, opacity: 0.2, fill: '#AB7AEA' },
-      circle5: { x: 2400, y: -1400, scale: 2.0, opacity: 0.45, fill: '#7A95FF' }
+      circle1: { x: -2500, y: -2000, scale: 1.2, opacity: 0.4, fill: '#D0D8F8' },
+      circle2: { x: 2200, y: 1800, scale: 2.5, opacity: 0.35, fill: '#E0D0F0' },
+      circle3: { x: 1700, y: -1600, scale: 0.3, opacity: 0.7, fill: '#C0D0E8' },
+      circle4: { x: -2800, y: 800, scale: 3.0, opacity: 0.2, fill: '#E8D8F0' },
+      circle5: { x: 2400, y: -1400, scale: 2.0, opacity: 0.45, fill: '#D0D8F8' }
     },
     section4: {
-      circle1: { x: 2700, y: 2100, scale: 2.5, opacity: 0.5, fill: '#8AA5FF' },
-      circle2: { x: -2300, y: -1900, scale: 0.4, opacity: 0.4, fill: '#BC8FFA' },
-      circle3: { x: -2000, y: 1700, scale: 3.5, opacity: 0.3, fill: '#6A95F0' },
-      circle4: { x: 2500, y: -1500, scale: 0.2, opacity: 0.8, fill: '#CB9AFF' },
-      circle5: { x: -1800, y: -2200, scale: 1.6, opacity: 0.35, fill: '#9AB5FF' }
+      circle1: { x: 2700, y: 2100, scale: 2.5, opacity: 0.5, fill: '#D8E0F8' },
+      circle2: { x: -2300, y: -1900, scale: 0.4, opacity: 0.4, fill: '#E8D8F8' },
+      circle3: { x: -2000, y: 1700, scale: 3.5, opacity: 0.3, fill: '#D0D8F0' },
+      circle4: { x: 2500, y: -1500, scale: 0.2, opacity: 0.8, fill: '#E8D8F8' },
+      circle5: { x: -1800, y: -2200, scale: 1.6, opacity: 0.35, fill: '#D8E0F8' }
     }
   };
 
