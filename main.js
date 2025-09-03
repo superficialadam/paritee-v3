@@ -19,6 +19,22 @@ window.addEventListener('load', function() {
   // Destructure the anime.js functions from the global object
   const { animate, utils, onScroll, createTimeline } = anime;
   
+  // Prevent scrolling initially by blocking scroll events
+  let scrollBlocked = true;
+  
+  const blockScroll = (e) => {
+    if (scrollBlocked) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+  };
+  
+  // Block scroll events
+  window.addEventListener('scroll', blockScroll, { passive: false });
+  window.addEventListener('wheel', blockScroll, { passive: false });
+  window.addEventListener('touchmove', blockScroll, { passive: false });
+  
   // Set initial state for hero text
   utils.set('#hero h1', {
     opacity: 0,
@@ -29,12 +45,13 @@ window.addEventListener('load', function() {
   // Create timeline animation for hero text
   const heroTimeline = createTimeline({
     onComplete: function() {
-      console.log('Hero animation complete, revealing sections');
-      // Show all sections after hero animation completes
-      const sections = document.querySelectorAll('.section:not(#hero)');
-      sections.forEach(section => {
-        section.style.display = 'flex';
-      });
+      console.log('Hero animation complete, enabling scroll');
+      // Enable scrolling after hero animation completes
+      scrollBlocked = false;
+      // Remove event listeners
+      window.removeEventListener('scroll', blockScroll);
+      window.removeEventListener('wheel', blockScroll);
+      window.removeEventListener('touchmove', blockScroll);
     }
   });
   
