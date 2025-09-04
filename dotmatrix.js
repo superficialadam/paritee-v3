@@ -655,7 +655,7 @@ function updatePointByCoord(col, row, properties) {
 // Initialize dot matrix
 createDotMatrix();
 
-// Expose for DevTools
+// Expose for DevTools and external animation
 Object.assign(window, { 
   scene, 
   camera, 
@@ -664,9 +664,15 @@ Object.assign(window, {
   updatePoint,
   updatePointByCoord,
   dotAttributes,
-  params,
+  dotMatrixParams: params, // Expose params with clear name
   noiseTexture,
-  noiseData
+  noiseData,
+  // Expose update functions for external control
+  updateDotMatrix: () => {
+    updateNoiseTexture(clock.getElapsedTime());
+    updatePointsFromNoise();
+  },
+  recreateDotMatrix: createDotMatrix
 });
 
 // Setup GUI
@@ -815,10 +821,16 @@ function setupGUI() {
     });
   
   // Keyboard shortcuts
+  let guiVisible = true;
   document.addEventListener('keydown', (event) => {
     if (event.key === 'h' || event.key === 'H') {
       event.preventDefault();
-      gui.show(gui._hidden);
+      guiVisible = !guiVisible;
+      if (guiVisible) {
+        gui.show();
+      } else {
+        gui.hide();
+      }
     }
   });
 }

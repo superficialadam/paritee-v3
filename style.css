@@ -36,6 +36,18 @@ body {
   z-index: -2;
 }
 
+/* Dot matrix canvas layer */
+#dotmatrix {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0; /* Above backgrounds but below content */
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
 .bg-circles {
   position: fixed;
   top: 0;
@@ -95,12 +107,13 @@ body {
 
 
 .section {
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   justify-content: flex-start;
   align-items: center;
   position: relative;
   padding-left: 5rem;
+  z-index: 1; /* Above dotmatrix canvas */
 }
 
 

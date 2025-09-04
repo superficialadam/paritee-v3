@@ -10,6 +10,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Styles -->
     <link rel="stylesheet" href="style.css">
+    <!-- Import map for Three.js modules -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.157.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.157.0/examples/jsm/"
+        }
+    }
+    </script>
   </head>
   <body>
     <!-- SVG Filters with varying blur levels -->
@@ -41,6 +50,8 @@
     <!-- Background gradients -->
     <div class="bg-dark"></div>
     <div class="bg-light"></div>
+    <!-- Dot matrix canvas (above background, below content) -->
+    <canvas id="dotmatrix"></canvas>
     <!-- Background blur circles -->
     <div class="bg-circles">
       <svg class="circle-1" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
@@ -102,7 +113,9 @@
     
     <!-- Load anime.js locally -->
     <script src="anime.min.js"></script>
-    <!-- Load main.js -->
+    <!-- Dot matrix module -->
+    <script type="module" src="dotmatrix.js"></script>
+    <!-- Main JavaScript file -->
     <script src="main.js"></script>
   </body>
 </html>
