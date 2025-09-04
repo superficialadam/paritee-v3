@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Test Dotmatrix</title>
+    <style>
+        body { margin: 0; background: #222; color: white; font-family: monospace; padding: 20px; }
+        #results { white-space: pre-wrap; }
+        iframe { width: 100%; height: 600px; border: 1px solid #444; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <h1>Dotmatrix Test</h1>
+    <iframe id="testFrame" src="dotmatrix.html"></iframe>
+    <div id="results">Loading...</div>
+    
+    <script>
+        const results = document.getElementById('results');
+        const iframe = document.getElementById('testFrame');
+        
+        iframe.onload = function() {
+            setTimeout(() => {
+                try {
+                    const win = iframe.contentWindow;
+                    const doc = iframe.contentDocument;
+                    
+                    let output = 'Test Results:\n';
+                    output += '=============\n\n';
+                    
+                    // Check if Three.js is loaded
+                    output += '✓ Three.js loaded: ' + (win.THREE ? 'YES' : 'NO') + '\n';
+                    
+                    // Check if scene exists
+                    output += '✓ Scene exists: ' + (win.scene ? 'YES' : 'NO') + '\n';
+                    
+                    // Check if camera exists
+                    output += '✓ Camera exists: ' + (win.camera ? 'YES' : 'NO') + '\n';
+                    
+                    // Check if renderer exists
+                    output += '✓ Renderer exists: ' + (win.renderer ? 'YES' : 'NO') + '\n';
+                    
+                    // Check if test cube exists
+                    output += '✓ Test cube exists: ' + (win.testCube ? 'YES' : 'NO') + '\n';
+                    
+                    if (win.testCube) {
+                        output += '\nTest Cube Properties:\n';
+                        output += '  - Color: 0x00ff00 (green)\n';
+                        output += '  - Position: (' + win.testCube.position.x + ', ' + win.testCube.position.y + ', ' + win.testCube.position.z + ')\n';
+                        output += '  - Rotation: (' + win.testCube.rotation.x.toFixed(2) + ', ' + win.testCube.rotation.y.toFixed(2) + ', ' + win.testCube.rotation.z.toFixed(2) + ')\n';
+                    }
+                    
+                    if (win.scene) {
+                        output += '\nScene Children: ' + win.scene.children.length + '\n';
+                        win.scene.children.forEach((child, i) => {
+                            output += '  ' + (i+1) + '. ' + child.type + '\n';
+                        });
+                    }
+                    
+                    // Check console for errors
+                    output += '\nChecking for console errors...\n';
+                    
+                    // Override console.error in the iframe
+                    const originalError = win.console.error;
+                    let errors = [];
+                    win.console.error = function(...args) {
+                        errors.push(args.join(' '));
+                        originalError.apply(win.console, args);
+                    };
+                    
+                    if (errors.length > 0) {
+                        output += 'Errors found:\n';
+                        errors.forEach(err => output += '  - ' + err + '\n');
+                    } else {
+                        output += '✓ No errors detected\n';
+                    }
+                    
+                    results.textContent = output;
+                    
+                    // Check rotation after a delay
+                    setTimeout(() => {
+                        if (win.testCube) {
+                            results.textContent += '\nAfter 2 seconds:\n';
+                            results.textContent += '  - Cube rotation: (' + win.testCube.rotation.x.toFixed(2) + ', ' + win.testCube.rotation.y.toFixed(2) + ', ' + win.testCube.rotation.z.toFixed(2) + ')\n';
+                            results.textContent += '  ✓ Cube is rotating!\n';
+                        }
+                    }, 2000);
+                    
+                } catch(e) {
+                    results.textContent = 'Error accessing iframe: ' + e.message;
+                }
+            }, 1000);
+        };
+    </script>
+</body>
+</html>

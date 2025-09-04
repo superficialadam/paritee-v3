@@ -2,7 +2,7 @@
 import * as THREE from 'three';
 import GUI from 'https://cdn.jsdelivr.net/npm/lil-gui@0.19/+esm';
 
-const canvas = document.getElementById('bg-splats');
+const canvas = document.getElementById('dotmatrix');
 
 
 // Default parameters
@@ -14,7 +14,7 @@ const params = {
   cameraFOV: 70,
 };
 
-let renderer, scene, camera, uniforms, clock, gui;
+let renderer, scene, camera, uniforms, clock, gui, testCube;
 
 
 // Try to load config file
@@ -26,16 +26,34 @@ renderer = new THREE.WebGLRenderer({
   powerPreference: 'high-performance'
 });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.setSize(window.innerWidth, window.innerHeight, false);
-renderer.setClearColor(params.backgroundColor);
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0x000000);
 
 scene = new THREE.Scene();
 camera = new THREE.PerspectiveCamera(params.cameraFOV, window.innerWidth / window.innerHeight, 0.01, 100);
 camera.position.set(params.cameraOffsetX, params.cameraOffsetY, params.cameraOffsetZ);
-currentCameraY = params.cameraOffsetY;
+camera.lookAt(0, 0, 0);
+let currentCameraY = params.cameraOffsetY;
+let targetCameraY = params.cameraOffsetY;
+
+// Add test cube
+const geometry = new THREE.BoxGeometry(1, 1, 1);
+const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+testCube = new THREE.Mesh(geometry, material);
+scene.add(testCube);
+
+// Add lighting for better visibility
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+scene.add(ambientLight);
+
+// Initialize uniforms
+uniforms = {
+  uTime: { value: 0 },
+  uDeltaTime: { value: 0 }
+};
 
 // Expose for DevTools
-Object.assign(window, { scene, camera, renderer });
+Object.assign(window, { scene, camera, renderer, testCube });
 
 
 
@@ -56,6 +74,11 @@ renderer.setAnimationLoop(() => {
   uniforms.uDeltaTime.value = deltaTime;
 
   // Update animation system
+  // Rotate the test cube
+  if (testCube) {
+    testCube.rotation.x += deltaTime * 0.5;
+    testCube.rotation.y += deltaTime * 0.7;
+  }
 
 
   renderer.render(scene, camera);
@@ -80,8 +103,9 @@ function setupGUI() {
     .name('Camera Y Offset')
     .onChange(v => {
       // Update target position immediately
-      targetCameraY = v - (scrollY * params.scrollMultiplier);
-      // Don't instantly move currentCameraY - let damping handle it
+      targetCameraY = v;
+      currentCameraY = v;
+      camera.position.y = v;
     });
   cameraFolder.add(params, 'cameraOffsetZ', 0.1, 20, 0.1)
     .name('Camera Z Offset')
@@ -123,7 +147,7 @@ function setupGUI() {
 
 function onResize() {
   const w = window.innerWidth, h = window.innerHeight;
-  renderer.setSize(w, h, false);
+  renderer.setSize(w, h);
   camera.aspect = w / h;
   camera.updateProjectionMatrix();
 }
