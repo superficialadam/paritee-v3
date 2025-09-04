@@ -1,0 +1,129 @@
+// neue-gui.js — With lil-gui controls and JSON config
+import * as THREE from 'three';
+import GUI from 'https://cdn.jsdelivr.net/npm/lil-gui@0.19/+esm';
+
+const canvas = document.getElementById('bg-splats');
+
+
+// Default parameters
+const params = {
+  // Scroll camera controls
+  cameraOffsetX: 0.0,
+  cameraOffsetY: 0.0,
+  cameraOffsetZ: 6.0,
+  cameraFOV: 70,
+};
+
+let renderer, scene, camera, uniforms, clock, gui;
+
+
+// Try to load config file
+// Renderer / Camera / Scene
+renderer = new THREE.WebGLRenderer({
+  canvas,
+  antialias: false,
+  alpha: false,
+  powerPreference: 'high-performance'
+});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight, false);
+renderer.setClearColor(params.backgroundColor);
+
+scene = new THREE.Scene();
+camera = new THREE.PerspectiveCamera(params.cameraFOV, window.innerWidth / window.innerHeight, 0.01, 100);
+camera.position.set(params.cameraOffsetX, params.cameraOffsetY, params.cameraOffsetZ);
+currentCameraY = params.cameraOffsetY;
+
+// Expose for DevTools
+Object.assign(window, { scene, camera, renderer });
+
+
+
+// Setup GUI
+setupGUI();
+
+
+
+// Animate
+clock = new THREE.Clock();
+let lastTime = 0;
+renderer.setAnimationLoop(() => {
+  const currentTime = clock.getElapsedTime();
+  const deltaTime = currentTime - lastTime;
+  lastTime = currentTime;
+
+  uniforms.uTime.value = currentTime;
+  uniforms.uDeltaTime.value = deltaTime;
+
+  // Update animation system
+
+
+  renderer.render(scene, camera);
+});
+
+// Resize
+window.addEventListener('resize', onResize);
+
+
+function setupGUI() {
+
+  gui = new GUI({ title: 'dotmatrix' });
+
+  // Camera & Scroll folder
+  const cameraFolder = gui.addFolder('Camera & Scroll');
+  cameraFolder.add(params, 'cameraOffsetX', -10, 10, 0.1)
+    .name('Camera X Offset')
+    .onChange(v => {
+      camera.position.x = v;
+    });
+  cameraFolder.add(params, 'cameraOffsetY', -10, 10, 0.1)
+    .name('Camera Y Offset')
+    .onChange(v => {
+      // Update target position immediately
+      targetCameraY = v - (scrollY * params.scrollMultiplier);
+      // Don't instantly move currentCameraY - let damping handle it
+    });
+  cameraFolder.add(params, 'cameraOffsetZ', 0.1, 20, 0.1)
+    .name('Camera Z Offset')
+    .onChange(v => {
+      camera.position.z = v;
+      // Update plane size when Z changes
+    });
+  cameraFolder.add(params, 'cameraFOV', 30, 120, 1)
+    .name('Camera FOV')
+    .onChange(v => {
+      camera.fov = v;
+      camera.updateProjectionMatrix();
+      // Update plane size when FOV changes
+    });
+  cameraFolder.open();
+
+
+  // Add keyboard shortcuts
+  let guiHidden = false;
+  document.addEventListener('keydown', (event) => {
+
+    // H key: Hide/Show GUI
+    if (event.key === 'h' || event.key === 'H') {
+      event.preventDefault();
+      if (guiHidden) {
+        gui.show();
+        guiHidden = false;
+        console.log('GUI shown (press H to hide)');
+      } else {
+        gui.hide();
+        guiHidden = true;
+        console.log('GUI hidden (press H to show)');
+      }
+    }
+  });
+
+}
+
+
+function onResize() {
+  const w = window.innerWidth, h = window.innerHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
