@@ -13,10 +13,19 @@ const params = {
   
   // Dot matrix controls
   gridResolution: 100, // Number of points across width
-  pointSize: 2.0,      // Size of each point in pixels
   pointMargin: 1.0,    // Margin between points (multiplier of point size)
   pointOpacity: 1.0,   // Global opacity
-  pointColor: '#ffffff', // Global color
+  
+  // Size-to-color mapping
+  sizeBlack: 0.5,      // Size when point is black
+  sizeWhite: 3.0,      // Size when point is white
+  
+  // Noise controls
+  noiseScale: 3.0,     // Scale of the noise pattern
+  noiseSpeed: 0.5,     // Speed of noise evolution
+  noiseOctaves: 4,     // Number of octaves for fractal noise
+  noiseLacunarity: 2.0, // Frequency multiplier per octave
+  noiseGain: 0.5,      // Amplitude multiplier per octave
   
   // Debug
   showStats: false
@@ -25,6 +34,7 @@ const params = {
 let renderer, scene, camera, clock, gui;
 let dotMatrix, dotGeometry, dotMaterial;
 let dotAttributes = {}; // Store per-point attributes
+let noiseTexture, noiseData;
 
 // Vertex shader - handles screen-space sizing
 const vertexShader = `
@@ -45,8 +55,8 @@ const vertexShader = `
     vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
     gl_Position = projectionMatrix * mvPosition;
     
-    // Calculate screen-space size
-    gl_PointSize = uPointSize * size;
+    // Calculate screen-space size (size attribute now controls the actual size)
+    gl_PointSize = size;
   }
 `;
 
@@ -87,6 +97,113 @@ camera = new THREE.PerspectiveCamera(params.cameraFOV, window.innerWidth / windo
 camera.position.set(params.cameraOffsetX, params.cameraOffsetY, params.cameraOffsetZ);
 camera.lookAt(0, 0, 0);
 
+// Simple 2D noise function
+function noise2D(x, y) {
+  // Simple pseudo-random based on sin
+  return (Math.sin(x * 12.9898 + y * 78.233) * 43758.5453) % 1.0;
+}
+
+// Smooth noise interpolation
+function smoothNoise2D(x, y) {
+  const intX = Math.floor(x);
+  const intY = Math.floor(y);
+  const fracX = x - intX;
+  const fracY = y - intY;
+  
+  // Get corner values
+  const a = noise2D(intX, intY);
+  const b = noise2D(intX + 1, intY);
+  const c = noise2D(intX, intY + 1);
+  const d = noise2D(intX + 1, intY + 1);
+  
+  // Smooth interpolation
+  const fx = fracX * fracX * (3 - 2 * fracX);
+  const fy = fracY * fracY * (3 - 2 * fracY);
+  
+  // Bilinear interpolation
+  const i1 = a * (1 - fx) + b * fx;
+  const i2 = c * (1 - fx) + d * fx;
+  
+  return i1 * (1 - fy) + i2 * fy;
+}
+
+// Fractal noise with octaves
+function fractalNoise2D(x, y, octaves, lacunarity, gain) {
+  let value = 0;
+  let amplitude = 1;
+  let frequency = 1;
+  let maxValue = 0;
+  
+  for (let i = 0; i < octaves; i++) {
+    value += smoothNoise2D(x * frequency, y * frequency) * amplitude;
+    maxValue += amplitude;
+    amplitude *= gain;
+    frequency *= lacunarity;
+  }
+  
+  return value / maxValue;
+}
+
+// Create noise texture data
+function createNoiseTexture(cols, rows) {
+  const size = cols * rows;
+  noiseData = new Float32Array(size * 4); // RGBA
+  
+  // Create texture
+  noiseTexture = new THREE.DataTexture(
+    noiseData,
+    cols,
+    rows,
+    THREE.RGBAFormat,
+    THREE.FloatType
+  );
+  noiseTexture.magFilter = THREE.NearestFilter;
+  noiseTexture.minFilter = THREE.NearestFilter;
+  noiseTexture.needsUpdate = true;
+}
+
+// Update noise texture with evolving pattern
+function updateNoiseTexture(time) {
+  if (!noiseData || !dotAttributes.cols || !dotAttributes.rows) return;
+  
+  const cols = dotAttributes.cols;
+  const rows = dotAttributes.rows;
+  const scale = params.noiseScale / Math.min(cols, rows);
+  
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      const index = (row * cols + col) * 4;
+      
+      // Generate noise value with time evolution
+      const x = col * scale;
+      const y = row * scale;
+      const z = time * params.noiseSpeed;
+      
+      // Use fractal noise
+      const noiseValue = fractalNoise2D(
+        x + z,
+        y + z * 0.7,
+        params.noiseOctaves,
+        params.noiseLacunarity,
+        params.noiseGain
+      );
+      
+      // Clamp to 0-1 range
+      const value = Math.max(0, Math.min(1, noiseValue));
+      
+      // Store in texture (using all channels for consistency)
+      noiseData[index] = value;
+      noiseData[index + 1] = value;
+      noiseData[index + 2] = value;
+      noiseData[index + 3] = 1.0;
+    }
+  }
+  
+  if (noiseTexture) {
+    noiseTexture.needsUpdate = true;
+  }
+}
+
 // Create dot matrix system
 function createDotMatrix() {
   // Remove existing matrix if it exists
@@ -102,7 +219,7 @@ function createDotMatrix() {
   
   // Calculate grid dimensions
   const cols = params.gridResolution;
-  const totalSpacing = params.pointSize * (1 + params.pointMargin);
+  const totalSpacing = params.sizeWhite * (1 + params.pointMargin);
   const rows = Math.floor(cols / aspect);
   
   const totalPoints = cols * rows;
@@ -119,6 +236,9 @@ function createDotMatrix() {
   const spacingX = gridWidth / (cols - 1);
   const spacingY = gridHeight / (rows - 1);
   const spacing = Math.min(spacingX, spacingY); // Use uniform spacing
+  
+  // Create noise texture matching grid resolution
+  createNoiseTexture(cols, rows);
   
   // Create geometry
   dotGeometry = new THREE.BufferGeometry();
@@ -144,10 +264,10 @@ function createDotMatrix() {
       positions[index * 3 + 1] = y;
       positions[index * 3 + 2] = z;
       
-      // Default size (1.0 = normal size)
-      sizes[index] = 1.0;
+      // Default size (will be updated by noise)
+      sizes[index] = params.sizeWhite;
       
-      // Default color (white)
+      // Default color (white, will be updated by noise)
       colors[index * 3] = 1.0;
       colors[index * 3 + 1] = 1.0;
       colors[index * 3 + 2] = 1.0;
@@ -181,7 +301,7 @@ function createDotMatrix() {
     vertexShader,
     fragmentShader,
     uniforms: {
-      uPointSize: { value: params.pointSize },
+      uPointSize: { value: params.sizeWhite },
       uResolution: { value: new THREE.Vector2(width, height) },
       uGlobalOpacity: { value: params.pointOpacity }
     },
@@ -193,6 +313,37 @@ function createDotMatrix() {
   // Create points mesh
   dotMatrix = new THREE.Points(dotGeometry, dotMaterial);
   scene.add(dotMatrix);
+}
+
+// Update points based on noise values
+function updatePointsFromNoise() {
+  if (!noiseData || !dotAttributes.totalPoints) return;
+  
+  const cols = dotAttributes.cols;
+  const rows = dotAttributes.rows;
+  
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      const pointIndex = row * cols + col;
+      const noiseIndex = pointIndex * 4;
+      
+      // Get noise value (0 to 1)
+      const noiseValue = noiseData[noiseIndex];
+      
+      // Map noise to size (black/small when 0, white/big when 1)
+      const size = params.sizeBlack + (params.sizeWhite - params.sizeBlack) * noiseValue;
+      dotAttributes.sizes[pointIndex] = size;
+      
+      // Map noise to color (black when 0, white when 1)
+      dotAttributes.colors[pointIndex * 3] = noiseValue;
+      dotAttributes.colors[pointIndex * 3 + 1] = noiseValue;
+      dotAttributes.colors[pointIndex * 3 + 2] = noiseValue;
+    }
+  }
+  
+  // Update geometry attributes
+  dotGeometry.attributes.size.needsUpdate = true;
+  dotGeometry.attributes.color.needsUpdate = true;
 }
 
 // Utility function to update individual point properties
@@ -227,27 +378,6 @@ function updatePointByCoord(col, row, properties) {
   updatePoint(index, properties);
 }
 
-// Example animation function (for testing)
-function animatePoints(time) {
-  if (!dotAttributes.totalPoints) return;
-  
-  // Example: Create a wave effect
-  for (let i = 0; i < dotAttributes.totalPoints; i++) {
-    const x = dotAttributes.positions[i * 3];
-    const y = dotAttributes.positions[i * 3 + 1];
-    const wave = Math.sin(x * 0.5 + time) * Math.cos(y * 0.5 + time);
-    
-    // Animate size
-    dotAttributes.sizes[i] = 1.0 + wave * 0.3;
-    
-    // Animate opacity
-    dotAttributes.opacities[i] = 0.5 + wave * 0.5;
-  }
-  
-  dotGeometry.attributes.size.needsUpdate = true;
-  dotGeometry.attributes.opacity.needsUpdate = true;
-}
-
 // Initialize dot matrix
 createDotMatrix();
 
@@ -260,7 +390,9 @@ Object.assign(window, {
   updatePoint,
   updatePointByCoord,
   dotAttributes,
-  params 
+  params,
+  noiseTexture,
+  noiseData
 });
 
 // Setup GUI
@@ -294,13 +426,12 @@ function setupGUI() {
   matrixFolder.add(params, 'gridResolution', 10, 200, 1)
     .name('Grid Resolution')
     .onChange(() => createDotMatrix());
-  matrixFolder.add(params, 'pointSize', 0.5, 10, 0.1)
-    .name('Point Size')
-    .onChange(v => {
-      if (dotMaterial) {
-        dotMaterial.uniforms.uPointSize.value = v;
-      }
-    });
+  matrixFolder.add(params, 'sizeBlack', 0.1, 5, 0.1)
+    .name('Size (Black)')
+    .onChange(() => updatePointsFromNoise());
+  matrixFolder.add(params, 'sizeWhite', 0.5, 10, 0.1)
+    .name('Size (White)')
+    .onChange(() => updatePointsFromNoise());
   matrixFolder.add(params, 'pointMargin', 0, 5, 0.1)
     .name('Point Margin')
     .onChange(() => createDotMatrix());
@@ -311,18 +442,21 @@ function setupGUI() {
         dotMaterial.uniforms.uGlobalOpacity.value = v;
       }
     });
-  matrixFolder.addColor(params, 'pointColor')
-    .name('Global Color')
-    .onChange(v => {
-      const color = new THREE.Color(v);
-      for (let i = 0; i < dotAttributes.totalPoints; i++) {
-        dotAttributes.colors[i * 3] = color.r;
-        dotAttributes.colors[i * 3 + 1] = color.g;
-        dotAttributes.colors[i * 3 + 2] = color.b;
-      }
-      dotGeometry.attributes.color.needsUpdate = true;
-    });
   matrixFolder.open();
+  
+  // Noise folder
+  const noiseFolder = gui.addFolder('Noise Pattern');
+  noiseFolder.add(params, 'noiseScale', 0.5, 10, 0.1)
+    .name('Scale');
+  noiseFolder.add(params, 'noiseSpeed', 0, 2, 0.01)
+    .name('Speed');
+  noiseFolder.add(params, 'noiseOctaves', 1, 8, 1)
+    .name('Octaves');
+  noiseFolder.add(params, 'noiseLacunarity', 1.5, 3, 0.1)
+    .name('Lacunarity');
+  noiseFolder.add(params, 'noiseGain', 0.1, 0.9, 0.01)
+    .name('Gain');
+  noiseFolder.open();
   
   // Debug folder
   const debugFolder = gui.addFolder('Debug');
@@ -334,7 +468,8 @@ function setupGUI() {
           totalPoints: dotAttributes.totalPoints,
           cols: dotAttributes.cols,
           rows: dotAttributes.rows,
-          pointSize: params.pointSize,
+          sizeBlack: params.sizeBlack,
+          sizeWhite: params.sizeWhite,
           gridResolution: params.gridResolution
         });
       }
@@ -360,8 +495,11 @@ renderer.setAnimationLoop(() => {
   const deltaTime = currentTime - lastTime;
   lastTime = currentTime;
   
-  // Uncomment to test animation
-  // animatePoints(currentTime);
+  // Update noise texture
+  updateNoiseTexture(currentTime);
+  
+  // Update points based on noise
+  updatePointsFromNoise();
   
   renderer.render(scene, camera);
 });
@@ -386,4 +524,4 @@ function onResize() {
 
 window.addEventListener('resize', onResize);
 
-console.log('Dot Matrix initialized. Press H to toggle GUI.');
+console.log('Dot Matrix initialized with noise-driven animation. Press H to toggle GUI.');
