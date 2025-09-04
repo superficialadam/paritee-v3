@@ -820,8 +820,11 @@ function setupGUI() {
       }
     });
   
+  // Hide GUI by default
+  gui.hide();
+  
   // Keyboard shortcuts
-  let guiVisible = true;
+  let guiVisible = false;
   document.addEventListener('keydown', (event) => {
     if (event.key === 'h' || event.key === 'H') {
       event.preventDefault();

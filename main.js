@@ -1,6 +1,90 @@
 // Wait for the page to fully load
 window.addEventListener('load', function () {
   console.log('Page loaded');
+  
+  // Initialize dot matrix parameters
+  if (window.dotMatrixParams) {
+    // Camera
+    dotMatrixParams.cameraOffsetX = 0.0;
+    dotMatrixParams.cameraOffsetY = 0.0;
+    dotMatrixParams.cameraOffsetZ = 6.0;
+    dotMatrixParams.cameraFOV = 70;
+    
+    // Dot Matrix
+    dotMatrixParams.gridResolution = 80;
+    dotMatrixParams.sizeBlack = 0.5;
+    dotMatrixParams.sizeWhite = 16;
+    dotMatrixParams.pointMargin = 1.0;
+    dotMatrixParams.pointOpacity = 1.0;
+    
+    // Main Noise
+    dotMatrixParams.mainNoiseEnabled = true;
+    dotMatrixParams.noiseAnimated = true;
+    dotMatrixParams.noiseScale = 5.0;
+    dotMatrixParams.noiseSpeed = 0.5;
+    dotMatrixParams.noiseOffsetX = 0.0;
+    dotMatrixParams.noiseOffsetY = 0.0;
+    dotMatrixParams.noiseOffsetZ = 0.0;
+    dotMatrixParams.noiseEvolution = 0.0;
+    dotMatrixParams.noiseOctaves = 4;
+    dotMatrixParams.noiseLacunarity = 2.0;
+    dotMatrixParams.noiseGain = 0.644;
+    dotMatrixParams.noiseThreshold = 0.7281;
+    dotMatrixParams.noiseIslandSize = 1.3965;
+    dotMatrixParams.noiseExposure = 0.102;
+    dotMatrixParams.noiseGamma = 0.6032;
+    dotMatrixParams.noiseMultiplier = 0.498;
+    
+    // Influence Zone 1
+    dotMatrixParams.influence1Enabled = true;
+    dotMatrixParams.influence1Subtract = false;
+    dotMatrixParams.influence1X = 0.5;
+    dotMatrixParams.influence1Y = 0.5;
+    dotMatrixParams.influence1RadiusX = 0.02;
+    dotMatrixParams.influence1RadiusY = 0.02;
+    dotMatrixParams.influence1Falloff = 2.0;
+    dotMatrixParams.influence1Intensity = 0.0;
+    
+    // Influence Zone 1 Edge Noise
+    dotMatrixParams.influence1EdgeEnabled = true;
+    dotMatrixParams.influence1EdgeStart = 0.0;
+    dotMatrixParams.influence1EdgeInfluence = 1.0;
+    dotMatrixParams.influence1EdgeScale = 40.0;
+    dotMatrixParams.influence1EdgeSpeed = 5.0;
+    dotMatrixParams.influence1EdgeOctaves = 2;
+    dotMatrixParams.influence1EdgeLacunarity = 2.5;
+    dotMatrixParams.influence1EdgeGain = 0.077;
+    dotMatrixParams.influence1EdgeThreshold = 0.6192;
+    dotMatrixParams.influence1EdgeIslandSize = 1.5352;
+    dotMatrixParams.influence1EdgeExposure = 0.636;
+    dotMatrixParams.influence1EdgeGamma = 0.1;
+    
+    // Influence Zone 2 - DISABLED
+    dotMatrixParams.influence2Enabled = false;
+    dotMatrixParams.influence2Subtract = false;
+    dotMatrixParams.influence2X = 0.7;
+    dotMatrixParams.influence2Y = 0.5;
+    dotMatrixParams.influence2RadiusX = 0.15;
+    dotMatrixParams.influence2RadiusY = 0.25;
+    dotMatrixParams.influence2Falloff = 1.5;
+    dotMatrixParams.influence2Intensity = 0.3;
+    
+    // Influence Zone 2 Edge Noise
+    dotMatrixParams.influence2EdgeEnabled = false;
+    dotMatrixParams.influence2EdgeStart = 0.4;
+    dotMatrixParams.influence2EdgeInfluence = 0.25;
+    dotMatrixParams.influence2EdgeScale = 8.0;
+    dotMatrixParams.influence2EdgeSpeed = 0.5;
+    dotMatrixParams.influence2EdgeOctaves = 3;
+    dotMatrixParams.influence2EdgeLacunarity = 2.0;
+    dotMatrixParams.influence2EdgeGain = 0.5;
+    dotMatrixParams.influence2EdgeThreshold = 0.0;
+    dotMatrixParams.influence2EdgeIslandSize = 0.5;
+    dotMatrixParams.influence2EdgeExposure = 0.0;
+    dotMatrixParams.influence2EdgeGamma = 1.0;
+    
+    console.log('Dot matrix parameters initialized');
+  }
 
   // Debug: Check what's available globally
   console.log('anime:', typeof anime);
