@@ -27,6 +27,15 @@ const params = {
   noiseOctaves: 4,     // Number of octaves for fractal noise
   noiseLacunarity: 2.0, // Frequency multiplier per octave
   noiseGain: 0.5,      // Amplitude multiplier per octave
+  noiseThreshold: 0.0,  // Black level threshold (cuts off values below)
+  noiseIslandSize: 0.5, // Controls bright island size (remap range)
+  noiseExposure: 0.0,  // Exposure adjustment (stops)
+  noiseGamma: 1.0,     // Gamma correction (1 = linear)
+  noiseOffsetX: 0.0,   // Manual X offset for noise
+  noiseOffsetY: 0.0,   // Manual Y offset for noise
+  noiseOffsetZ: 0.0,   // Manual Z offset for noise
+  noiseEvolution: 0.0, // Evolution/phase offset for noise morphing
+  noiseAnimated: true, // Toggle noise animation on/off
   
   // Influence zone 1 controls
   influence1Enabled: true,
@@ -35,7 +44,19 @@ const params = {
   influence1RadiusX: 0.2, // Ellipse radius X (0-1, normalized)
   influence1RadiusY: 0.15, // Ellipse radius Y (0-1, normalized)
   influence1Falloff: 2.0, // Falloff power (1=linear, 2=quadratic, etc)
-  influence1Intensity: 0.5, // Intensity/value of influence (0=black, 1=white)
+  influence1Intensity: 0.5, // Intensity/value of influence
+  influence1Subtract: false, // If true, subtracts from value instead of adding
+  
+  // Edge noise for zone 1
+  influence1EdgeEnabled: true,
+  influence1EdgeStart: 0.3,      // Where edge noise starts (0=center, 1=edge)
+  influence1EdgeInfluence: 0.3,  // How much the edge noise affects the influence
+  influence1EdgeScale: 5.0,      // Scale of edge noise
+  influence1EdgeSpeed: 0.3,      // Speed of edge noise evolution
+  influence1EdgeOctaves: 2,      // Octaves for edge noise
+  influence1EdgeLacunarity: 2.5, // Lacunarity for edge noise
+  influence1EdgeGain: 0.6,       // Gain for edge noise
+  influence1EdgeContrast: 1.0,   // Contrast adjustment for edge noise
   
   // Influence zone 2 controls
   influence2Enabled: true,
@@ -44,18 +65,19 @@ const params = {
   influence2RadiusX: 0.15, // Ellipse radius X (0-1, normalized)
   influence2RadiusY: 0.25, // Ellipse radius Y (0-1, normalized)
   influence2Falloff: 1.5, // Falloff power (1=linear, 2=quadratic, etc)
-  influence2Intensity: 0.3, // Intensity/value of influence (0=black, 1=white)
+  influence2Intensity: 0.3, // Intensity/value of influence
+  influence2Subtract: false, // If true, subtracts from value instead of adding
   
-  // Edge noise controls (for breaking up influence zone edges)
-  edgeNoiseEnabled: true,
-  edgeNoiseStart: 0.3,      // Where edge noise starts (0=center, 1=edge)
-  edgeNoiseInfluence: 0.3,  // How much the edge noise affects the influence (0-1)
-  edgeNoiseScale: 5.0,      // Scale of edge noise
-  edgeNoiseSpeed: 0.3,      // Speed of edge noise evolution
-  edgeNoiseOctaves: 2,      // Octaves for edge noise
-  edgeNoiseLacunarity: 2.5, // Lacunarity for edge noise
-  edgeNoiseGain: 0.6,       // Gain for edge noise
-  edgeNoiseContrast: 1.0,   // Contrast adjustment for edge noise
+  // Edge noise for zone 2
+  influence2EdgeEnabled: true,
+  influence2EdgeStart: 0.4,      // Where edge noise starts (0=center, 1=edge)
+  influence2EdgeInfluence: 0.25, // How much the edge noise affects the influence
+  influence2EdgeScale: 8.0,      // Scale of edge noise
+  influence2EdgeSpeed: 0.5,      // Speed of edge noise evolution
+  influence2EdgeOctaves: 3,      // Octaves for edge noise
+  influence2EdgeLacunarity: 2.0, // Lacunarity for edge noise
+  influence2EdgeGain: 0.5,       // Gain for edge noise
+  influence2EdgeContrast: 1.2,   // Contrast adjustment for edge noise
   
   // Debug
   showStats: false
@@ -127,68 +149,95 @@ camera = new THREE.PerspectiveCamera(params.cameraFOV, window.innerWidth / windo
 camera.position.set(params.cameraOffsetX, params.cameraOffsetY, params.cameraOffsetZ);
 camera.lookAt(0, 0, 0);
 
-// Simple 3D noise function for Z-axis movement
-function noise3D(x, y, z) {
-  // Simple pseudo-random based on sin
-  return (Math.sin(x * 12.9898 + y * 78.233 + z * 43.532) * 43758.5453) % 1.0;
+// Improved Perlin-style noise with better gradients
+function hash3D(x, y, z) {
+  let n = Math.sin(x * 127.1 + y * 311.7 + z * 74.7) * 43758.5453123;
+  return n - Math.floor(n);
 }
 
-// Smooth noise interpolation in 3D
-function smoothNoise3D(x, y, z) {
-  const intX = Math.floor(x);
-  const intY = Math.floor(y);
-  const intZ = Math.floor(z);
-  const fracX = x - intX;
-  const fracY = y - intY;
-  const fracZ = z - intZ;
+// Gradient noise for smoother results
+function gradientNoise3D(x, y, z) {
+  const i = Math.floor(x);
+  const j = Math.floor(y);
+  const k = Math.floor(z);
+  const fx = x - i;
+  const fy = y - j;
+  const fz = z - k;
   
-  // Get corner values (8 corners of a cube)
-  const a000 = noise3D(intX, intY, intZ);
-  const a100 = noise3D(intX + 1, intY, intZ);
-  const a010 = noise3D(intX, intY + 1, intZ);
-  const a110 = noise3D(intX + 1, intY + 1, intZ);
-  const a001 = noise3D(intX, intY, intZ + 1);
-  const a101 = noise3D(intX + 1, intY, intZ + 1);
-  const a011 = noise3D(intX, intY + 1, intZ + 1);
-  const a111 = noise3D(intX + 1, intY + 1, intZ + 1);
+  // Generate pseudo-random gradients at corners
+  const grad = (ix, iy, iz, fx, fy, fz) => {
+    const h = hash3D(ix, iy, iz) * 12.0;
+    const u = h < 8 ? fx : fy;
+    const v = h < 4 ? fy : h === 12 || h === 14 ? fx : fz;
+    return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
+  };
   
-  // Smooth interpolation
-  const fx = fracX * fracX * (3 - 2 * fracX);
-  const fy = fracY * fracY * (3 - 2 * fracY);
-  const fz = fracZ * fracZ * (3 - 2 * fracZ);
+  // Fade curves for smooth interpolation
+  const u = fx * fx * fx * (fx * (fx * 6 - 15) + 10);
+  const v = fy * fy * fy * (fy * (fy * 6 - 15) + 10);
+  const w = fz * fz * fz * (fz * (fz * 6 - 15) + 10);
   
-  // Trilinear interpolation
-  const i00 = a000 * (1 - fx) + a100 * fx;
-  const i10 = a010 * (1 - fx) + a110 * fx;
-  const i01 = a001 * (1 - fx) + a101 * fx;
-  const i11 = a011 * (1 - fx) + a111 * fx;
+  // Gradients at 8 corners
+  const g000 = grad(i, j, k, fx, fy, fz);
+  const g100 = grad(i + 1, j, k, fx - 1, fy, fz);
+  const g010 = grad(i, j + 1, k, fx, fy - 1, fz);
+  const g110 = grad(i + 1, j + 1, k, fx - 1, fy - 1, fz);
+  const g001 = grad(i, j, k + 1, fx, fy, fz - 1);
+  const g101 = grad(i + 1, j, k + 1, fx - 1, fy, fz - 1);
+  const g011 = grad(i, j + 1, k + 1, fx, fy - 1, fz - 1);
+  const g111 = grad(i + 1, j + 1, k + 1, fx - 1, fy - 1, fz - 1);
   
-  const i0 = i00 * (1 - fy) + i10 * fy;
-  const i1 = i01 * (1 - fy) + i11 * fy;
+  // Interpolate
+  const x00 = g000 * (1 - u) + g100 * u;
+  const x10 = g010 * (1 - u) + g110 * u;
+  const x01 = g001 * (1 - u) + g101 * u;
+  const x11 = g011 * (1 - u) + g111 * u;
   
-  return i0 * (1 - fz) + i1 * fz;
+  const y0 = x00 * (1 - v) + x10 * v;
+  const y1 = x01 * (1 - v) + x11 * v;
+  
+  const result = y0 * (1 - w) + y1 * w;
+  
+  // Normalize to 0-1 range
+  return (result + 1) * 0.5;
 }
 
-// Fractal noise with octaves
-function fractalNoise3D(x, y, z, octaves, lacunarity, gain, seed = 0) {
+// Fractional Brownian Motion (FBM)
+function fbm3D(x, y, z, octaves, lacunarity, gain, seed = 0) {
+  // If gain is 0, return neutral value (0.5)
+  if (gain === 0) return 0.5;
+  
   let value = 0;
-  let amplitude = 1;
+  let amplitude = 0.5;
   let frequency = 1;
-  let maxValue = 0;
+  let maxAmplitude = 0;
   
   // Add seed offset for different noise patterns
-  x += seed * 100;
-  y += seed * 100;
-  z += seed * 100;
+  x += seed * 137.5;
+  y += seed * 285.2;
+  // Don't add seed to z to maintain pure forward evolution
   
   for (let i = 0; i < octaves; i++) {
-    value += smoothNoise3D(x * frequency, y * frequency, z * frequency) * amplitude;
-    maxValue += amplitude;
-    amplitude *= gain;
+    value += amplitude * gradientNoise3D(
+      x * frequency,
+      y * frequency,
+      z * frequency
+    );
+    maxAmplitude += amplitude;
     frequency *= lacunarity;
+    amplitude *= gain;
   }
   
-  return value / maxValue;
+  // Normalize based on actual amplitude used
+  value = value / maxAmplitude;
+  
+  // Map from [-0.5, 0.5] to [0, 1] range
+  return Math.max(0, Math.min(1, value + 0.5));
+}
+
+// Keep old function name for compatibility but use FBM
+function fractalNoise3D(x, y, z, octaves, lacunarity, gain, seed = 0) {
+  return fbm3D(x, y, z, octaves, lacunarity, gain, seed);
 }
 
 // Apply contrast to a value
@@ -200,8 +249,8 @@ function applyContrast(value, contrast) {
   return Math.max(0, Math.min(1, value));
 }
 
-// Calculate elliptical influence with edge noise
-function calculateInfluence(x, y, centerX, centerY, radiusX, radiusY, falloff, intensity, time, influenceIndex = 1) {
+// Calculate elliptical influence with individual edge noise
+function calculateInfluence(x, y, centerX, centerY, radiusX, radiusY, falloff, intensity, time, zoneParams, zoneIndex) {
   // Calculate normalized distance from center
   const dx = (x - centerX) / radiusX;
   const dy = (y - centerY) / radiusY;
@@ -213,35 +262,37 @@ function calculateInfluence(x, y, centerX, centerY, radiusX, radiusY, falloff, i
   let factor = 1.0 - Math.pow(distance, falloff);
   
   // Apply edge noise to break up the circular edge
-  if (params.edgeNoiseEnabled && distance > params.edgeNoiseStart) {
-    // Calculate edge noise at this position
-    const noiseX = x * params.edgeNoiseScale;
-    const noiseY = y * params.edgeNoiseScale;
-    const noiseZ = -time * params.edgeNoiseSpeed;
+  if (zoneParams.edgeEnabled && distance > zoneParams.edgeStart) {
+    // Calculate edge noise at this position - ONLY USE Z FOR TIME
+    const noiseX = x * zoneParams.edgeScale;
+    const noiseY = y * zoneParams.edgeScale;
+    const noiseZ = -time * zoneParams.edgeSpeed; // Only Z moves with time
     
     let edgeNoise = fractalNoise3D(
       noiseX,
       noiseY,
       noiseZ,
-      params.edgeNoiseOctaves,
-      params.edgeNoiseLacunarity,
-      params.edgeNoiseGain,
-      influenceIndex // Different seed for each influence zone
+      zoneParams.edgeOctaves,
+      zoneParams.edgeLacunarity,
+      zoneParams.edgeGain,
+      zoneIndex // Different seed for each influence zone
     );
     
     // Apply contrast
-    edgeNoise = applyContrast(edgeNoise, params.edgeNoiseContrast);
+    edgeNoise = applyContrast(edgeNoise, zoneParams.edgeContrast);
     
     // Calculate how much edge noise affects this point
-    const edgeWeight = (distance - params.edgeNoiseStart) / (1.0 - params.edgeNoiseStart);
+    const edgeWeight = (distance - zoneParams.edgeStart) / (1.0 - zoneParams.edgeStart);
     
     // ADD edge noise (not multiply) - edge noise adds or subtracts from influence
-    const noiseEffect = (edgeNoise - 0.5) * 2 * params.edgeNoiseInfluence * edgeWeight;
+    const noiseEffect = (edgeNoise - 0.5) * 2 * zoneParams.edgeInfluence * edgeWeight;
     factor = factor + noiseEffect;
     factor = Math.max(0, Math.min(1, factor)); // Clamp to [0,1]
   }
   
-  return factor * intensity;
+  // Apply intensity and handle subtraction mode
+  const result = factor * intensity;
+  return zoneParams.subtract ? -result : result;
 }
 
 // Create noise texture data
@@ -278,18 +329,45 @@ function updateNoiseTexture(time) {
       
       // Add main noise if enabled
       if (params.mainNoiseEnabled) {
-        const x = col * scale;
-        const y = row * scale;
-        const z = -time * params.noiseSpeed; // Negative Z for "towards us" movement
+        // Fixed X and Y, evolution parameter for continuous forward evolution
+        const x = col * scale + params.noiseOffsetX;
+        const y = row * scale + params.noiseOffsetY;
+        const evolution = params.noiseAnimated ? 
+                         (time * params.noiseSpeed + params.noiseEvolution) : 
+                         params.noiseEvolution;
         
-        const noiseValue = fractalNoise3D(
+        // Use evolution as a fourth dimension - continuous forward movement
+        let noiseValue = fractalNoise3D(
           x,
           y,
-          z,
+          params.noiseOffsetZ + evolution,
           params.noiseOctaves,
           params.noiseLacunarity,
           params.noiseGain
         );
+        
+        // Apply threshold to create black plateau (values below threshold become 0)
+        if (noiseValue < params.noiseThreshold) {
+          noiseValue = 0;
+        } else {
+          // Remap remaining range to control island size
+          // Island size controls how much of the range above threshold maps to bright
+          const range = 1.0 - params.noiseThreshold;
+          const islandRange = range * params.noiseIslandSize;
+          
+          // Remap from [threshold, threshold+islandRange] to [0, 1]
+          noiseValue = (noiseValue - params.noiseThreshold) / islandRange;
+          noiseValue = Math.min(1, noiseValue); // Clamp at 1
+        }
+        
+        // Apply exposure (multiply by 2^exposure, like camera stops)
+        noiseValue = noiseValue * Math.pow(2, params.noiseExposure);
+        
+        // Apply gamma correction (power function for non-linear response)
+        noiseValue = Math.pow(noiseValue, 1.0 / params.noiseGamma);
+        
+        // Clamp to valid range
+        noiseValue = Math.max(0, Math.min(1, noiseValue));
         
         finalValue += noiseValue;
       }
@@ -298,8 +376,21 @@ function updateNoiseTexture(time) {
       const normX = col / (cols - 1);
       const normY = row / (rows - 1);
       
-      // Add influence zone 1 (additive)
+      // Add influence zone 1 (additive or subtractive)
       if (params.influence1Enabled) {
+        const zone1Params = {
+          edgeEnabled: params.influence1EdgeEnabled,
+          edgeStart: params.influence1EdgeStart,
+          edgeInfluence: params.influence1EdgeInfluence,
+          edgeScale: params.influence1EdgeScale,
+          edgeSpeed: params.influence1EdgeSpeed,
+          edgeOctaves: params.influence1EdgeOctaves,
+          edgeLacunarity: params.influence1EdgeLacunarity,
+          edgeGain: params.influence1EdgeGain,
+          edgeContrast: params.influence1EdgeContrast,
+          subtract: params.influence1Subtract
+        };
+        
         const influence1 = calculateInfluence(
           normX, normY,
           params.influence1X, params.influence1Y,
@@ -307,14 +398,28 @@ function updateNoiseTexture(time) {
           params.influence1Falloff,
           params.influence1Intensity,
           time,
+          zone1Params,
           1
         );
         
         finalValue += influence1;
       }
       
-      // Add influence zone 2 (additive)
+      // Add influence zone 2 (additive or subtractive)
       if (params.influence2Enabled) {
+        const zone2Params = {
+          edgeEnabled: params.influence2EdgeEnabled,
+          edgeStart: params.influence2EdgeStart,
+          edgeInfluence: params.influence2EdgeInfluence,
+          edgeScale: params.influence2EdgeScale,
+          edgeSpeed: params.influence2EdgeSpeed,
+          edgeOctaves: params.influence2EdgeOctaves,
+          edgeLacunarity: params.influence2EdgeLacunarity,
+          edgeGain: params.influence2EdgeGain,
+          edgeContrast: params.influence2EdgeContrast,
+          subtract: params.influence2Subtract
+        };
+        
         const influence2 = calculateInfluence(
           normX, normY,
           params.influence2X, params.influence2Y,
@@ -322,6 +427,7 @@ function updateNoiseTexture(time) {
           params.influence2Falloff,
           params.influence2Intensity,
           time,
+          zone2Params,
           2
         );
         
@@ -578,26 +684,51 @@ function setupGUI() {
   // Main Noise folder
   const noiseFolder = gui.addFolder('Main Noise');
   noiseFolder.add(params, 'mainNoiseEnabled').name('Enabled');
+  noiseFolder.add(params, 'noiseAnimated').name('Animated');
   noiseFolder.add(params, 'noiseScale').name('Scale').min(0);
   noiseFolder.add(params, 'noiseSpeed').name('Speed').min(0);
+  noiseFolder.add(params, 'noiseOffsetX', -50, 50).name('Offset X');
+  noiseFolder.add(params, 'noiseOffsetY', -50, 50).name('Offset Y');
+  noiseFolder.add(params, 'noiseOffsetZ', -50, 50).name('Offset Z');
+  noiseFolder.add(params, 'noiseEvolution', 0, 10).name('Evolution');
   noiseFolder.add(params, 'noiseOctaves').name('Octaves').min(1).step(1);
   noiseFolder.add(params, 'noiseLacunarity').name('Lacunarity').min(0);
   noiseFolder.add(params, 'noiseGain').name('Gain').min(0).max(1);
+  noiseFolder.add(params, 'noiseThreshold', 0, 0.9).name('Black Threshold');
+  noiseFolder.add(params, 'noiseIslandSize', 0.1, 2).name('Island Size');
+  noiseFolder.add(params, 'noiseExposure', -3, 3).name('Exposure');
+  noiseFolder.add(params, 'noiseGamma', 0.1, 3).name('Gamma');
+  noiseFolder.open();
   
   // Influence Zone 1 folder
   const influence1Folder = gui.addFolder('Influence Zone 1');
   influence1Folder.add(params, 'influence1Enabled').name('Enabled');
+  influence1Folder.add(params, 'influence1Subtract').name('Subtract Mode');
   influence1Folder.add(params, 'influence1X').name('X Position').min(0).max(1);
   influence1Folder.add(params, 'influence1Y').name('Y Position').min(0).max(1);
   influence1Folder.add(params, 'influence1RadiusX').name('Radius X').min(0);
   influence1Folder.add(params, 'influence1RadiusY').name('Radius Y').min(0);
   influence1Folder.add(params, 'influence1Falloff').name('Falloff').min(0);
   influence1Folder.add(params, 'influence1Intensity').name('Intensity');
+  
+  // Edge noise for zone 1
+  const edge1Folder = influence1Folder.addFolder('Edge Noise');
+  edge1Folder.add(params, 'influence1EdgeEnabled').name('Enabled');
+  edge1Folder.add(params, 'influence1EdgeStart').name('Start Position').min(0).max(1);
+  edge1Folder.add(params, 'influence1EdgeInfluence').name('Influence').min(0);
+  edge1Folder.add(params, 'influence1EdgeScale').name('Scale').min(0);
+  edge1Folder.add(params, 'influence1EdgeSpeed').name('Speed').min(0);
+  edge1Folder.add(params, 'influence1EdgeOctaves').name('Octaves').min(1).step(1);
+  edge1Folder.add(params, 'influence1EdgeLacunarity').name('Lacunarity').min(0);
+  edge1Folder.add(params, 'influence1EdgeGain').name('Gain').min(0).max(1);
+  edge1Folder.add(params, 'influence1EdgeContrast').name('Contrast').min(0);
+  
   influence1Folder.open();
   
   // Influence Zone 2 folder
   const influence2Folder = gui.addFolder('Influence Zone 2');
   influence2Folder.add(params, 'influence2Enabled').name('Enabled');
+  influence2Folder.add(params, 'influence2Subtract').name('Subtract Mode');
   influence2Folder.add(params, 'influence2X').name('X Position').min(0).max(1);
   influence2Folder.add(params, 'influence2Y').name('Y Position').min(0).max(1);
   influence2Folder.add(params, 'influence2RadiusX').name('Radius X').min(0);
@@ -605,18 +736,17 @@ function setupGUI() {
   influence2Folder.add(params, 'influence2Falloff').name('Falloff').min(0);
   influence2Folder.add(params, 'influence2Intensity').name('Intensity');
   
-  // Edge Noise folder
-  const edgeNoiseFolder = gui.addFolder('Edge Noise');
-  edgeNoiseFolder.add(params, 'edgeNoiseEnabled').name('Enabled');
-  edgeNoiseFolder.add(params, 'edgeNoiseStart').name('Start Position').min(0).max(1);
-  edgeNoiseFolder.add(params, 'edgeNoiseInfluence').name('Influence').min(0);
-  edgeNoiseFolder.add(params, 'edgeNoiseScale').name('Scale').min(0);
-  edgeNoiseFolder.add(params, 'edgeNoiseSpeed').name('Speed').min(0);
-  edgeNoiseFolder.add(params, 'edgeNoiseOctaves').name('Octaves').min(1).step(1);
-  edgeNoiseFolder.add(params, 'edgeNoiseLacunarity').name('Lacunarity').min(0);
-  edgeNoiseFolder.add(params, 'edgeNoiseGain').name('Gain').min(0).max(1);
-  edgeNoiseFolder.add(params, 'edgeNoiseContrast').name('Contrast').min(0);
-  edgeNoiseFolder.open();
+  // Edge noise for zone 2
+  const edge2Folder = influence2Folder.addFolder('Edge Noise');
+  edge2Folder.add(params, 'influence2EdgeEnabled').name('Enabled');
+  edge2Folder.add(params, 'influence2EdgeStart').name('Start Position').min(0).max(1);
+  edge2Folder.add(params, 'influence2EdgeInfluence').name('Influence').min(0);
+  edge2Folder.add(params, 'influence2EdgeScale').name('Scale').min(0);
+  edge2Folder.add(params, 'influence2EdgeSpeed').name('Speed').min(0);
+  edge2Folder.add(params, 'influence2EdgeOctaves').name('Octaves').min(1).step(1);
+  edge2Folder.add(params, 'influence2EdgeLacunarity').name('Lacunarity').min(0);
+  edge2Folder.add(params, 'influence2EdgeGain').name('Gain').min(0).max(1);
+  edge2Folder.add(params, 'influence2EdgeContrast').name('Contrast').min(0);
   
   // Debug folder
   const debugFolder = gui.addFolder('Debug');
@@ -633,20 +763,17 @@ function setupGUI() {
           mainNoiseEnabled: params.mainNoiseEnabled,
           influence1: {
             enabled: params.influence1Enabled,
+            subtract: params.influence1Subtract,
             position: [params.influence1X, params.influence1Y],
-            radius: [params.influence1RadiusX, params.influence1RadiusY]
+            radius: [params.influence1RadiusX, params.influence1RadiusY],
+            edgeNoise: params.influence1EdgeEnabled
           },
           influence2: {
             enabled: params.influence2Enabled,
+            subtract: params.influence2Subtract,
             position: [params.influence2X, params.influence2Y],
-            radius: [params.influence2RadiusX, params.influence2RadiusY]
-          },
-          edgeNoise: {
-            enabled: params.edgeNoiseEnabled,
-            start: params.edgeNoiseStart,
-            influence: params.edgeNoiseInfluence,
-            scale: params.edgeNoiseScale,
-            contrast: params.edgeNoiseContrast
+            radius: [params.influence2RadiusX, params.influence2RadiusY],
+            edgeNoise: params.influence2EdgeEnabled
           }
         });
       }
@@ -701,4 +828,4 @@ function onResize() {
 
 window.addEventListener('resize', onResize);
 
-console.log('Dot Matrix: Pure additive layers with dual influence zones. Press H to toggle GUI.');
+console.log('Dot Matrix: Z-only noise, individual edge controls, subtract mode. Press H for GUI.');
