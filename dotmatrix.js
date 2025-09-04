@@ -31,6 +31,7 @@ const params = {
   noiseIslandSize: 0.5, // Controls bright island size (remap range)
   noiseExposure: 0.0,  // Exposure adjustment (stops)
   noiseGamma: 1.0,     // Gamma correction (1 = linear)
+  noiseMultiplier: 1.0, // Final output multiplier (overall fader)
   noiseOffsetX: 0.0,   // Manual X offset for noise
   noiseOffsetY: 0.0,   // Manual Y offset for noise
   noiseOffsetZ: 0.0,   // Manual Z offset for noise
@@ -56,7 +57,10 @@ const params = {
   influence1EdgeOctaves: 2,      // Octaves for edge noise
   influence1EdgeLacunarity: 2.5, // Lacunarity for edge noise
   influence1EdgeGain: 0.6,       // Gain for edge noise
-  influence1EdgeContrast: 1.0,   // Contrast adjustment for edge noise
+  influence1EdgeThreshold: 0.0,  // Black level threshold for edge noise
+  influence1EdgeIslandSize: 0.5, // Island size for edge noise
+  influence1EdgeExposure: 0.0,   // Exposure for edge noise
+  influence1EdgeGamma: 1.0,      // Gamma for edge noise
   
   // Influence zone 2 controls
   influence2Enabled: true,
@@ -77,7 +81,10 @@ const params = {
   influence2EdgeOctaves: 3,      // Octaves for edge noise
   influence2EdgeLacunarity: 2.0, // Lacunarity for edge noise
   influence2EdgeGain: 0.5,       // Gain for edge noise
-  influence2EdgeContrast: 1.2,   // Contrast adjustment for edge noise
+  influence2EdgeThreshold: 0.0,  // Black level threshold for edge noise
+  influence2EdgeIslandSize: 0.5, // Island size for edge noise
+  influence2EdgeExposure: 0.0,   // Exposure for edge noise
+  influence2EdgeGamma: 1.0,      // Gamma for edge noise
   
   // Debug
   showStats: false
@@ -278,8 +285,20 @@ function calculateInfluence(x, y, centerX, centerY, radiusX, radiusY, falloff, i
       zoneIndex // Different seed for each influence zone
     );
     
-    // Apply contrast
-    edgeNoise = applyContrast(edgeNoise, zoneParams.edgeContrast);
+    // Apply same processing as main noise: threshold, island size, exposure, gamma
+    if (edgeNoise < zoneParams.edgeThreshold) {
+      edgeNoise = 0;
+    } else {
+      const range = 1.0 - zoneParams.edgeThreshold;
+      const islandRange = range * zoneParams.edgeIslandSize;
+      edgeNoise = (edgeNoise - zoneParams.edgeThreshold) / islandRange;
+      edgeNoise = Math.min(1, edgeNoise);
+    }
+    
+    // Apply exposure and gamma
+    edgeNoise = edgeNoise * Math.pow(2, zoneParams.edgeExposure);
+    edgeNoise = Math.pow(edgeNoise, 1.0 / zoneParams.edgeGamma);
+    edgeNoise = Math.max(0, Math.min(1, edgeNoise));
     
     // Calculate how much edge noise affects this point
     const edgeWeight = (distance - zoneParams.edgeStart) / (1.0 - zoneParams.edgeStart);
@@ -369,6 +388,9 @@ function updateNoiseTexture(time) {
         // Clamp to valid range
         noiseValue = Math.max(0, Math.min(1, noiseValue));
         
+        // Apply final multiplier (overall fader) - LAST in chain
+        noiseValue *= params.noiseMultiplier;
+        
         finalValue += noiseValue;
       }
       
@@ -387,7 +409,10 @@ function updateNoiseTexture(time) {
           edgeOctaves: params.influence1EdgeOctaves,
           edgeLacunarity: params.influence1EdgeLacunarity,
           edgeGain: params.influence1EdgeGain,
-          edgeContrast: params.influence1EdgeContrast,
+          edgeThreshold: params.influence1EdgeThreshold,
+          edgeIslandSize: params.influence1EdgeIslandSize,
+          edgeExposure: params.influence1EdgeExposure,
+          edgeGamma: params.influence1EdgeGamma,
           subtract: params.influence1Subtract
         };
         
@@ -416,7 +441,10 @@ function updateNoiseTexture(time) {
           edgeOctaves: params.influence2EdgeOctaves,
           edgeLacunarity: params.influence2EdgeLacunarity,
           edgeGain: params.influence2EdgeGain,
-          edgeContrast: params.influence2EdgeContrast,
+          edgeThreshold: params.influence2EdgeThreshold,
+          edgeIslandSize: params.influence2EdgeIslandSize,
+          edgeExposure: params.influence2EdgeExposure,
+          edgeGamma: params.influence2EdgeGamma,
           subtract: params.influence2Subtract
         };
         
@@ -698,6 +726,7 @@ function setupGUI() {
   noiseFolder.add(params, 'noiseIslandSize', 0.1, 2).name('Island Size');
   noiseFolder.add(params, 'noiseExposure', -3, 3).name('Exposure');
   noiseFolder.add(params, 'noiseGamma', 0.1, 3).name('Gamma');
+  noiseFolder.add(params, 'noiseMultiplier', 0, 2).name('Multiplier');
   noiseFolder.open();
   
   // Influence Zone 1 folder
@@ -721,7 +750,10 @@ function setupGUI() {
   edge1Folder.add(params, 'influence1EdgeOctaves').name('Octaves').min(1).step(1);
   edge1Folder.add(params, 'influence1EdgeLacunarity').name('Lacunarity').min(0);
   edge1Folder.add(params, 'influence1EdgeGain').name('Gain').min(0).max(1);
-  edge1Folder.add(params, 'influence1EdgeContrast').name('Contrast').min(0);
+  edge1Folder.add(params, 'influence1EdgeThreshold', 0, 0.9).name('Black Threshold');
+  edge1Folder.add(params, 'influence1EdgeIslandSize', 0.1, 2).name('Island Size');
+  edge1Folder.add(params, 'influence1EdgeExposure', -3, 3).name('Exposure');
+  edge1Folder.add(params, 'influence1EdgeGamma', 0.1, 3).name('Gamma');
   
   influence1Folder.open();
   
@@ -746,7 +778,10 @@ function setupGUI() {
   edge2Folder.add(params, 'influence2EdgeOctaves').name('Octaves').min(1).step(1);
   edge2Folder.add(params, 'influence2EdgeLacunarity').name('Lacunarity').min(0);
   edge2Folder.add(params, 'influence2EdgeGain').name('Gain').min(0).max(1);
-  edge2Folder.add(params, 'influence2EdgeContrast').name('Contrast').min(0);
+  edge2Folder.add(params, 'influence2EdgeThreshold', 0, 0.9).name('Black Threshold');
+  edge2Folder.add(params, 'influence2EdgeIslandSize', 0.1, 2).name('Island Size');
+  edge2Folder.add(params, 'influence2EdgeExposure', -3, 3).name('Exposure');
+  edge2Folder.add(params, 'influence2EdgeGamma', 0.1, 3).name('Gamma');
   
   // Debug folder
   const debugFolder = gui.addFolder('Debug');
