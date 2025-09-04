@@ -27,6 +27,16 @@ const params = {
   noiseLacunarity: 2.0, // Frequency multiplier per octave
   noiseGain: 0.5,      // Amplitude multiplier per octave
   
+  // Influence zone controls
+  influenceEnabled: true,
+  influenceX: 0.5,     // X position (0-1, normalized)
+  influenceY: 0.5,     // Y position (0-1, normalized)
+  influenceRadiusX: 0.3, // Ellipse radius X (0-1, normalized)
+  influenceRadiusY: 0.2, // Ellipse radius Y (0-1, normalized)
+  influenceFalloff: 2.0, // Falloff power (1=linear, 2=quadratic, etc)
+  influenceIntensity: 1.0, // Intensity/value of influence (0=black, 1=white)
+  influenceBlend: 0.5,  // Blend factor with noise (0=only noise, 1=only influence)
+  
   // Debug
   showStats: false
 };
@@ -97,51 +107,77 @@ camera = new THREE.PerspectiveCamera(params.cameraFOV, window.innerWidth / windo
 camera.position.set(params.cameraOffsetX, params.cameraOffsetY, params.cameraOffsetZ);
 camera.lookAt(0, 0, 0);
 
-// Simple 2D noise function
-function noise2D(x, y) {
+// Simple 3D noise function for Z-axis movement
+function noise3D(x, y, z) {
   // Simple pseudo-random based on sin
-  return (Math.sin(x * 12.9898 + y * 78.233) * 43758.5453) % 1.0;
+  return (Math.sin(x * 12.9898 + y * 78.233 + z * 43.532) * 43758.5453) % 1.0;
 }
 
-// Smooth noise interpolation
-function smoothNoise2D(x, y) {
+// Smooth noise interpolation in 3D
+function smoothNoise3D(x, y, z) {
   const intX = Math.floor(x);
   const intY = Math.floor(y);
+  const intZ = Math.floor(z);
   const fracX = x - intX;
   const fracY = y - intY;
+  const fracZ = z - intZ;
   
-  // Get corner values
-  const a = noise2D(intX, intY);
-  const b = noise2D(intX + 1, intY);
-  const c = noise2D(intX, intY + 1);
-  const d = noise2D(intX + 1, intY + 1);
+  // Get corner values (8 corners of a cube)
+  const a000 = noise3D(intX, intY, intZ);
+  const a100 = noise3D(intX + 1, intY, intZ);
+  const a010 = noise3D(intX, intY + 1, intZ);
+  const a110 = noise3D(intX + 1, intY + 1, intZ);
+  const a001 = noise3D(intX, intY, intZ + 1);
+  const a101 = noise3D(intX + 1, intY, intZ + 1);
+  const a011 = noise3D(intX, intY + 1, intZ + 1);
+  const a111 = noise3D(intX + 1, intY + 1, intZ + 1);
   
   // Smooth interpolation
   const fx = fracX * fracX * (3 - 2 * fracX);
   const fy = fracY * fracY * (3 - 2 * fracY);
+  const fz = fracZ * fracZ * (3 - 2 * fracZ);
   
-  // Bilinear interpolation
-  const i1 = a * (1 - fx) + b * fx;
-  const i2 = c * (1 - fx) + d * fx;
+  // Trilinear interpolation
+  const i00 = a000 * (1 - fx) + a100 * fx;
+  const i10 = a010 * (1 - fx) + a110 * fx;
+  const i01 = a001 * (1 - fx) + a101 * fx;
+  const i11 = a011 * (1 - fx) + a111 * fx;
   
-  return i1 * (1 - fy) + i2 * fy;
+  const i0 = i00 * (1 - fy) + i10 * fy;
+  const i1 = i01 * (1 - fy) + i11 * fy;
+  
+  return i0 * (1 - fz) + i1 * fz;
 }
 
 // Fractal noise with octaves
-function fractalNoise2D(x, y, octaves, lacunarity, gain) {
+function fractalNoise3D(x, y, z, octaves, lacunarity, gain) {
   let value = 0;
   let amplitude = 1;
   let frequency = 1;
   let maxValue = 0;
   
   for (let i = 0; i < octaves; i++) {
-    value += smoothNoise2D(x * frequency, y * frequency) * amplitude;
+    value += smoothNoise3D(x * frequency, y * frequency, z * frequency) * amplitude;
     maxValue += amplitude;
     amplitude *= gain;
     frequency *= lacunarity;
   }
   
   return value / maxValue;
+}
+
+// Calculate elliptical influence
+function calculateInfluence(x, y, centerX, centerY, radiusX, radiusY, falloff, intensity) {
+  // Calculate normalized distance from center
+  const dx = (x - centerX) / radiusX;
+  const dy = (y - centerY) / radiusY;
+  const distance = Math.sqrt(dx * dx + dy * dy);
+  
+  if (distance >= 1.0) return 0;
+  
+  // Apply falloff
+  const factor = 1.0 - Math.pow(distance, falloff);
+  return factor * intensity;
 }
 
 // Create noise texture data
@@ -174,19 +210,38 @@ function updateNoiseTexture(time) {
     for (let col = 0; col < cols; col++) {
       const index = (row * cols + col) * 4;
       
-      // Generate noise value with time evolution
+      // Generate noise value with Z-axis time evolution (moving towards viewer)
       const x = col * scale;
       const y = row * scale;
-      const z = time * params.noiseSpeed;
+      const z = -time * params.noiseSpeed; // Negative Z for "towards us" movement
       
-      // Use fractal noise
-      const noiseValue = fractalNoise2D(
-        x + z,
-        y + z * 0.7,
+      // Use fractal noise in 3D
+      let noiseValue = fractalNoise3D(
+        x,
+        y,
+        z,
         params.noiseOctaves,
         params.noiseLacunarity,
         params.noiseGain
       );
+      
+      // Apply influence zone if enabled
+      if (params.influenceEnabled) {
+        // Convert grid coordinates to normalized coordinates (0-1)
+        const normX = col / (cols - 1);
+        const normY = row / (rows - 1);
+        
+        const influence = calculateInfluence(
+          normX, normY,
+          params.influenceX, params.influenceY,
+          params.influenceRadiusX, params.influenceRadiusY,
+          params.influenceFalloff,
+          params.influenceIntensity
+        );
+        
+        // Blend noise with influence
+        noiseValue = noiseValue * (1 - params.influenceBlend) + influence * params.influenceBlend;
+      }
       
       // Clamp to 0-1 range
       const value = Math.max(0, Math.min(1, noiseValue));
@@ -426,10 +481,10 @@ function setupGUI() {
   matrixFolder.add(params, 'gridResolution', 10, 200, 1)
     .name('Grid Resolution')
     .onChange(() => createDotMatrix());
-  matrixFolder.add(params, 'sizeBlack', 0.1, 5, 0.1)
+  matrixFolder.add(params, 'sizeBlack', 0.1, 10, 0.1)
     .name('Size (Black)')
     .onChange(() => updatePointsFromNoise());
-  matrixFolder.add(params, 'sizeWhite', 0.5, 10, 0.1)
+  matrixFolder.add(params, 'sizeWhite', 0.5, 50, 0.5)
     .name('Size (White)')
     .onChange(() => updatePointsFromNoise());
   matrixFolder.add(params, 'pointMargin', 0, 5, 0.1)
@@ -456,7 +511,26 @@ function setupGUI() {
     .name('Lacunarity');
   noiseFolder.add(params, 'noiseGain', 0.1, 0.9, 0.01)
     .name('Gain');
-  noiseFolder.open();
+  
+  // Influence Zone folder
+  const influenceFolder = gui.addFolder('Influence Zone');
+  influenceFolder.add(params, 'influenceEnabled')
+    .name('Enabled');
+  influenceFolder.add(params, 'influenceX', 0, 1, 0.01)
+    .name('X Position');
+  influenceFolder.add(params, 'influenceY', 0, 1, 0.01)
+    .name('Y Position');
+  influenceFolder.add(params, 'influenceRadiusX', 0.01, 1, 0.01)
+    .name('Radius X');
+  influenceFolder.add(params, 'influenceRadiusY', 0.01, 1, 0.01)
+    .name('Radius Y');
+  influenceFolder.add(params, 'influenceFalloff', 0.5, 5, 0.1)
+    .name('Falloff');
+  influenceFolder.add(params, 'influenceIntensity', 0, 1, 0.01)
+    .name('Intensity');
+  influenceFolder.add(params, 'influenceBlend', 0, 1, 0.01)
+    .name('Blend');
+  influenceFolder.open();
   
   // Debug folder
   const debugFolder = gui.addFolder('Debug');
@@ -470,7 +544,14 @@ function setupGUI() {
           rows: dotAttributes.rows,
           sizeBlack: params.sizeBlack,
           sizeWhite: params.sizeWhite,
-          gridResolution: params.gridResolution
+          gridResolution: params.gridResolution,
+          influenceZone: {
+            enabled: params.influenceEnabled,
+            position: [params.influenceX, params.influenceY],
+            radius: [params.influenceRadiusX, params.influenceRadiusY],
+            falloff: params.influenceFalloff,
+            intensity: params.influenceIntensity
+          }
         });
       }
     });
@@ -524,4 +605,4 @@ function onResize() {
 
 window.addEventListener('resize', onResize);
 
-console.log('Dot Matrix initialized with noise-driven animation. Press H to toggle GUI.');
+console.log('Dot Matrix initialized with Z-axis noise and influence zone. Press H to toggle GUI.');
