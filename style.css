@@ -1,4 +1,24 @@
 
+      .bg-dark {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        background: linear-gradient(to right, #0B111D, #0A1D40);
+        z-index: -3;
+      }
+
+      .bg-light {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        background: linear-gradient(to right, #FAFBFF, #FFF9FE);
+        opacity: 0;
+        z-index: -2;
+      }
 /* Dot matrix canvas layer */
 #dotmatrix {
   position: fixed;
