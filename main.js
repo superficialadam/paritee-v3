@@ -132,7 +132,8 @@ window.addEventListener('load', function () {
 
 
 
-  const heroLogoRevealTl = createTimeline()
+  const heroLogoRevealTl = createTimeline({
+  })
     .add(dotMatrixParams, {
       influence1Intensity: 1,
       duration: 100,
@@ -168,7 +169,7 @@ window.addEventListener('load', function () {
 
 
   const themeTimeline = createTimeline({
-    autoplay: false,
+    autoplay: true,
     onComplete: function () {
       console.log('Theme timeline complete, playing hero heading animation');
       // Play the hero heading animation after theme timeline completes
@@ -177,6 +178,9 @@ window.addEventListener('load', function () {
 
     },
   });
+
+
+  themeTimeline.sync(heroLogoRevealTl);
 
   // 3 second idle state (nothing happens)
   const idleTime = 3000;
@@ -365,18 +369,21 @@ window.addEventListener('load', function () {
   headingContainers.forEach(function (container) {
     const prismHeadings = container.querySelectorAll('.heading-prism');
     const mainHeading = container.querySelector('.heading-main');
+    const homeContent = container.querySelector('.homeContent');
 
     // Set initial positions - start from right side of screen
     utils.set(prismHeadings[0], { opacity: 0, x: window.innerWidth }); // cyan
     utils.set(prismHeadings[1], { opacity: 0, x: window.innerWidth + 30 }); // purple - slightly offset
     utils.set(prismHeadings[2], { opacity: 0, x: window.innerWidth + 60 }); // green - more offset
     utils.set(mainHeading, { opacity: 0 });
+    utils.set(homeContent, { opacity: 0 });
   });
 
   // Create scroll-triggered prism animations for each section
   headingContainers.forEach(function (container) {
     const prismHeadings = container.querySelectorAll('.heading-prism');
     const mainHeading = container.querySelector('.heading-main');
+    const homeContent = container.querySelector('.homeContent');
 
     console.log('Setting up prism animation for:', mainHeading.textContent);
 
@@ -394,6 +401,7 @@ window.addEventListener('load', function () {
           utils.set(prismHeadings[1], { opacity: 0, x: window.innerWidth + 30 });
           utils.set(prismHeadings[2], { opacity: 0, x: window.innerWidth + 60 });
           utils.set(mainHeading, { opacity: 0 });
+          utils.set(homeContent, { opacity: 0 });
           // Play the timeline
           headingTimeline.restart();
         }
@@ -456,6 +464,12 @@ window.addEventListener('load', function () {
       duration: 200,
       ease: 'outSine'
     }, prismTime);
+
+    headingTimeline.add(homeContent, {
+      opacity: [0, 1],
+      duration: 2000,
+      ease: 'inOutSine'
+    })
   });
 
   console.log('All animations initialized!');

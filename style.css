@@ -109,8 +109,9 @@ body {
 .section {
   min-height: 100vh;
   display: flex;
-  justify-content: flex-start;
-  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
   position: relative;
   padding-left: 5rem;
   z-index: 1; /* Above dotmatrix canvas */
@@ -157,6 +158,16 @@ body {
   color: #333333;
   opacity: 0;
   text-align: left;
+}
+
+.homeContent {
+  text-align: left;
+  background-color: rgba(255, 255, 255, 0.1); /* 10% white background */
+  padding: 2rem;
+  border-radius: 8px;
+  max-width: 600px;
+  margin-top: 8rem; /* Add spacing from the heading above */
+  margin-right: auto; /* This pushes the div to the left */
 }
 
 
