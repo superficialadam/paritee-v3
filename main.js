@@ -1,7 +1,7 @@
 // Wait for the page to fully load
 window.addEventListener('load', function () {
   console.log('Page loaded');
-  
+
   // Initialize dot matrix parameters
   if (window.dotMatrixParams) {
     // Camera
@@ -9,14 +9,14 @@ window.addEventListener('load', function () {
     dotMatrixParams.cameraOffsetY = 0.0;
     dotMatrixParams.cameraOffsetZ = 6.0;
     dotMatrixParams.cameraFOV = 70;
-    
+
     // Dot Matrix
     dotMatrixParams.gridResolution = 80;
     dotMatrixParams.sizeBlack = 0.5;
     dotMatrixParams.sizeWhite = 16;
     dotMatrixParams.pointMargin = 1.0;
     dotMatrixParams.pointOpacity = 1.0;
-    
+
     // Main Noise
     dotMatrixParams.mainNoiseEnabled = true;
     dotMatrixParams.noiseAnimated = true;
@@ -34,7 +34,7 @@ window.addEventListener('load', function () {
     dotMatrixParams.noiseExposure = 0.102;
     dotMatrixParams.noiseGamma = 0.6032;
     dotMatrixParams.noiseMultiplier = 0.498;
-    
+
     // Influence Zone 1
     dotMatrixParams.influence1Enabled = true;
     dotMatrixParams.influence1Subtract = false;
@@ -44,31 +44,31 @@ window.addEventListener('load', function () {
     dotMatrixParams.influence1RadiusY = 0.02;
     dotMatrixParams.influence1Falloff = 2.0;
     dotMatrixParams.influence1Intensity = 0.0;
-    
+
     // Influence Zone 1 Edge Noise
     dotMatrixParams.influence1EdgeEnabled = true;
     dotMatrixParams.influence1EdgeStart = 0.0;
     dotMatrixParams.influence1EdgeInfluence = 1.0;
     dotMatrixParams.influence1EdgeScale = 40.0;
-    dotMatrixParams.influence1EdgeSpeed = 5.0;
+    dotMatrixParams.influence1EdgeSpeed = 2.0;
     dotMatrixParams.influence1EdgeOctaves = 2;
     dotMatrixParams.influence1EdgeLacunarity = 2.5;
     dotMatrixParams.influence1EdgeGain = 0.077;
-    dotMatrixParams.influence1EdgeThreshold = 0.6192;
+    dotMatrixParams.influence1EdgeThreshold = 0.8192;
     dotMatrixParams.influence1EdgeIslandSize = 1.5352;
     dotMatrixParams.influence1EdgeExposure = 0.636;
     dotMatrixParams.influence1EdgeGamma = 0.1;
-    
+
     // Influence Zone 2 - DISABLED
-    dotMatrixParams.influence2Enabled = false;
-    dotMatrixParams.influence2Subtract = false;
-    dotMatrixParams.influence2X = 0.7;
+    dotMatrixParams.influence2Enabled = true;
+    dotMatrixParams.influence2Subtract = true;
+    dotMatrixParams.influence2X = 0.5;
     dotMatrixParams.influence2Y = 0.5;
-    dotMatrixParams.influence2RadiusX = 0.15;
-    dotMatrixParams.influence2RadiusY = 0.25;
+    dotMatrixParams.influence2RadiusX = 0.05;
+    dotMatrixParams.influence2RadiusY = 0.05;
     dotMatrixParams.influence2Falloff = 1.5;
-    dotMatrixParams.influence2Intensity = 0.3;
-    
+    dotMatrixParams.influence2Intensity = 0.0;
+
     // Influence Zone 2 Edge Noise
     dotMatrixParams.influence2EdgeEnabled = false;
     dotMatrixParams.influence2EdgeStart = 0.4;
@@ -82,7 +82,7 @@ window.addEventListener('load', function () {
     dotMatrixParams.influence2EdgeIslandSize = 0.5;
     dotMatrixParams.influence2EdgeExposure = 0.0;
     dotMatrixParams.influence2EdgeGamma = 1.0;
-    
+
     console.log('Dot matrix parameters initialized');
   }
 
@@ -123,14 +123,170 @@ window.addEventListener('load', function () {
   const heroContainer = document.querySelector('#hero .heading-container');
   const heroPrismHeadings = heroContainer.querySelectorAll('.heading-prism');
   const heroMainHeading = heroContainer.querySelector('.heading-main');
-  
+
   utils.set(heroPrismHeadings[0], { opacity: 0, x: window.innerWidth }); // cyan
   utils.set(heroPrismHeadings[1], { opacity: 0, x: window.innerWidth + 30 }); // purple
   utils.set(heroPrismHeadings[2], { opacity: 0, x: window.innerWidth + 60 }); // yellow
   utils.set(heroMainHeading, { opacity: 0 });
 
 
-  
+
+
+  const heroLogoRevealTl = createTimeline()
+    .add(dotMatrixParams, {
+      influence1Intensity: 1,
+      duration: 100,
+      ease: 'outExpo',
+    }, 2000)
+    .add(dotMatrixParams, {
+      influence1Intensity: 1,
+      duration: 2000,
+      ease: 'outExpo',
+    })
+    .add(dotMatrixParams, {
+      influence1RadiusX: 1.0,
+      influence1RadiusY: 1.0,
+      influence1Falloff: 0.2,
+      duration: 1500,
+      ease: 'outSine',
+    })
+    .add(dotMatrixParams, {
+      influence2RadiusX: 1.0,
+      influence2RadiusY: 1.0,
+      influence2Falloff: 0.8,
+      influence2Intensity: 1,
+      duration: 1500,
+      ease: 'outSine',
+    }, '-=1000')
+    .add(dotMatrixParams, {
+      influence2EdgeThreshold: 1,
+      influence1Intensity: 0.0,
+      duration: 6500,
+      ease: 'outSine',
+    }, '-=2000');
+
+
+
+  const themeTimeline = createTimeline({
+    autoplay: false,
+    onComplete: function () {
+      console.log('Theme timeline complete, playing hero heading animation');
+      // Play the hero heading animation after theme timeline completes
+      heroHeadingTimeline.play();
+      startScrollListener(); // Start listening to scroll after initial animations
+
+    },
+  });
+
+  // 3 second idle state (nothing happens)
+  const idleTime = 3000;
+
+  // Circle 2 expands and lightens first (lead circle)
+  themeTimeline.add('.circle-2', {
+    x: [0, -100],
+    y: [0, 50],
+    scale: [1, 1.8], // Expand more than its final size first
+    duration: 1500,
+    ease: 'outExpo'
+  }, idleTime);
+
+  themeTimeline.add('.circle-2 circle', {
+    fill: ['#3B167A', '#E8D8FF'],
+    duration: 1500,
+    ease: 'outExpo'
+  }, idleTime);
+
+  // Then scale down to final size while others start animating
+  themeTimeline.add('.circle-2', {
+    scale: [1.8, 0.8], // Settle to final size
+    duration: 2000,
+    ease: 'inOutSine'
+  }, idleTime + 1500);
+
+  // Background and other elements follow after circle 2 starts
+  const followDelay = idleTime + 800; // Start 800ms after circle 2
+
+  // Animate background gradient to much brighter mode
+  themeTimeline.add('.bg-light', {
+    opacity: [0, 1],
+    duration: 3500,
+    ease: 'inOutSine'
+  }, followDelay);
+
+  // Animate main heading text colors to dark for light mode
+  themeTimeline.add('.heading-main', {
+    color: ['#333333', '#1A1A2E'],
+    duration: 3500,
+    ease: 'inOutSine'
+  }, followDelay);
+
+  // Transition hero main heading text to dark
+  themeTimeline.add('#hero .heading-main', {
+    color: ['#333333', '#1A1A2E'],
+    duration: 3500,
+    ease: 'inOutSine'
+  }, followDelay);
+
+  // Animate circle 1 - move, scale and color change
+  themeTimeline.add('.circle-1', {
+    x: [0, 150],
+    y: [0, 100],
+    scale: [1, 1.3],
+    duration: 3000,
+    ease: 'inOutQuad'
+  }, followDelay + 200);
+
+  themeTimeline.add('.circle-1 circle', {
+    fill: ['#0E2683', '#C8DDFF'],
+    duration: 3000,
+    ease: 'inOutSine'
+  }, followDelay + 200);
+
+  // Animate circle 3 - move, scale and color change
+  themeTimeline.add('.circle-3', {
+    x: [0, -80],
+    y: [0, -120],
+    scale: [1, 1.2],
+    duration: 3000,
+    ease: 'inOutQuad'
+  }, followDelay + 400);
+
+  themeTimeline.add('.circle-3 circle', {
+    fill: ['#0E2683', '#C8DDFF'],
+    duration: 3000,
+    ease: 'inOutSine'
+  }, followDelay + 400);
+
+  // Animate circle 4 - move, scale and color change
+  themeTimeline.add('.circle-4', {
+    x: [0, 200],
+    y: [0, -80],
+    scale: [1, 1.1],
+    duration: 3000,
+    ease: 'inOutQuad'
+  }, followDelay + 600);
+
+  themeTimeline.add('.circle-4 circle', {
+    fill: ['#3B167A', '#E8D8FF'],
+    duration: 3000,
+    ease: 'inOutSine'
+  }, followDelay + 600);
+
+  // Animate circle 5 - move, scale and color change
+  themeTimeline.add('.circle-5', {
+    x: [0, -150],
+    y: [0, -100],
+    scale: [1, 0.9],
+    duration: 3000,
+    ease: 'inOutQuad'
+  }, followDelay + 800);
+
+  themeTimeline.add('.circle-5 circle', {
+    fill: ['#0E2683', '#C8DDFF'],
+    duration: 3000,
+    ease: 'inOutSine'
+  }, followDelay + 800);
+
   // Create heading animation timeline for hero
   const heroHeadingTimeline = createTimeline({
     autoplay: false,
@@ -144,11 +300,11 @@ window.addEventListener('load', function () {
       window.removeEventListener('touchmove', blockScroll);
     }
   });
-  
+
   // Add prism animations for hero section (same as section-1)
   let heroPrismTime = 600;
   let heroPrismStart = window.innerWidth - 300;
-  
+
   // Animate cyan layer - movement only (blur stays at 18)
   heroHeadingTimeline.add(heroPrismHeadings[0], {
     opacity: [0, 1],
@@ -156,14 +312,14 @@ window.addEventListener('load', function () {
     duration: heroPrismTime,
     ease: 'outSine'
   }, 0);
-  
+
   // Remove blur AFTER movement completes for cyan
   heroHeadingTimeline.add(heroPrismHeadings[0], {
     filter: ['url(#motion-blur-18)', 'url(#motion-blur-0)'],
     duration: 300,
     ease: 'outExpo'
   }, heroPrismTime);
-  
+
   // Animate purple layer - movement only (blur stays at 18)
   heroHeadingTimeline.add(heroPrismHeadings[1], {
     opacity: [0, 1],
@@ -171,14 +327,14 @@ window.addEventListener('load', function () {
     duration: heroPrismTime,
     ease: 'outSine'
   }, 30);
-  
+
   // Remove blur AFTER movement completes for purple
   heroHeadingTimeline.add(heroPrismHeadings[1], {
     filter: ['url(#motion-blur-18)', 'url(#motion-blur-0)'],
     duration: 300,
     ease: 'outExpo'
   }, heroPrismTime + 30);
-  
+
   // Animate yellow layer - movement only (blur stays at 18)
   heroHeadingTimeline.add(heroPrismHeadings[2], {
     opacity: [0, 1],
@@ -186,20 +342,21 @@ window.addEventListener('load', function () {
     duration: heroPrismTime,
     ease: 'outSine'
   }, 50);
-  
+
   // Remove blur AFTER movement completes for yellow
   heroHeadingTimeline.add(heroPrismHeadings[2], {
     filter: ['url(#motion-blur-18)', 'url(#motion-blur-0)'],
     duration: 300,
     ease: 'outExpo'
   }, heroPrismTime + 50);
-  
+
   // Quickly fade in the dark grey text after prism settles
   heroHeadingTimeline.add(heroMainHeading, {
     opacity: [0, 1],
     duration: 200,
     ease: 'outSine'
   }, heroPrismTime);
+
 
   // Get all section heading containers except hero
   const headingContainers = document.querySelectorAll('.section:not(#hero) .heading-container');
@@ -460,128 +617,11 @@ window.addEventListener('load', function () {
     updateTargetValues();
   };
 
-  // Add scroll listener after hero animation completes
-  setTimeout(() => {
+  const startScrollListener = () => {
     window.addEventListener('scroll', updateCirclesOnScroll);
-    // Start the continuous animation loop
+    // Start the animation loop
     animateCircles();
-  }, 8000); // Wait for full theme animation to complete (3s idle + ~5s animation)
+  };
 
   // Background theme transition timeline (this is the main hero animation)
-  const themeTimeline = createTimeline({
-    onComplete: function () {
-      console.log('Theme timeline complete, playing hero heading animation');
-      // Play the hero heading animation after theme timeline completes
-      heroHeadingTimeline.play();
-    }
-  });
-  
-  // 3 second idle state (nothing happens)
-  const idleTime = 3000;
-  
-  // Circle 2 expands and lightens first (lead circle)
-  themeTimeline.add('.circle-2', {
-    x: [0, -100],
-    y: [0, 50],
-    scale: [1, 1.8], // Expand more than its final size first
-    duration: 1500,
-    ease: 'outExpo'
-  }, idleTime);
-
-  themeTimeline.add('.circle-2 circle', {
-    fill: ['#3B167A', '#E8D8FF'],
-    duration: 1500,
-    ease: 'outExpo'
-  }, idleTime);
-  
-  // Then scale down to final size while others start animating
-  themeTimeline.add('.circle-2', {
-    scale: [1.8, 0.8], // Settle to final size
-    duration: 2000,
-    ease: 'inOutSine'
-  }, idleTime + 1500);
-  
-  // Background and other elements follow after circle 2 starts
-  const followDelay = idleTime + 800; // Start 800ms after circle 2
-  
-  // Animate background gradient to much brighter mode
-  themeTimeline.add('.bg-light', {
-    opacity: [0, 1],
-    duration: 3500,
-    ease: 'inOutSine'
-  }, followDelay);
-
-  // Animate main heading text colors to dark for light mode
-  themeTimeline.add('.heading-main', {
-    color: ['#333333', '#1A1A2E'],
-    duration: 3500,
-    ease: 'inOutSine'
-  }, followDelay);
-
-  // Transition hero main heading text to dark
-  themeTimeline.add('#hero .heading-main', {
-    color: ['#333333', '#1A1A2E'],
-    duration: 3500,
-    ease: 'inOutSine'
-  }, followDelay);
-
-  // Animate circle 1 - move, scale and color change
-  themeTimeline.add('.circle-1', {
-    x: [0, 150],
-    y: [0, 100],
-    scale: [1, 1.3],
-    duration: 3000,
-    ease: 'inOutQuad'
-  }, followDelay + 200);
-
-  themeTimeline.add('.circle-1 circle', {
-    fill: ['#0E2683', '#C8DDFF'],
-    duration: 3000,
-    ease: 'inOutSine'
-  }, followDelay + 200);
-
-  // Animate circle 3 - move, scale and color change
-  themeTimeline.add('.circle-3', {
-    x: [0, -80],
-    y: [0, -120],
-    scale: [1, 1.2],
-    duration: 3000,
-    ease: 'inOutQuad'
-  }, followDelay + 400);
-
-  themeTimeline.add('.circle-3 circle', {
-    fill: ['#0E2683', '#C8DDFF'],
-    duration: 3000,
-    ease: 'inOutSine'
-  }, followDelay + 400);
-
-  // Animate circle 4 - move, scale and color change
-  themeTimeline.add('.circle-4', {
-    x: [0, 200],
-    y: [0, -80],
-    scale: [1, 1.1],
-    duration: 3000,
-    ease: 'inOutQuad'
-  }, followDelay + 600);
-
-  themeTimeline.add('.circle-4 circle', {
-    fill: ['#3B167A', '#E8D8FF'],
-    duration: 3000,
-    ease: 'inOutSine'
-  }, followDelay + 600);
-
-  // Animate circle 5 - move, scale and color change
-  themeTimeline.add('.circle-5', {
-    x: [0, -150],
-    y: [0, -100],
-    scale: [1, 0.9],
-    duration: 3000,
-    ease: 'inOutQuad'
-  }, followDelay + 800);
-
-  themeTimeline.add('.circle-5 circle', {
-    fill: ['#0E2683', '#C8DDFF'],
-    duration: 3000,
-    ease: 'inOutSine'
-  }, followDelay + 800);
 });
