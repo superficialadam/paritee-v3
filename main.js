@@ -33,7 +33,7 @@ window.addEventListener('load', function () {
     dotMatrixParams.noiseIslandSize = 1.3965;
     dotMatrixParams.noiseExposure = 0.102;
     dotMatrixParams.noiseGamma = 0.6032;
-    dotMatrixParams.noiseMultiplier = 0.498;
+    dotMatrixParams.noiseMultiplier = 0.198;
 
     // Influence Zone 1
     dotMatrixParams.influence1Enabled = true;
@@ -125,14 +125,24 @@ window.addEventListener('load', function () {
   const heroMainHeading = heroContainer.querySelector('.heading-main');
   const heroHomeContainer = document.querySelector('#hero .homeContent');
 
+  // Logo selectors
+  const logoAll = document.querySelector('.paritee-logo');
+  const logo1 = document.querySelector('.paritee-logo.cyan');
+  const logo2 = document.querySelector('.paritee-logo.purple');
+  const logo3 = document.querySelector('.paritee-logo.yellow');
+
+
+
+
   utils.set(heroPrismHeadings[0], { opacity: 0, x: window.innerWidth }); // cyan
   utils.set(heroPrismHeadings[1], { opacity: 0, x: window.innerWidth + 30 }); // purple
   utils.set(heroPrismHeadings[2], { opacity: 0, x: window.innerWidth + 60 }); // yellow
   utils.set(heroMainHeading, { opacity: 0 });
   utils.set(heroHomeContainer, { opacity: 0 });
 
-
-
+  utils.set(logo1, { opacity: 0 });
+  utils.set(logo2, { opacity: 0 });
+  utils.set(logo3, { opacity: 0 });
 
   const heroLogoRevealTl = createTimeline({
   })
@@ -153,22 +163,136 @@ window.addEventListener('load', function () {
       duration: 1500,
       ease: 'outSine',
     })
+    //LOGO SCALE ANDD FADE
+    .add(logo1, {
+      opacity: 1.0,
+      duration: 1000,
+      ease: 'inOutSine',
+    }, 4500)
+    .add(logo1, {
+      width: ['200px', '240px'],
+      duration: 5000,
+    }, 4500)
+    .add(logo2, {
+      opacity: 1.0,
+      duration: 1000,
+      ease: 'inOutSine',
+    }, 4500)
+    .add(logo2, {
+      width: ['200px', '240px'],
+      duration: 5000,
+    }, 4500)
+    .add(logo3, {
+      opacity: 1.0,
+      duration: 1000,
+      ease: 'inOutSine',
+    }, 4500)
+    .add(logo3, {
+      width: ['200px', '240px'],
+      duration: 5000,
+    }, 4500)
+    //LOGO COLOR SHIFT
+    .add(logo1, {
+      left: ['50%', '50.1%'],
+      duration: 1000,
+      ease: 'inOutSine',
+    }, 4500)
+    .add(logo1, {
+      left: ['50.1%', '50%'],
+      duration: 1000,
+      ease: 'inOutSine',
+    }, 5500)
+    .add(logo2, {
+      left: ['50%', '49.9%'],
+      duration: 1000,
+      ease: 'inOutSine',
+    }, 4500)
+    .add(logo2, {
+      left: ['49.9%', '50%'],
+      duration: 1000,
+      ease: 'inOutSine',
+    }, 5500)
+
+    //OPACITY GLITCH OUT
+    .add(logo1, {
+      opacity: 0.0,
+      duration: 10,
+    }, 9000)
+    .add(logo1, {
+      opacity: 1.0,
+      duration: 10,
+    }, 9100)
+    .add(logo1, {
+      opacity: 0.0,
+      duration: 10,
+    }, 9150)
+    .add(logo1, {
+      opacity: 1.0,
+      duration: 10,
+    }, 9200)
+    .add(logo1, {
+      opacity: 0.0,
+      duration: 10,
+    }, 9220)
+    .add(logo2, {
+      opacity: 0.0,
+      duration: 10,
+    }, 9000)
+    .add(logo2, {
+      opacity: 1.0,
+      duration: 10,
+    }, 9100)
+    .add(logo2, {
+      opacity: 0.0,
+      duration: 10,
+    }, 9150)
+    .add(logo2, {
+      opacity: 1.0,
+      duration: 10,
+    }, 9200)
+    .add(logo2, {
+      opacity: 0.0,
+      duration: 10,
+    }, 9220)
+    .add(logo3, {
+      opacity: 0.0,
+      duration: 10,
+    }, 9000)
+    .add(logo3, {
+      opacity: 1.0,
+      duration: 10,
+    }, 9100)
+    .add(logo3, {
+      opacity: 0.0,
+      duration: 10,
+    }, 9150)
+    .add(logo3, {
+      opacity: 1.0,
+      duration: 10,
+    }, 9200)
+    .add(logo3, {
+      opacity: 0.0,
+      duration: 10,
+    }, 9220)
     .add(dotMatrixParams, {
       influence2RadiusX: 1.0,
       influence2RadiusY: 1.0,
       influence2Falloff: 0.8,
       influence2Intensity: 1,
-      duration: 1500,
+      duration: 2500,
       ease: 'outSine',
-    }, '-=1000')
+    }, '-=3000')
     .add(dotMatrixParams, {
       influence2EdgeThreshold: 1,
       influence1Intensity: 0.0,
-      duration: 6500,
+      duration: 1500,
       ease: 'outSine',
-    }, '-=2000');
-
-
+    }, '-=4000')
+    .add(dotMatrixParams, {
+      influence2Intensity: 0,
+      duration: 1500,
+      ease: 'outSine',
+    }, '-=3000');
 
   const themeTimeline = createTimeline({
     autoplay: true,
@@ -182,23 +306,22 @@ window.addEventListener('load', function () {
   });
 
 
-  themeTimeline.sync(heroLogoRevealTl);
 
   // 3 second idle state (nothing happens)
-  const idleTime = 3000;
+  const idleTime = 5000;
 
   // Circle 2 expands and lightens first (lead circle)
   themeTimeline.add('.circle-2', {
-    x: [0, -100],
-    y: [0, 50],
+    x: 500,
+    y: 500,
     scale: [1, 1.8], // Expand more than its final size first
-    duration: 1500,
+    duration: 500,
     ease: 'outExpo'
   }, idleTime);
 
   themeTimeline.add('.circle-2 circle', {
     fill: ['#3B167A', '#E8D8FF'],
-    duration: 1500,
+    duration: 500,
     ease: 'outExpo'
   }, idleTime);
 

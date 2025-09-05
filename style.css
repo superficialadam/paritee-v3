@@ -99,7 +99,7 @@
 .heading-prism {
   position: absolute;
   opacity: 0;
-  mix-blend-mode: screen;
+  mix-blend-mode: plus-lighter;
   filter: url(#motion-blur-18);
 }
 
@@ -118,23 +118,36 @@
 .heading-main {
   position: absolute;
   top: 0;
-  left: 0;
+  left: 0;left: ['50%', '55%'],
   color: #333333;
   opacity: 0;
   text-align: left;
 }
-
-/* Paritee Logo */
+/* Paritee Logos */
 .paritee-logo {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   width: 200px; /* Adjust size as needed */
-  height: auto;
+  height: 200px; /* Set height for mask */
   z-index: 999; /* High z-index to appear above everything */
   pointer-events: none;
-  opacity: 1.0;
+  opacity: 0.8;
   mix-blend-mode: plus-lighter; /* CSS equivalent to "add" blend mode */
+  -webkit-mask: url('pariteeLogo.png') no-repeat center / contain;
+  mask: url('pariteeLogo.png') no-repeat center / contain;
+}
+
+.paritee-logo.cyan {
+  background-color: #00FFFF;
+}
+
+.paritee-logo.purple {
+  background-color: #FF00FF;
+}
+
+.paritee-logo.yellow {
+  background-color: #FFFF00;
 }
 

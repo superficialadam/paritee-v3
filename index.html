@@ -68,7 +68,7 @@
     <link rel="stylesheet" href="style.css">
     <!-- Import map for Three.js modules -->
     <script type="importmap">
-    {
+      {
         "imports": {
             "three": "https://unpkg.com/three@0.157.0/build/three.module.js",
             "three/addons/": "https://unpkg.com/three@0.157.0/examples/jsm/"
@@ -80,27 +80,27 @@
     <!-- SVG Filters with varying blur levels -->
     <svg style="position: absolute; width: 0; height: 0;">
       <defs>
-        <filter id="motion-blur-0">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="0 0" />
-        </filter>
-        <filter id="motion-blur-3">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="3 0" />
-        </filter>
-        <filter id="motion-blur-6">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="6 0" />
-        </filter>
-        <filter id="motion-blur-9">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="9 0" />
-        </filter>
-        <filter id="motion-blur-12">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="12 0" />
-        </filter>
-        <filter id="motion-blur-15">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="15 0" />
-        </filter>
-        <filter id="motion-blur-18">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="18 0" />
-        </filter>
+      <filter id="motion-blur-0">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="0 0" />
+      </filter>
+      <filter id="motion-blur-3">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3 0" />
+      </filter>
+      <filter id="motion-blur-6">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="6 0" />
+      </filter>
+      <filter id="motion-blur-9">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="9 0" />
+      </filter>
+      <filter id="motion-blur-12">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="12 0" />
+      </filter>
+      <filter id="motion-blur-15">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="15 0" />
+      </filter>
+      <filter id="motion-blur-18">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="18 0" />
+      </filter>
       </defs>
     </svg>
     <!-- Background gradients -->
@@ -108,10 +108,10 @@
     <div class="bg-light"></div>
     <!-- Dot matrix canvas (above background, below content) -->
     <canvas id="dotmatrix"></canvas>
-    <!-- Paritee Logo -->
-    <img src="pariteeLogo.png" alt="Paritee Logo" class="paritee-logo cyan">
-    <img src="pariteeLogo.png" alt="Paritee Logo" class="paritee-logo purple">
-    <img src="pariteeLogo.png" alt="Paritee Logo" class="paritee-logo yellow">
+    <!-- Paritee Logos -->
+    <div class="paritee-logo cyan"></div>
+    <div class="paritee-logo purple"></div>
+    <div class="paritee-logo yellow"></div>
     
     <!-- Background blur circles -->
     <div class="bg-circles">
