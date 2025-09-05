@@ -153,13 +153,14 @@ window.addEventListener('load', function () {
     }, 2000)
     .add(dotMatrixParams, {
       influence1Intensity: 1,
+      influence1Falloff: 0.4,
       duration: 2000,
       ease: 'outExpo',
     })
     .add(dotMatrixParams, {
       influence1RadiusX: 1.0,
       influence1RadiusY: 1.0,
-      influence1Falloff: 0.2,
+      influence1Falloff: 0.1,
       duration: 1500,
       ease: 'outSine',
     })
