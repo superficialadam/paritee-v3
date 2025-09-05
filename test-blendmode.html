@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      background: #1a1a1a;
+      padding: 50px;
+      font-family: 'Montserrat', sans-serif;
+    }
+    
+    .container {
+      position: relative;
+      margin: 50px 0;
+    }
+    
+    .test-heading {
+      font-size: 48px;
+      font-weight: 700;
+      position: absolute;
+    }
+    
+    .with-blend {
+      color: #66B3B3;
+      mix-blend-mode: plus-lighter;
+    }
+    
+    .without-blend {
+      color: #66B3B3;
+      top: 60px;
+    }
+    
+    .overlay-test {
+      position: relative;
+      margin-top: 150px;
+    }
+    
+    .overlay-1 {
+      position: absolute;
+      color: #66B3B3;
+      mix-blend-mode: plus-lighter;
+    }
+    
+    .overlay-2 {
+      position: absolute;
+      color: #B366B3;
+      mix-blend-mode: plus-lighter;
+    }
+    
+    .overlay-3 {
+      position: absolute;
+      color: #FF6666;
+      mix-blend-mode: plus-lighter;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="test-heading with-blend">With plus-lighter blend mode</h1>
+    <h1 class="test-heading without-blend">Without blend mode</h1>
+  </div>
+  
+  <div class="overlay-test">
+    <h1 class="overlay-1">Overlapping Text</h1>
+    <h1 class="overlay-2">Overlapping Text</h1>
+    <h1 class="overlay-3">Overlapping Text</h1>
+  </div>
+  
+  <p style="color: white; margin-top: 200px;">
+    If plus-lighter is working, the overlapping text should create bright white where colors combine.
+  </p>
+</body>
+</html>

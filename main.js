@@ -134,9 +134,9 @@ window.addEventListener('load', function () {
 
 
 
-  utils.set(heroPrismHeadings[0], { opacity: 0, x: window.innerWidth, filter: 'blur(18px)' }); // cyan
-  utils.set(heroPrismHeadings[1], { opacity: 0, x: window.innerWidth + 30, filter: 'blur(18px)' }); // purple
-  utils.set(heroPrismHeadings[2], { opacity: 0, x: window.innerWidth + 60, filter: 'blur(18px)' }); // yellow
+  utils.set(heroPrismHeadings[0], { opacity: 0, x: window.innerWidth }); // cyan
+  utils.set(heroPrismHeadings[1], { opacity: 0, x: window.innerWidth + 30 }); // purple
+  utils.set(heroPrismHeadings[2], { opacity: 0, x: window.innerWidth + 60 }); // yellow
   utils.set(heroMainHeading, { opacity: 0 });
   utils.set(heroHomeContainer, { opacity: 0 });
 
@@ -434,29 +434,26 @@ window.addEventListener('load', function () {
   let heroPrismTime = 600;
   let heroPrismStart = window.innerWidth - 300;
 
-  // Animate cyan layer - movement, opacity AND blur together
+  // Animate cyan layer - movement and opacity
   heroHeadingTimeline.add(heroPrismHeadings[0], {
     opacity: [0, 0.5],
     x: [heroPrismStart, 0],
-    filter: ['blur(18px)', 'blur(0px)'],
     duration: heroPrismTime,
     ease: 'outSine'
   }, 0);
 
-  // Animate purple layer - movement, opacity AND blur together
+  // Animate purple layer - movement and opacity
   heroHeadingTimeline.add(heroPrismHeadings[1], {
     opacity: [0, 0.5],
     x: [heroPrismStart + 1, 0],
-    filter: ['blur(18px)', 'blur(0px)'],
     duration: heroPrismTime,
     ease: 'outSine'
   }, 30);
 
-  // Animate yellow layer - movement, opacity AND blur together
+  // Animate yellow layer - movement and opacity
   heroHeadingTimeline.add(heroPrismHeadings[2], {
     opacity: [0, 0.5],
     x: [heroPrismStart + 2, 0],
-    filter: ['blur(18px)', 'blur(0px)'],
     duration: heroPrismTime,
     ease: 'outSine'
   }, 50);
@@ -486,9 +483,9 @@ window.addEventListener('load', function () {
     const homeContent = section ? section.querySelector('.homeContent') : null; // Find homeContent in the section
 
     // Set initial positions - start from right side of screen
-    utils.set(prismHeadings[0], { opacity: 0, x: window.innerWidth, filter: 'blur(18px)' }); // cyan
-    utils.set(prismHeadings[1], { opacity: 0, x: window.innerWidth + 30, filter: 'blur(18px)' }); // purple - slightly offset
-    utils.set(prismHeadings[2], { opacity: 0, x: window.innerWidth + 60, filter: 'blur(18px)' }); // green - more offset
+    utils.set(prismHeadings[0], { opacity: 0, x: window.innerWidth }); // cyan
+    utils.set(prismHeadings[1], { opacity: 0, x: window.innerWidth + 30 }); // purple - slightly offset
+    utils.set(prismHeadings[2], { opacity: 0, x: window.innerWidth + 60 }); // green - more offset
     utils.set(mainHeading, { opacity: 0 });
     if (homeContent) {
       utils.set(homeContent, { opacity: 0 });
@@ -532,29 +529,26 @@ window.addEventListener('load', function () {
     let prismTime = 600;
     let prismStart = window.innerWidth - 300;
 
-    // Animate cyan layer - movement, opacity AND blur together
+    // Animate cyan layer - movement and opacity
     headingTimeline.add(prismHeadings[0], {
       opacity: [0, 0.5],
       x: [prismStart, 0],
-      filter: ['blur(18px)', 'blur(0px)'],
       duration: prismTime,
       ease: 'outSine'
     }, 0);
 
-    // Animate purple layer - movement, opacity AND blur together
+    // Animate purple layer - movement and opacity
     headingTimeline.add(prismHeadings[1], {
       opacity: [0, 0.5],
       x: [prismStart + 1, 0],
-      filter: ['blur(18px)', 'blur(0px)'],
       duration: prismTime,
       ease: 'outSine'
     }, 30);
 
-    // Animate yellow layer - movement, opacity AND blur together
+    // Animate yellow layer - movement and opacity
     headingTimeline.add(prismHeadings[2], {
       opacity: [0, 0.5],
       x: [prismStart + 2, 0],
-      filter: ['blur(18px)', 'blur(0px)'],
       duration: prismTime,
       ease: 'outSine'
     }, 50);

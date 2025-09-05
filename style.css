@@ -99,20 +99,19 @@
 .heading-prism {
   position: absolute;
   opacity: 0;
-  mix-blend-mode: plus-lighter;
-  filter: blur(18px);
+  mix-blend-mode: screen; /* Screen blend mode for additive effect */
 }
 
 .cyan {
-  color: #00FFFF;
+  color: #99DDDD; /* Bright but desaturated cyan */
 }
 
 .purple {
-  color: #FF00FF;
+  color: #DD99DD; /* Bright but desaturated purple */
 }
 
 .yellow {
-  color: #FFFF00;
+  color: #FFAAAA; /* Bright but desaturated red/pink */
 }
 
 .heading-main {
@@ -140,14 +139,14 @@
 }
 
 .paritee-logo.cyan {
-  background-color: #00FFFF;
+  background-color: #99DDDD;
 }
 
 .paritee-logo.purple {
-  background-color: #FF00FF;
+  background-color: #DD99DD;
 }
 
 .paritee-logo.yellow {
-  background-color: #FFFF00;
+  background-color: #FFAAAA;
 }
 
