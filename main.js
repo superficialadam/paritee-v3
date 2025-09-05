@@ -134,9 +134,9 @@ window.addEventListener('load', function () {
 
 
 
-  utils.set(heroPrismHeadings[0], { opacity: 0, x: window.innerWidth }); // cyan
-  utils.set(heroPrismHeadings[1], { opacity: 0, x: window.innerWidth + 30 }); // purple
-  utils.set(heroPrismHeadings[2], { opacity: 0, x: window.innerWidth + 60 }); // yellow
+  utils.set(heroPrismHeadings[0], { opacity: 0, x: window.innerWidth, filter: 'blur(18px)' }); // cyan
+  utils.set(heroPrismHeadings[1], { opacity: 0, x: window.innerWidth + 30, filter: 'blur(18px)' }); // purple
+  utils.set(heroPrismHeadings[2], { opacity: 0, x: window.innerWidth + 60, filter: 'blur(18px)' }); // yellow
   utils.set(heroMainHeading, { opacity: 0 });
   utils.set(heroHomeContainer, { opacity: 0 });
 
@@ -444,7 +444,7 @@ window.addEventListener('load', function () {
 
   // Remove blur AFTER movement completes for cyan
   heroHeadingTimeline.add(heroPrismHeadings[0], {
-    filter: ['url(#motion-blur-18)', 'url(#motion-blur-0)'],
+    filter: ['blur(18px)', 'blur(0px)'],
     duration: 300,
     ease: 'outExpo'
   }, heroPrismTime);
@@ -459,7 +459,7 @@ window.addEventListener('load', function () {
 
   // Remove blur AFTER movement completes for purple
   heroHeadingTimeline.add(heroPrismHeadings[1], {
-    filter: ['url(#motion-blur-18)', 'url(#motion-blur-0)'],
+    filter: ['blur(18px)', 'blur(0px)'],
     duration: 300,
     ease: 'outExpo'
   }, heroPrismTime + 30);
@@ -474,17 +474,17 @@ window.addEventListener('load', function () {
 
   // Remove blur AFTER movement completes for yellow
   heroHeadingTimeline.add(heroPrismHeadings[2], {
-    filter: ['url(#motion-blur-18)', 'url(#motion-blur-0)'],
+    filter: ['blur(18px)', 'blur(0px)'],
     duration: 300,
     ease: 'outExpo'
   }, heroPrismTime + 50);
 
   // Quickly fade in the dark grey text after prism settles
   heroHeadingTimeline.add(heroMainHeading, {
-    opacity: [0, 1],
+    opacity: [0, 0],
     duration: 200,
     ease: 'outSine'
-  }, heroPrismTime);
+  }, heroPrismTime + 350);
 
   heroHeadingTimeline.add(heroHomeContainer, {
     opacity: [0, 1],
@@ -504,9 +504,9 @@ window.addEventListener('load', function () {
     const homeContent = section ? section.querySelector('.homeContent') : null; // Find homeContent in the section
 
     // Set initial positions - start from right side of screen
-    utils.set(prismHeadings[0], { opacity: 0, x: window.innerWidth }); // cyan
-    utils.set(prismHeadings[1], { opacity: 0, x: window.innerWidth + 30 }); // purple - slightly offset
-    utils.set(prismHeadings[2], { opacity: 0, x: window.innerWidth + 60 }); // green - more offset
+    utils.set(prismHeadings[0], { opacity: 0, x: window.innerWidth, filter: 'blur(18px)' }); // cyan
+    utils.set(prismHeadings[1], { opacity: 0, x: window.innerWidth + 30, filter: 'blur(18px)' }); // purple - slightly offset
+    utils.set(prismHeadings[2], { opacity: 0, x: window.innerWidth + 60, filter: 'blur(18px)' }); // green - more offset
     utils.set(mainHeading, { opacity: 0 });
     if (homeContent) {
       utils.set(homeContent, { opacity: 0 });
@@ -560,7 +560,7 @@ window.addEventListener('load', function () {
 
     // Remove blur AFTER movement completes for cyan
     headingTimeline.add(prismHeadings[0], {
-      filter: ['url(#motion-blur-18)', 'url(#motion-blur-0)'],
+      filter: ['blur(18px)', 'blur(0px)'],
       duration: 300,
       ease: 'outExpo'
     }, prismTime);
@@ -575,7 +575,7 @@ window.addEventListener('load', function () {
 
     // Remove blur AFTER movement completes for purple
     headingTimeline.add(prismHeadings[1], {
-      filter: ['url(#motion-blur-18)', 'url(#motion-blur-0)'],
+      filter: ['blur(18px)', 'blur(0px)'],
       duration: 300,
       ease: 'outExpo'
     }, prismTime + 30);
@@ -590,7 +590,7 @@ window.addEventListener('load', function () {
 
     // Remove blur AFTER movement completes for yellow
     headingTimeline.add(prismHeadings[2], {
-      filter: ['url(#motion-blur-18)', 'url(#motion-blur-0)'],
+      filter: ['blur(18px)', 'blur(0px)'],
       duration: 300,
       ease: 'outExpo'
     }, prismTime + 50);
@@ -600,7 +600,7 @@ window.addEventListener('load', function () {
       opacity: [0, 1],
       duration: 200,
       ease: 'outSine'
-    }, prismTime);
+    }, prismTime + 350);
 
     if (homeContent) {
       headingTimeline.add(homeContent, {

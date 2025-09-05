@@ -28,7 +28,7 @@
   height: 100vh;
   z-index: 0; /* Above backgrounds but below content */
   pointer-events: none;
-  mix-blend-mode: screen;
+  mix-blend-mode: plus-lighter;
 }
 
 .bg-circles {
@@ -100,7 +100,7 @@
   position: absolute;
   opacity: 0;
   mix-blend-mode: plus-lighter;
-  filter: url(#motion-blur-18);
+  filter: blur(18px);
 }
 
 .cyan {
@@ -118,7 +118,7 @@
 .heading-main {
   position: absolute;
   top: 0;
-  left: 0;left: ['50%', '55%'],
+  left: 0;
   color: #333333;
   opacity: 0;
   text-align: left;
