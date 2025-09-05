@@ -123,11 +123,13 @@ window.addEventListener('load', function () {
   const heroContainer = document.querySelector('#hero .heading-container');
   const heroPrismHeadings = heroContainer.querySelectorAll('.heading-prism');
   const heroMainHeading = heroContainer.querySelector('.heading-main');
+  const heroHomeContainer = document.querySelector('#hero .homeContent');
 
   utils.set(heroPrismHeadings[0], { opacity: 0, x: window.innerWidth }); // cyan
   utils.set(heroPrismHeadings[1], { opacity: 0, x: window.innerWidth + 30 }); // purple
   utils.set(heroPrismHeadings[2], { opacity: 0, x: window.innerWidth + 60 }); // yellow
   utils.set(heroMainHeading, { opacity: 0 });
+  utils.set(heroHomeContainer, { opacity: 0 });
 
 
 
@@ -360,6 +362,12 @@ window.addEventListener('load', function () {
     duration: 200,
     ease: 'outSine'
   }, heroPrismTime);
+
+  heroHeadingTimeline.add(heroHomeContainer, {
+    opacity: [0, 1],
+    duration: 2000,
+    ease: 'inOutSine'
+  });
 
 
   // Get all section heading containers except hero
