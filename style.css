@@ -103,15 +103,15 @@
   filter: url(#motion-blur-18);
 }
 
-.heading-prism.cyan {
+.cyan {
   color: #00FFFF;
 }
 
-.heading-prism.purple {
+.purple {
   color: #FF00FF;
 }
 
-.heading-prism.yellow {
+.yellow {
   color: #FFFF00;
 }
 
@@ -122,5 +122,19 @@
   color: #333333;
   opacity: 0;
   text-align: left;
+}
+
+/* Paritee Logo */
+.paritee-logo {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 200px; /* Adjust size as needed */
+  height: auto;
+  z-index: 999; /* High z-index to appear above everything */
+  pointer-events: none;
+  opacity: 1.0;
+  mix-blend-mode: plus-lighter; /* CSS equivalent to "add" blend mode */
 }
 
