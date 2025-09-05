@@ -434,57 +434,39 @@ window.addEventListener('load', function () {
   let heroPrismTime = 600;
   let heroPrismStart = window.innerWidth - 300;
 
-  // Animate cyan layer - movement only (blur stays at 18)
+  // Animate cyan layer - movement, opacity AND blur together
   heroHeadingTimeline.add(heroPrismHeadings[0], {
-    opacity: [0, 1],
+    opacity: [0, 0.5],
     x: [heroPrismStart, 0],
+    filter: ['blur(18px)', 'blur(0px)'],
     duration: heroPrismTime,
     ease: 'outSine'
   }, 0);
 
-  // Remove blur AFTER movement completes for cyan
-  heroHeadingTimeline.add(heroPrismHeadings[0], {
-    filter: ['blur(18px)', 'blur(0px)'],
-    duration: 300,
-    ease: 'outExpo'
-  }, heroPrismTime);
-
-  // Animate purple layer - movement only (blur stays at 18)
+  // Animate purple layer - movement, opacity AND blur together
   heroHeadingTimeline.add(heroPrismHeadings[1], {
-    opacity: [0, 1],
-    x: [heroPrismStart + 2, 0],
+    opacity: [0, 0.5],
+    x: [heroPrismStart + 1, 0],
+    filter: ['blur(18px)', 'blur(0px)'],
     duration: heroPrismTime,
     ease: 'outSine'
   }, 30);
 
-  // Remove blur AFTER movement completes for purple
-  heroHeadingTimeline.add(heroPrismHeadings[1], {
-    filter: ['blur(18px)', 'blur(0px)'],
-    duration: 300,
-    ease: 'outExpo'
-  }, heroPrismTime + 30);
-
-  // Animate yellow layer - movement only (blur stays at 18)
+  // Animate yellow layer - movement, opacity AND blur together
   heroHeadingTimeline.add(heroPrismHeadings[2], {
-    opacity: [0, 1],
-    x: [heroPrismStart + 12, 0],
+    opacity: [0, 0.5],
+    x: [heroPrismStart + 2, 0],
+    filter: ['blur(18px)', 'blur(0px)'],
     duration: heroPrismTime,
     ease: 'outSine'
   }, 50);
 
-  // Remove blur AFTER movement completes for yellow
-  heroHeadingTimeline.add(heroPrismHeadings[2], {
-    filter: ['blur(18px)', 'blur(0px)'],
-    duration: 300,
-    ease: 'outExpo'
-  }, heroPrismTime + 50);
-
   // Quickly fade in the dark grey text after prism settles
   heroHeadingTimeline.add(heroMainHeading, {
-    opacity: [0, 0],
+    opacity: [0, 1],
     duration: 200,
     ease: 'outSine'
-  }, heroPrismTime + 350);
+  }, heroPrismTime + 100);
 
   heroHeadingTimeline.add(heroHomeContainer, {
     opacity: [0, 1],
@@ -550,57 +532,39 @@ window.addEventListener('load', function () {
     let prismTime = 600;
     let prismStart = window.innerWidth - 300;
 
-    // Animate cyan layer - movement only (blur stays at 18)
+    // Animate cyan layer - movement, opacity AND blur together
     headingTimeline.add(prismHeadings[0], {
-      opacity: [0, 1],
+      opacity: [0, 0.5],
       x: [prismStart, 0],
+      filter: ['blur(18px)', 'blur(0px)'],
       duration: prismTime,
       ease: 'outSine'
     }, 0);
 
-    // Remove blur AFTER movement completes for cyan
-    headingTimeline.add(prismHeadings[0], {
-      filter: ['blur(18px)', 'blur(0px)'],
-      duration: 300,
-      ease: 'outExpo'
-    }, prismTime);
-
-    // Animate purple layer - movement only (blur stays at 18)
+    // Animate purple layer - movement, opacity AND blur together
     headingTimeline.add(prismHeadings[1], {
-      opacity: [0, 1],
-      x: [prismStart + 2, 0],
+      opacity: [0, 0.5],
+      x: [prismStart + 1, 0],
+      filter: ['blur(18px)', 'blur(0px)'],
       duration: prismTime,
       ease: 'outSine'
     }, 30);
 
-    // Remove blur AFTER movement completes for purple
-    headingTimeline.add(prismHeadings[1], {
-      filter: ['blur(18px)', 'blur(0px)'],
-      duration: 300,
-      ease: 'outExpo'
-    }, prismTime + 30);
-
-    // Animate yellow layer - movement only (blur stays at 18)
+    // Animate yellow layer - movement, opacity AND blur together
     headingTimeline.add(prismHeadings[2], {
-      opacity: [0, 1],
-      x: [prismStart + 12, 0],
+      opacity: [0, 0.5],
+      x: [prismStart + 2, 0],
+      filter: ['blur(18px)', 'blur(0px)'],
       duration: prismTime,
       ease: 'outSine'
     }, 50);
-
-    // Remove blur AFTER movement completes for yellow
-    headingTimeline.add(prismHeadings[2], {
-      filter: ['blur(18px)', 'blur(0px)'],
-      duration: 300,
-      ease: 'outExpo'
-    }, prismTime + 50);
 
     // Quickly fade in the dark grey text after prism settles
     headingTimeline.add(mainHeading, {
       opacity: [0, 1],
       duration: 200,
       ease: 'outSine'
-    }, prismTime + 350);
+    }, prismTime + 100);
 
     if (homeContent) {
       headingTimeline.add(homeContent, {
