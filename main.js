@@ -313,8 +313,8 @@ window.addEventListener('load', function () {
 
   // Circle 2 expands and lightens first (lead circle)
   themeTimeline.add('.circle-2', {
-    translateX: 500,
-    translateY: 500,
+    translateX: -100,  // Base position
+    translateY: 50,     // Base position
     scale: [1, 1.8], // Expand more than its final size first
     duration: 500,
     ease: 'outExpo'
@@ -359,8 +359,8 @@ window.addEventListener('load', function () {
 
   // Animate circle 1 - move, scale and color change
   themeTimeline.add('.circle-1', {
-    translateX: [0, 150],
-    translateY: [0, 100],
+    translateX: [0, 150],  // Keep base position
+    translateY: [0, 100],   // Keep base position
     scale: [1, 1.3],
     duration: 3000,
     ease: 'inOutQuad'
@@ -389,8 +389,8 @@ window.addEventListener('load', function () {
 
   // Animate circle 4 - move, scale and color change
   themeTimeline.add('.circle-4', {
-    translateX: [0, 200],
-    translateY: [0, -80],
+    translateX: [0, 200],  // Keep base position
+    translateY: [0, -80],   // Keep base position
     scale: [1, 1.1],
     duration: 3000,
     ease: 'inOutQuad'
@@ -404,8 +404,8 @@ window.addEventListener('load', function () {
 
   // Animate circle 5 - move, scale and color change
   themeTimeline.add('.circle-5', {
-    translateX: [0, -150],
-    translateY: [0, -100],
+    translateX: [0, -150],  // Keep base position
+    translateY: [0, -100],   // Keep base position
     scale: [1, 0.9],
     duration: 3000,
     ease: 'inOutQuad'
@@ -579,6 +579,7 @@ window.addEventListener('load', function () {
   console.log('All animations initialized!');
 
   // Circle configurations for each section - now with INTRO and MAIN states
+  // Base positions from hero, with transformations dialed back by 5x
   const circleConfigs = {
     hero: {
       circle1: { x: 150, y: 100, scale: 1.3, opacity: 0.4, fill: '#C8DDFF' },
@@ -588,60 +589,60 @@ window.addEventListener('load', function () {
       circle5: { x: -150, y: -100, scale: 0.9, opacity: 0.3, fill: '#C8DDFF' }
     },
     section1_intro: {
-      circle1: { x: -800, y: 600, scale: 1.3, opacity: 0.25, fill: '#0080B0' },
-      circle2: { x: 1000, y: -700, scale: 0.8, opacity: 0.2, fill: '#0060A0' },
-      circle3: { x: 900, y: 800, scale: 1.2, opacity: 0.15, fill: '#0070A0' },
-      circle4: { x: -1100, y: -900, scale: 1.1, opacity: 0.3, fill: '#0080B0' },
-      circle5: { x: 1050, y: 450, scale: 0.9, opacity: 0.2, fill: '#0080A0' }
+      circle1: { x: -10, y: 220, scale: 1.3, opacity: 0.25, fill: '#0080B0' },
+      circle2: { x: 120, y: -90, scale: 0.8, opacity: 0.2, fill: '#0060A0' },
+      circle3: { x: 100, y: 40, scale: 1.2, opacity: 0.15, fill: '#0070A0' },
+      circle4: { x: -60, y: -260, scale: 1.1, opacity: 0.3, fill: '#0080B0' },
+      circle5: { x: 60, y: -10, scale: 0.9, opacity: 0.2, fill: '#0080A0' }
     },
     section1_main: {
-      circle1: { x: -2000, y: 1200, scale: 3.0, opacity: 0.6, fill: '#B8C5E8' },
-      circle2: { x: 2500, y: -1500, scale: 0.2, opacity: 0.3, fill: '#C8B8D8' },
-      circle3: { x: 1800, y: 1600, scale: 2.5, opacity: 0.2, fill: '#A8B8E0' },
-      circle4: { x: -2200, y: -1800, scale: 0.4, opacity: 0.5, fill: '#D0C0E0' },
-      circle5: { x: 2100, y: 900, scale: 1.8, opacity: 0.35, fill: '#B0C0E8' }
+      circle1: { x: -250, y: 340, scale: 1.54, opacity: 0.6, fill: '#B8C5E8' },
+      circle2: { x: 400, y: -250, scale: 0.72, opacity: 0.3, fill: '#C8B8D8' },
+      circle3: { x: 280, y: 200, scale: 1.46, opacity: 0.2, fill: '#A8B8E0' },
+      circle4: { x: -280, y: -440, scale: 0.98, opacity: 0.5, fill: '#D0C0E0' },
+      circle5: { x: 270, y: 80, scale: 1.08, opacity: 0.35, fill: '#B0C0E8' }
     },
     section2_intro: {
-      circle1: { x: 1150, y: -850, scale: 0.5, opacity: 0.35, fill: '#8090C0' },
-      circle2: { x: -1200, y: 700, scale: 2.0, opacity: 0.1, fill: '#A080B0' },
-      circle3: { x: -800, y: -950, scale: 0.8, opacity: 0.3, fill: '#7080A0' },
-      circle4: { x: 1300, y: 550, scale: 1.5, opacity: 0.15, fill: '#B090C0' },
-      circle5: { x: -950, y: -650, scale: 1.8, opacity: 0.2, fill: '#9090B0' }
+      circle1: { x: 350, y: -90, scale: 1.2, opacity: 0.35, fill: '#8090C0' },
+      circle2: { x: -340, y: 190, scale: 0.88, opacity: 0.1, fill: '#A080B0' },
+      circle3: { x: -240, y: -310, scale: 1.16, opacity: 0.3, fill: '#7080A0' },
+      circle4: { x: 460, y: 50, scale: 1.18, opacity: 0.15, fill: '#B090C0' },
+      circle5: { x: -340, y: -230, scale: 1.02, opacity: 0.2, fill: '#9090B0' }
     },
     section2_main: {
-      circle1: { x: 2300, y: -1700, scale: 0.3, opacity: 0.7, fill: '#C0D0F0' },
-      circle2: { x: -2400, y: 1400, scale: 3.5, opacity: 0.15, fill: '#D8C8E8' },
-      circle3: { x: -1600, y: -1900, scale: 0.6, opacity: 0.55, fill: '#B0C0E0' },
-      circle4: { x: 2600, y: 1100, scale: 2.2, opacity: 0.25, fill: '#E0D0F0' },
-      circle5: { x: -1900, y: -1300, scale: 2.8, opacity: 0.3, fill: '#C8D0F0' }
+      circle1: { x: 610, y: -260, scale: 1.24, opacity: 0.7, fill: '#C0D0F0' },
+      circle2: { x: -580, y: 330, scale: 1.06, opacity: 0.15, fill: '#D8C8E8' },
+      circle3: { x: -400, y: -500, scale: 1.14, opacity: 0.55, fill: '#B0C0E0' },
+      circle4: { x: 720, y: 140, scale: 1.32, opacity: 0.25, fill: '#E0D0F0' },
+      circle5: { x: -530, y: -360, scale: 1.22, opacity: 0.3, fill: '#C8D0F0' }
     },
     section3_intro: {
-      circle1: { x: -1250, y: -1000, scale: 0.8, opacity: 0.2, fill: '#90A0D0' },
-      circle2: { x: 1100, y: 900, scale: 1.7, opacity: 0.2, fill: '#B090C0' },
-      circle3: { x: 850, y: -800, scale: 0.5, opacity: 0.4, fill: '#8090B0' },
-      circle4: { x: -1400, y: 400, scale: 2.0, opacity: 0.12, fill: '#C0A0D0' },
-      circle5: { x: 1200, y: -700, scale: 1.3, opacity: 0.25, fill: '#A0A0D0' }
+      circle1: { x: -100, y: -100, scale: 1.26, opacity: 0.2, fill: '#90A0D0' },
+      circle2: { x: 120, y: 230, scale: 0.94, opacity: 0.2, fill: '#B090C0' },
+      circle3: { x: 90, y: -280, scale: 1.13, opacity: 0.4, fill: '#8090B0' },
+      circle4: { x: -80, y: 0, scale: 1.24, opacity: 0.12, fill: '#C0A0D0' },
+      circle5: { x: 90, y: -220, scale: 0.96, opacity: 0.25, fill: '#A0A0D0' }
     },
     section3_main: {
-      circle1: { x: -2500, y: -2000, scale: 1.2, opacity: 0.4, fill: '#D0D8F8' },
-      circle2: { x: 2200, y: 1800, scale: 2.5, opacity: 0.35, fill: '#E0D0F0' },
-      circle3: { x: 1700, y: -1600, scale: 0.3, opacity: 0.7, fill: '#C0D0E8' },
-      circle4: { x: -2800, y: 800, scale: 3.0, opacity: 0.2, fill: '#E8D8F0' },
-      circle5: { x: 2400, y: -1400, scale: 2.0, opacity: 0.45, fill: '#D0D8F8' }
+      circle1: { x: -350, y: -300, scale: 1.28, opacity: 0.4, fill: '#D0D8F8' },
+      circle2: { x: 340, y: 410, scale: 1.03, opacity: 0.35, fill: '#E0D0F0' },
+      circle3: { x: 260, y: -400, scale: 1.18, opacity: 0.7, fill: '#C0D0E8' },
+      circle4: { x: -360, y: 80, scale: 1.38, opacity: 0.2, fill: '#E8D8F0' },
+      circle5: { x: 330, y: -360, scale: 1.1, opacity: 0.45, fill: '#D0D8F8' }
     },
     section4_intro: {
-      circle1: { x: 1350, y: 1050, scale: 1.6, opacity: 0.3, fill: '#A0B0E0' },
-      circle2: { x: -1150, y: -950, scale: 0.6, opacity: 0.25, fill: '#C0B0E0' },
-      circle3: { x: -1000, y: 850, scale: 2.2, opacity: 0.18, fill: '#90A0C0' },
-      circle4: { x: 1250, y: -750, scale: 0.4, opacity: 0.5, fill: '#C0B0E0' },
-      circle5: { x: -900, y: -1100, scale: 1.0, opacity: 0.22, fill: '#A0B0E0' }
+      circle1: { x: 420, y: 310, scale: 1.36, opacity: 0.3, fill: '#A0B0E0' },
+      circle2: { x: -330, y: -290, scale: 0.76, opacity: 0.25, fill: '#C0B0E0' },
+      circle3: { x: -280, y: 250, scale: 1.32, opacity: 0.18, fill: '#90A0C0' },
+      circle4: { x: 450, y: -230, scale: 1.02, opacity: 0.5, fill: '#C0B0E0' },
+      circle5: { x: -330, y: -340, scale: 0.9, opacity: 0.22, fill: '#A0B0E0' }
     },
     section4_main: {
-      circle1: { x: 2700, y: 2100, scale: 2.5, opacity: 0.5, fill: '#D8E0F8' },
-      circle2: { x: -2300, y: -1900, scale: 0.4, opacity: 0.4, fill: '#E8D8F8' },
-      circle3: { x: -2000, y: 1700, scale: 3.5, opacity: 0.3, fill: '#D0D8F0' },
-      circle4: { x: 2500, y: -1500, scale: 0.2, opacity: 0.8, fill: '#E8D8F8' },
-      circle5: { x: -1800, y: -2200, scale: 1.6, opacity: 0.35, fill: '#D8E0F8' }
+      circle1: { x: 690, y: 520, scale: 1.45, opacity: 0.5, fill: '#D8E0F8' },
+      circle2: { x: -560, y: -470, scale: 0.74, opacity: 0.4, fill: '#E8D8F8' },
+      circle3: { x: -480, y: 420, scale: 1.49, opacity: 0.3, fill: '#D0D8F0' },
+      circle4: { x: 700, y: -380, scale: 1.08, opacity: 0.8, fill: '#E8D8F8' },
+      circle5: { x: -510, y: -540, scale: 0.98, opacity: 0.35, fill: '#D8E0F8' }
     }
   };
 
