@@ -578,7 +578,7 @@ window.addEventListener('load', function () {
 
   console.log('All animations initialized!');
 
-  // Circle configurations for each section
+  // Circle configurations for each section - now with INTRO and MAIN states
   const circleConfigs = {
     hero: {
       circle1: { x: 150, y: 100, scale: 1.3, opacity: 0.4, fill: '#C8DDFF' },
@@ -587,28 +587,56 @@ window.addEventListener('load', function () {
       circle4: { x: 200, y: -80, scale: 1.1, opacity: 0.45, fill: '#E8D8FF' },
       circle5: { x: -150, y: -100, scale: 0.9, opacity: 0.3, fill: '#C8DDFF' }
     },
-    section1: {
+    section1_intro: {
+      circle1: { x: -800, y: 600, scale: 1.3, opacity: 0.25, fill: '#0080B0' },
+      circle2: { x: 1000, y: -700, scale: 0.8, opacity: 0.2, fill: '#0060A0' },
+      circle3: { x: 900, y: 800, scale: 1.2, opacity: 0.15, fill: '#0070A0' },
+      circle4: { x: -1100, y: -900, scale: 1.1, opacity: 0.3, fill: '#0080B0' },
+      circle5: { x: 1050, y: 450, scale: 0.9, opacity: 0.2, fill: '#0080A0' }
+    },
+    section1_main: {
       circle1: { x: -2000, y: 1200, scale: 3.0, opacity: 0.6, fill: '#B8C5E8' },
       circle2: { x: 2500, y: -1500, scale: 0.2, opacity: 0.3, fill: '#C8B8D8' },
       circle3: { x: 1800, y: 1600, scale: 2.5, opacity: 0.2, fill: '#A8B8E0' },
       circle4: { x: -2200, y: -1800, scale: 0.4, opacity: 0.5, fill: '#D0C0E0' },
       circle5: { x: 2100, y: 900, scale: 1.8, opacity: 0.35, fill: '#B0C0E8' }
     },
-    section2: {
+    section2_intro: {
+      circle1: { x: 1150, y: -850, scale: 0.5, opacity: 0.35, fill: '#8090C0' },
+      circle2: { x: -1200, y: 700, scale: 2.0, opacity: 0.1, fill: '#A080B0' },
+      circle3: { x: -800, y: -950, scale: 0.8, opacity: 0.3, fill: '#7080A0' },
+      circle4: { x: 1300, y: 550, scale: 1.5, opacity: 0.15, fill: '#B090C0' },
+      circle5: { x: -950, y: -650, scale: 1.8, opacity: 0.2, fill: '#9090B0' }
+    },
+    section2_main: {
       circle1: { x: 2300, y: -1700, scale: 0.3, opacity: 0.7, fill: '#C0D0F0' },
       circle2: { x: -2400, y: 1400, scale: 3.5, opacity: 0.15, fill: '#D8C8E8' },
       circle3: { x: -1600, y: -1900, scale: 0.6, opacity: 0.55, fill: '#B0C0E0' },
       circle4: { x: 2600, y: 1100, scale: 2.2, opacity: 0.25, fill: '#E0D0F0' },
       circle5: { x: -1900, y: -1300, scale: 2.8, opacity: 0.3, fill: '#C8D0F0' }
     },
-    section3: {
+    section3_intro: {
+      circle1: { x: -1250, y: -1000, scale: 0.8, opacity: 0.2, fill: '#90A0D0' },
+      circle2: { x: 1100, y: 900, scale: 1.7, opacity: 0.2, fill: '#B090C0' },
+      circle3: { x: 850, y: -800, scale: 0.5, opacity: 0.4, fill: '#8090B0' },
+      circle4: { x: -1400, y: 400, scale: 2.0, opacity: 0.12, fill: '#C0A0D0' },
+      circle5: { x: 1200, y: -700, scale: 1.3, opacity: 0.25, fill: '#A0A0D0' }
+    },
+    section3_main: {
       circle1: { x: -2500, y: -2000, scale: 1.2, opacity: 0.4, fill: '#D0D8F8' },
       circle2: { x: 2200, y: 1800, scale: 2.5, opacity: 0.35, fill: '#E0D0F0' },
       circle3: { x: 1700, y: -1600, scale: 0.3, opacity: 0.7, fill: '#C0D0E8' },
       circle4: { x: -2800, y: 800, scale: 3.0, opacity: 0.2, fill: '#E8D8F0' },
       circle5: { x: 2400, y: -1400, scale: 2.0, opacity: 0.45, fill: '#D0D8F8' }
     },
-    section4: {
+    section4_intro: {
+      circle1: { x: 1350, y: 1050, scale: 1.6, opacity: 0.3, fill: '#A0B0E0' },
+      circle2: { x: -1150, y: -950, scale: 0.6, opacity: 0.25, fill: '#C0B0E0' },
+      circle3: { x: -1000, y: 850, scale: 2.2, opacity: 0.18, fill: '#90A0C0' },
+      circle4: { x: 1250, y: -750, scale: 0.4, opacity: 0.5, fill: '#C0B0E0' },
+      circle5: { x: -900, y: -1100, scale: 1.0, opacity: 0.22, fill: '#A0B0E0' }
+    },
+    section4_main: {
       circle1: { x: 2700, y: 2100, scale: 2.5, opacity: 0.5, fill: '#D8E0F8' },
       circle2: { x: -2300, y: -1900, scale: 0.4, opacity: 0.4, fill: '#E8D8F8' },
       circle3: { x: -2000, y: 1700, scale: 3.5, opacity: 0.3, fill: '#D0D8F0' },
@@ -621,7 +649,7 @@ window.addEventListener('load', function () {
   const sections = ['hero', 'section1', 'section2', 'section3', 'section4'];
   let lastSectionIndex = -1;
 
-  // Initialize with hero's ending positions
+  // Store target values for direct application
   let targetValues = {
     circle1: { x: 150, y: 100, scale: 1.3, opacity: 0.4 },
     circle2: { x: -100, y: 50, scale: 0.8, opacity: 0.3 },
@@ -630,115 +658,129 @@ window.addEventListener('load', function () {
     circle5: { x: -150, y: -100, scale: 0.9, opacity: 0.3 }
   };
 
-  // Current values for smooth interpolation (start from hero end positions)
-  let currentValues = JSON.parse(JSON.stringify(targetValues));
+  // Helper function to interpolate between hex colors
+  const interpolateColor = (color1, color2, progress) => {
+    // Convert hex to RGB
+    const hex2rgb = (hex) => {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+      } : null;
+    };
 
-  // Smooth damping for gentle catchup with visible movement
-  const damping = 0.025; // Slow but visible movement
+    // Convert RGB back to hex
+    const rgb2hex = (r, g, b) => {
+      return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+    };
 
-  // Animation frame for smooth updates
-  let animationFrame = null;
+    const c1 = hex2rgb(color1);
+    const c2 = hex2rgb(color2);
 
-  // Function to calculate target values based on scroll
-  const updateTargetValues = () => {
-    const scrollY = window.scrollY;
-    const windowHeight = window.innerHeight;
-    const scrollProgress = scrollY / windowHeight;
+    if (!c1 || !c2) return color1;
 
-    // Determine current section and interpolation progress
-    const sectionIndex = Math.floor(scrollProgress);
-    const sectionProgress = scrollProgress - sectionIndex;
+    const r = Math.round(c1.r + (c2.r - c1.r) * progress);
+    const g = Math.round(c1.g + (c2.g - c1.g) * progress);
+    const b = Math.round(c1.b + (c2.b - c1.b) * progress);
 
-    const actualSectionIndex = Math.min(sectionIndex, sections.length - 1);
-
-    const currentSection = sections[actualSectionIndex];
-    const nextSection = sections[Math.min(actualSectionIndex + 1, sections.length - 1)];
-
-    const currentConfig = circleConfigs[currentSection];
-    const nextConfig = circleConfigs[nextSection];
-
-    // Update target values for each circle
-    for (let i = 1; i <= 5; i++) {
-      const circleKey = `circle${i}`;
-      const current = currentConfig[circleKey];
-      const next = nextConfig[circleKey];
-
-      // Calculate target values
-      targetValues[circleKey] = {
-        x: current.x + (next.x - current.x) * sectionProgress,
-        y: current.y + (next.y - current.y) * sectionProgress,
-        scale: current.scale + (next.scale - current.scale) * sectionProgress,
-        opacity: current.opacity + (next.opacity - current.opacity) * sectionProgress
-      };
-
-      // Animate color when entering a new section
-      if (actualSectionIndex !== lastSectionIndex && actualSectionIndex < sections.length - 1) {
-        animate(`.circle-${i} circle`, {
-          fill: [current.fill, next.fill],
-          duration: 2000,
-          ease: 'inOutSine'
-        });
-      }
-    }
-
-    lastSectionIndex = actualSectionIndex;
+    return rgb2hex(r, g, b);
   };
 
-  // Smooth animation loop with very slow easing
-  const animateCircles = () => {
-    let needsUpdate = false;
+  // Function to calculate and apply values based on scroll
+  const updateCirclesOnScroll = () => {
+    const scrollY = window.scrollY;
+    const windowHeight = window.innerHeight;
+    const totalScroll = scrollY / windowHeight;
 
-    // Update each circle with damped movement
+    // Create a continuous interpolation path through all states
+    // Each section has 2 states (intro at 0.5, main at 1.0)
+    // Hero (0) -> S1_intro (0.5) -> S1_main (1.0) -> S2_intro (1.5) -> S2_main (2.0) etc.
+
+    let fromConfig, toConfig, localProgress;
+
+    if (totalScroll <= 0.5) {
+      // Hero to Section1_intro
+      fromConfig = circleConfigs.hero;
+      toConfig = circleConfigs.section1_intro;
+      localProgress = totalScroll * 2; // 0 to 1
+    } else if (totalScroll <= 1.0) {
+      // Section1_intro to Section1_main
+      fromConfig = circleConfigs.section1_intro;
+      toConfig = circleConfigs.section1_main;
+      localProgress = (totalScroll - 0.5) * 2; // 0 to 1
+    } else if (totalScroll <= 1.5) {
+      // Section1_main to Section2_intro
+      fromConfig = circleConfigs.section1_main;
+      toConfig = circleConfigs.section2_intro;
+      localProgress = (totalScroll - 1.0) * 2; // 0 to 1
+    } else if (totalScroll <= 2.0) {
+      // Section2_intro to Section2_main
+      fromConfig = circleConfigs.section2_intro;
+      toConfig = circleConfigs.section2_main;
+      localProgress = (totalScroll - 1.5) * 2; // 0 to 1
+    } else if (totalScroll <= 2.5) {
+      // Section2_main to Section3_intro
+      fromConfig = circleConfigs.section2_main;
+      toConfig = circleConfigs.section3_intro;
+      localProgress = (totalScroll - 2.0) * 2; // 0 to 1
+    } else if (totalScroll <= 3.0) {
+      // Section3_intro to Section3_main
+      fromConfig = circleConfigs.section3_intro;
+      toConfig = circleConfigs.section3_main;
+      localProgress = (totalScroll - 2.5) * 2; // 0 to 1
+    } else if (totalScroll <= 3.5) {
+      // Section3_main to Section4_intro
+      fromConfig = circleConfigs.section3_main;
+      toConfig = circleConfigs.section4_intro;
+      localProgress = (totalScroll - 3.0) * 2; // 0 to 1
+    } else if (totalScroll <= 4.0) {
+      // Section4_intro to Section4_main
+      fromConfig = circleConfigs.section4_intro;
+      toConfig = circleConfigs.section4_main;
+      localProgress = (totalScroll - 3.5) * 2; // 0 to 1
+    } else {
+      // Stay at Section4_main
+      fromConfig = circleConfigs.section4_main;
+      toConfig = circleConfigs.section4_main;
+      localProgress = 1;
+    }
+
+    // Apply smooth interpolation for each circle
     for (let i = 1; i <= 5; i++) {
       const circleKey = `circle${i}`;
-      const target = targetValues[circleKey];
-      const current = currentValues[circleKey];
+      const from = fromConfig[circleKey];
+      const to = toConfig[circleKey];
 
-      // Different damping per circle for organic feel (each circle progressively slower)
-      const circleDamping = damping * (1 - i * 0.15); // Each circle 15% slower
+      // Interpolate position, scale, and opacity
+      const x = from.x + (to.x - from.x) * localProgress;
+      const y = from.y + (to.y - from.y) * localProgress;
+      const scale = from.scale + (to.scale - from.scale) * localProgress;
+      const opacity = from.opacity + (to.opacity - from.opacity) * localProgress;
 
-      // Simple eased interpolation - no immediate response, just smooth catchup
-      const deltaX = (target.x - current.x) * circleDamping;
-      const deltaY = (target.y - current.y) * circleDamping;
-      const deltaScale = (target.scale - current.scale) * circleDamping;
-      const deltaOpacity = (target.opacity - current.opacity) * circleDamping;
+      // Interpolate color smoothly
+      const fill = interpolateColor(from.fill, to.fill, localProgress);
 
-      // Update current values with very smooth, slow interpolation
-      current.x += deltaX;
-      current.y += deltaY;
-      current.scale += deltaScale;
-      current.opacity += deltaOpacity;
-
-      // Check if still animating
-      if (Math.abs(target.x - current.x) > 0.1 ||
-        Math.abs(target.y - current.y) > 0.1 ||
-        Math.abs(target.scale - current.scale) > 0.001 ||
-        Math.abs(target.opacity - current.opacity) > 0.001) {
-        needsUpdate = true;
-      }
-
-      // Apply the smoothed values
+      // Apply all values at once
       utils.set(`.circle-${i}`, {
-        x: current.x,
-        y: current.y,
-        scale: current.scale,
-        opacity: current.opacity
+        x: x,
+        y: y,
+        scale: scale,
+        opacity: opacity
+      });
+
+      utils.set(`.circle-${i} circle`, {
+        fill: fill
       });
     }
 
-    // Always continue animation loop
-    animationFrame = requestAnimationFrame(animateCircles);
-  };
-
-  // Function to handle scroll events
-  const updateCirclesOnScroll = () => {
-    updateTargetValues();
+    lastSectionIndex = Math.floor(totalScroll);
   };
 
   const startScrollListener = () => {
     window.addEventListener('scroll', updateCirclesOnScroll);
-    // Start the animation loop
-    animateCircles();
+    // Initialize circles on load
+    updateCirclesOnScroll();
   };
 
   // Background theme transition timeline (this is the main hero animation)
