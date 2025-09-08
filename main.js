@@ -313,8 +313,8 @@ window.addEventListener('load', function () {
 
   // Circle 2 expands and lightens first (lead circle)
   themeTimeline.add('.circle-2', {
-    x: 500,
-    y: 500,
+    translateX: 500,
+    translateY: 500,
     scale: [1, 1.8], // Expand more than its final size first
     duration: 500,
     ease: 'outExpo'
@@ -359,8 +359,8 @@ window.addEventListener('load', function () {
 
   // Animate circle 1 - move, scale and color change
   themeTimeline.add('.circle-1', {
-    x: [0, 150],
-    y: [0, 100],
+    translateX: [0, 150],
+    translateY: [0, 100],
     scale: [1, 1.3],
     duration: 3000,
     ease: 'inOutQuad'
@@ -374,8 +374,8 @@ window.addEventListener('load', function () {
 
   // Animate circle 3 - move, scale and color change
   themeTimeline.add('.circle-3', {
-    x: [0, -80],
-    y: [0, -120],
+    translateX: [0, -80],
+    translateY: [0, -120],
     scale: [1, 1.2],
     duration: 3000,
     ease: 'inOutQuad'
@@ -389,8 +389,8 @@ window.addEventListener('load', function () {
 
   // Animate circle 4 - move, scale and color change
   themeTimeline.add('.circle-4', {
-    x: [0, 200],
-    y: [0, -80],
+    translateX: [0, 200],
+    translateY: [0, -80],
     scale: [1, 1.1],
     duration: 3000,
     ease: 'inOutQuad'
@@ -404,8 +404,8 @@ window.addEventListener('load', function () {
 
   // Animate circle 5 - move, scale and color change
   themeTimeline.add('.circle-5', {
-    x: [0, -150],
-    y: [0, -100],
+    translateX: [0, -150],
+    translateY: [0, -100],
     scale: [1, 0.9],
     duration: 3000,
     ease: 'inOutQuad'
@@ -746,6 +746,11 @@ window.addEventListener('load', function () {
       localProgress = 1;
     }
 
+    // Debug: Log current state occasionally
+    if (Math.random() < 0.02) {
+      console.log(`Scroll: ${totalScroll.toFixed(2)}, Progress: ${localProgress.toFixed(2)}, From: ${fromConfig.circle1.x}, To: ${toConfig.circle1.x}`);
+    }
+    
     // Apply smooth interpolation for each circle
     for (let i = 1; i <= 5; i++) {
       const circleKey = `circle${i}`;
@@ -761,10 +766,11 @@ window.addEventListener('load', function () {
       // Interpolate color smoothly
       const fill = interpolateColor(from.fill, to.fill, localProgress);
 
-      // Apply all values at once
+      // Apply transform for position and scale
+      // Use translateX and translateY separately to avoid parsing issues
       utils.set(`.circle-${i}`, {
-        x: x,
-        y: y,
+        translateX: x,
+        translateY: y,
         scale: scale,
         opacity: opacity
       });
