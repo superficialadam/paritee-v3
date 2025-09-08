@@ -586,63 +586,216 @@ window.addEventListener('load', function () {
       circle2: { x: -100, y: 50, scale: 0.8, opacity: 0.3, fill: '#E8D8FF' },
       circle3: { x: -80, y: -120, scale: 1.2, opacity: 0.35, fill: '#C8DDFF' },
       circle4: { x: 200, y: -80, scale: 1.1, opacity: 0.45, fill: '#E8D8FF' },
-      circle5: { x: -150, y: -100, scale: 0.9, opacity: 0.3, fill: '#C8DDFF' }
+      circle5: { x: -150, y: -100, scale: 0.9, opacity: 0.3, fill: '#C8DDFF' },
+      dotMatrix: {
+        influence1X: 0.5,
+        influence1Y: 0.5,
+        influence1RadiusX: 0.02,
+        influence1RadiusY: 0.02,
+        influence1Falloff: 2.0,
+        influence1Intensity: 0.0,
+        influence1EdgeStart: 0.0,
+        influence1EdgeInfluence: 1.0,
+        influence1EdgeScale: 40.0,
+        influence1EdgeSpeed: 2.0,
+        influence1EdgeGain: 0.077,
+        influence1EdgeThreshold: 0.8192,
+        influence1EdgeIslandSize: 1.5352,
+        influence1EdgeExposure: 0.636,
+        influence1EdgeGamma: 0.1
+      }
     },
     section1_intro: {
-      circle1: { x: -10, y: 220, scale: 1.3, opacity: 0.25, fill: '#0080B0' },
-      circle2: { x: 120, y: -90, scale: 0.8, opacity: 0.2, fill: '#0060A0' },
-      circle3: { x: 100, y: 40, scale: 1.2, opacity: 0.15, fill: '#0070A0' },
-      circle4: { x: -60, y: -260, scale: 1.1, opacity: 0.3, fill: '#0080B0' },
-      circle5: { x: 60, y: -10, scale: 0.9, opacity: 0.2, fill: '#0080A0' }
+      circle1: { x: -10, y: 220, scale: 3.9, opacity: 0.25, fill: '#0080B0' },  // 3x scale
+      circle2: { x: 120, y: -90, scale: 2.4, opacity: 0.2, fill: '#0060A0' },   // 3x scale
+      circle3: { x: 100, y: 40, scale: 3.6, opacity: 0.15, fill: '#0070A0' },   // 3x scale
+      circle4: { x: -60, y: -260, scale: 2.75, opacity: 0.3, fill: '#0080B0' }, // 2.5x scale
+      circle5: { x: 60, y: -10, scale: 2.7, opacity: 0.2, fill: '#0080A0' },    // 3x scale
+      dotMatrix: {
+        influence1X: 0.3,  // Position varies ~0.5 from hero
+        influence1Y: 0.7,
+        influence1RadiusX: 0.4,  // Large radius as requested
+        influence1RadiusY: 0.4,
+        influence1Falloff: 1.2,
+        influence1Intensity: 0.8,  // High intensity for intro
+        influence1EdgeStart: 0.1,
+        influence1EdgeInfluence: 0.9,
+        influence1EdgeScale: 20.0,  // 20 scale noise as requested
+        influence1EdgeSpeed: 2.5,
+        influence1EdgeGain: 0.08,
+        influence1EdgeThreshold: 0.8,
+        influence1EdgeIslandSize: 1.6,
+        influence1EdgeExposure: 0.6,
+        influence1EdgeGamma: 0.12
+      }
     },
     section1_main: {
-      circle1: { x: -250, y: 340, scale: 1.54, opacity: 0.6, fill: '#B8C5E8' },
-      circle2: { x: 400, y: -250, scale: 0.72, opacity: 0.3, fill: '#C8B8D8' },
-      circle3: { x: 280, y: 200, scale: 1.46, opacity: 0.2, fill: '#A8B8E0' },
-      circle4: { x: -280, y: -440, scale: 0.98, opacity: 0.5, fill: '#D0C0E0' },
-      circle5: { x: 270, y: 80, scale: 1.08, opacity: 0.35, fill: '#B0C0E8' }
+      circle1: { x: -250, y: 340, scale: 0.8, opacity: 0.6, fill: '#B8C5E8' },  // Smaller scale
+      circle2: { x: 400, y: -250, scale: 0.5, opacity: 0.3, fill: '#C8B8D8' },  // Smaller scale
+      circle3: { x: 280, y: 200, scale: 0.7, opacity: 0.2, fill: '#A8B8E0' },   // Smaller scale
+      circle4: { x: -280, y: -440, scale: 0.6, opacity: 0.5, fill: '#D0C0E0' }, // Smaller scale
+      circle5: { x: 270, y: 80, scale: 0.5, opacity: 0.35, fill: '#B0C0E8' },   // Smaller scale
+      dotMatrix: {
+        influence1X: 0.8,  // Position varies ~0.5 from intro
+        influence1Y: 0.2,
+        influence1RadiusX: 0.05,  // Small radius
+        influence1RadiusY: 0.05,
+        influence1Falloff: 2.5,
+        influence1Intensity: 0.1,  // Low intensity for main
+        influence1EdgeStart: 0.3,
+        influence1EdgeInfluence: 0.5,
+        influence1EdgeScale: 40.0,
+        influence1EdgeSpeed: 1.0,
+        influence1EdgeGain: 0.04,
+        influence1EdgeThreshold: 0.9,
+        influence1EdgeIslandSize: 1.2,
+        influence1EdgeExposure: 0.4,
+        influence1EdgeGamma: 0.2
+      }
     },
     section2_intro: {
-      circle1: { x: 350, y: -90, scale: 1.2, opacity: 0.35, fill: '#8090C0' },
-      circle2: { x: -340, y: 190, scale: 0.88, opacity: 0.1, fill: '#A080B0' },
-      circle3: { x: -240, y: -310, scale: 1.16, opacity: 0.3, fill: '#7080A0' },
-      circle4: { x: 460, y: 50, scale: 1.18, opacity: 0.15, fill: '#B090C0' },
-      circle5: { x: -340, y: -230, scale: 1.02, opacity: 0.2, fill: '#9090B0' }
+      circle1: { x: 350, y: -90, scale: 3.6, opacity: 0.35, fill: '#8090C0' },   // 3x scale
+      circle2: { x: -340, y: 190, scale: 2.64, opacity: 0.1, fill: '#A080B0' },  // 3x scale
+      circle3: { x: -240, y: -310, scale: 3.48, opacity: 0.3, fill: '#7080A0' }, // 3x scale
+      circle4: { x: 460, y: 50, scale: 3.0, opacity: 0.15, fill: '#B090C0' },    // 2.5x scale
+      circle5: { x: -340, y: -230, scale: 3.06, opacity: 0.2, fill: '#9090B0' }, // 3x scale
+      dotMatrix: {
+        influence1X: 0.2,  
+        influence1Y: 0.8,
+        influence1RadiusX: 0.5,  // Large radius
+        influence1RadiusY: 0.5,
+        influence1Falloff: 1.0,
+        influence1Intensity: 0.9,  // High intensity
+        influence1EdgeStart: 0.05,
+        influence1EdgeInfluence: 0.95,
+        influence1EdgeScale: 20.0,
+        influence1EdgeSpeed: 3.0,
+        influence1EdgeGain: 0.09,
+        influence1EdgeThreshold: 0.75,
+        influence1EdgeIslandSize: 1.7,
+        influence1EdgeExposure: 0.65,
+        influence1EdgeGamma: 0.1
+      }
     },
     section2_main: {
-      circle1: { x: 610, y: -260, scale: 1.24, opacity: 0.7, fill: '#C0D0F0' },
-      circle2: { x: -580, y: 330, scale: 1.06, opacity: 0.15, fill: '#D8C8E8' },
-      circle3: { x: -400, y: -500, scale: 1.14, opacity: 0.55, fill: '#B0C0E0' },
-      circle4: { x: 720, y: 140, scale: 1.32, opacity: 0.25, fill: '#E0D0F0' },
-      circle5: { x: -530, y: -360, scale: 1.22, opacity: 0.3, fill: '#C8D0F0' }
+      circle1: { x: 610, y: -260, scale: 0.6, opacity: 0.7, fill: '#C0D0F0' },  // Smaller scale
+      circle2: { x: -580, y: 330, scale: 0.4, opacity: 0.15, fill: '#D8C8E8' }, // Smaller scale
+      circle3: { x: -400, y: -500, scale: 0.5, opacity: 0.55, fill: '#B0C0E0' },// Smaller scale
+      circle4: { x: 720, y: 140, scale: 0.7, opacity: 0.25, fill: '#E0D0F0' },  // Smaller scale
+      circle5: { x: -530, y: -360, scale: 0.6, opacity: 0.3, fill: '#C8D0F0' }, // Smaller scale
+      dotMatrix: {
+        influence1X: 0.7,  
+        influence1Y: 0.3,
+        influence1RadiusX: 0.03,  // Small radius
+        influence1RadiusY: 0.03,
+        influence1Falloff: 3.0,
+        influence1Intensity: 0.05,  // Very low intensity
+        influence1EdgeStart: 0.4,
+        influence1EdgeInfluence: 0.4,
+        influence1EdgeScale: 50.0,
+        influence1EdgeSpeed: 0.8,
+        influence1EdgeGain: 0.03,
+        influence1EdgeThreshold: 0.95,
+        influence1EdgeIslandSize: 1.0,
+        influence1EdgeExposure: 0.3,
+        influence1EdgeGamma: 0.25
+      }
     },
     section3_intro: {
-      circle1: { x: -100, y: -100, scale: 1.26, opacity: 0.2, fill: '#90A0D0' },
-      circle2: { x: 120, y: 230, scale: 0.94, opacity: 0.2, fill: '#B090C0' },
-      circle3: { x: 90, y: -280, scale: 1.13, opacity: 0.4, fill: '#8090B0' },
-      circle4: { x: -80, y: 0, scale: 1.24, opacity: 0.12, fill: '#C0A0D0' },
-      circle5: { x: 90, y: -220, scale: 0.96, opacity: 0.25, fill: '#A0A0D0' }
+      circle1: { x: -100, y: -100, scale: 3.78, opacity: 0.2, fill: '#90A0D0' }, // 3x scale
+      circle2: { x: 120, y: 230, scale: 2.82, opacity: 0.2, fill: '#B090C0' },   // 3x scale
+      circle3: { x: 90, y: -280, scale: 3.39, opacity: 0.4, fill: '#8090B0' },   // 3x scale
+      circle4: { x: -80, y: 0, scale: 3.1, opacity: 0.12, fill: '#C0A0D0' },     // 2.5x scale
+      circle5: { x: 90, y: -220, scale: 2.88, opacity: 0.25, fill: '#A0A0D0' },  // 3x scale
+      dotMatrix: {
+        influence1X: 0.6,  
+        influence1Y: 0.4,
+        influence1RadiusX: 0.6,  // Large radius
+        influence1RadiusY: 0.6,
+        influence1Falloff: 0.8,
+        influence1Intensity: 0.85,  // High intensity
+        influence1EdgeStart: 0.0,
+        influence1EdgeInfluence: 1.0,
+        influence1EdgeScale: 20.0,
+        influence1EdgeSpeed: 2.2,
+        influence1EdgeGain: 0.1,
+        influence1EdgeThreshold: 0.7,
+        influence1EdgeIslandSize: 1.8,
+        influence1EdgeExposure: 0.7,
+        influence1EdgeGamma: 0.08
+      }
     },
     section3_main: {
-      circle1: { x: -350, y: -300, scale: 1.28, opacity: 0.4, fill: '#D0D8F8' },
-      circle2: { x: 340, y: 410, scale: 1.03, opacity: 0.35, fill: '#E0D0F0' },
-      circle3: { x: 260, y: -400, scale: 1.18, opacity: 0.7, fill: '#C0D0E8' },
-      circle4: { x: -360, y: 80, scale: 1.38, opacity: 0.2, fill: '#E8D8F0' },
-      circle5: { x: 330, y: -360, scale: 1.1, opacity: 0.45, fill: '#D0D8F8' }
+      circle1: { x: -350, y: -300, scale: 0.7, opacity: 0.4, fill: '#D0D8F8' }, // Smaller scale
+      circle2: { x: 340, y: 410, scale: 0.5, opacity: 0.35, fill: '#E0D0F0' },  // Smaller scale
+      circle3: { x: 260, y: -400, scale: 0.6, opacity: 0.7, fill: '#C0D0E8' },  // Smaller scale
+      circle4: { x: -360, y: 80, scale: 0.8, opacity: 0.2, fill: '#E8D8F0' },   // Smaller scale
+      circle5: { x: 330, y: -360, scale: 0.5, opacity: 0.45, fill: '#D0D8F8' }, // Smaller scale
+      dotMatrix: {
+        influence1X: 0.1,  
+        influence1Y: 0.9,
+        influence1RadiusX: 0.02,  // Very small radius
+        influence1RadiusY: 0.02,
+        influence1Falloff: 3.5,
+        influence1Intensity: 0.02,  // Very low intensity
+        influence1EdgeStart: 0.5,
+        influence1EdgeInfluence: 0.3,
+        influence1EdgeScale: 60.0,
+        influence1EdgeSpeed: 0.5,
+        influence1EdgeGain: 0.02,
+        influence1EdgeThreshold: 0.98,
+        influence1EdgeIslandSize: 0.8,
+        influence1EdgeExposure: 0.2,
+        influence1EdgeGamma: 0.3
+      }
     },
     section4_intro: {
-      circle1: { x: 420, y: 310, scale: 1.36, opacity: 0.3, fill: '#A0B0E0' },
-      circle2: { x: -330, y: -290, scale: 0.76, opacity: 0.25, fill: '#C0B0E0' },
-      circle3: { x: -280, y: 250, scale: 1.32, opacity: 0.18, fill: '#90A0C0' },
-      circle4: { x: 450, y: -230, scale: 1.02, opacity: 0.5, fill: '#C0B0E0' },
-      circle5: { x: -330, y: -340, scale: 0.9, opacity: 0.22, fill: '#A0B0E0' }
+      circle1: { x: 420, y: 310, scale: 4.08, opacity: 0.3, fill: '#A0B0E0' },  // 3x scale
+      circle2: { x: -330, y: -290, scale: 2.28, opacity: 0.25, fill: '#C0B0E0' },// 3x scale
+      circle3: { x: -280, y: 250, scale: 3.96, opacity: 0.18, fill: '#90A0C0' }, // 3x scale
+      circle4: { x: 450, y: -230, scale: 2.55, opacity: 0.5, fill: '#C0B0E0' },  // 2.5x scale
+      circle5: { x: -330, y: -340, scale: 2.7, opacity: 0.22, fill: '#A0B0E0' }, // 3x scale
+      dotMatrix: {
+        influence1X: 0.4,  
+        influence1Y: 0.6,
+        influence1RadiusX: 0.7,  // Large radius
+        influence1RadiusY: 0.7,
+        influence1Falloff: 0.6,
+        influence1Intensity: 0.95,  // Very high intensity
+        influence1EdgeStart: 0.0,
+        influence1EdgeInfluence: 1.0,
+        influence1EdgeScale: 20.0,
+        influence1EdgeSpeed: 3.5,
+        influence1EdgeGain: 0.12,
+        influence1EdgeThreshold: 0.65,
+        influence1EdgeIslandSize: 2.0,
+        influence1EdgeExposure: 0.75,
+        influence1EdgeGamma: 0.05
+      }
     },
     section4_main: {
-      circle1: { x: 690, y: 520, scale: 1.45, opacity: 0.5, fill: '#D8E0F8' },
-      circle2: { x: -560, y: -470, scale: 0.74, opacity: 0.4, fill: '#E8D8F8' },
-      circle3: { x: -480, y: 420, scale: 1.49, opacity: 0.3, fill: '#D0D8F0' },
-      circle4: { x: 700, y: -380, scale: 1.08, opacity: 0.8, fill: '#E8D8F8' },
-      circle5: { x: -510, y: -540, scale: 0.98, opacity: 0.35, fill: '#D8E0F8' }
+      circle1: { x: 690, y: 520, scale: 0.9, opacity: 0.5, fill: '#D8E0F8' },  // Smaller scale
+      circle2: { x: -560, y: -470, scale: 0.4, opacity: 0.4, fill: '#E8D8F8' },// Smaller scale
+      circle3: { x: -480, y: 420, scale: 0.7, opacity: 0.3, fill: '#D0D8F0' }, // Smaller scale
+      circle4: { x: 700, y: -380, scale: 0.5, opacity: 0.8, fill: '#E8D8F8' }, // Smaller scale
+      circle5: { x: -510, y: -540, scale: 0.4, opacity: 0.35, fill: '#D8E0F8' },// Smaller scale
+      dotMatrix: {
+        influence1X: 0.9,  
+        influence1Y: 0.1,
+        influence1RadiusX: 0.01,  // Tiny radius
+        influence1RadiusY: 0.01,
+        influence1Falloff: 4.0,
+        influence1Intensity: 0.0,  // Zero intensity
+        influence1EdgeStart: 0.6,
+        influence1EdgeInfluence: 0.2,
+        influence1EdgeScale: 80.0,
+        influence1EdgeSpeed: 0.3,
+        influence1EdgeGain: 0.01,
+        influence1EdgeThreshold: 1.0,
+        influence1EdgeIslandSize: 0.5,
+        influence1EdgeExposure: 0.1,
+        influence1EdgeGamma: 0.4
+      }
     }
   };
 
@@ -779,6 +932,29 @@ window.addEventListener('load', function () {
       utils.set(`.circle-${i} circle`, {
         fill: fill
       });
+    }
+
+    // Interpolate and apply dotMatrix parameters
+    if (window.dotMatrixParams && fromConfig.dotMatrix && toConfig.dotMatrix) {
+      const fromDot = fromConfig.dotMatrix;
+      const toDot = toConfig.dotMatrix;
+
+      // Interpolate all dotMatrix parameters
+      dotMatrixParams.influence1X = fromDot.influence1X + (toDot.influence1X - fromDot.influence1X) * localProgress;
+      dotMatrixParams.influence1Y = fromDot.influence1Y + (toDot.influence1Y - fromDot.influence1Y) * localProgress;
+      dotMatrixParams.influence1RadiusX = fromDot.influence1RadiusX + (toDot.influence1RadiusX - fromDot.influence1RadiusX) * localProgress;
+      dotMatrixParams.influence1RadiusY = fromDot.influence1RadiusY + (toDot.influence1RadiusY - fromDot.influence1RadiusY) * localProgress;
+      dotMatrixParams.influence1Falloff = fromDot.influence1Falloff + (toDot.influence1Falloff - fromDot.influence1Falloff) * localProgress;
+      dotMatrixParams.influence1Intensity = fromDot.influence1Intensity + (toDot.influence1Intensity - fromDot.influence1Intensity) * localProgress;
+      dotMatrixParams.influence1EdgeStart = fromDot.influence1EdgeStart + (toDot.influence1EdgeStart - fromDot.influence1EdgeStart) * localProgress;
+      dotMatrixParams.influence1EdgeInfluence = fromDot.influence1EdgeInfluence + (toDot.influence1EdgeInfluence - fromDot.influence1EdgeInfluence) * localProgress;
+      dotMatrixParams.influence1EdgeScale = fromDot.influence1EdgeScale + (toDot.influence1EdgeScale - fromDot.influence1EdgeScale) * localProgress;
+      dotMatrixParams.influence1EdgeSpeed = fromDot.influence1EdgeSpeed + (toDot.influence1EdgeSpeed - fromDot.influence1EdgeSpeed) * localProgress;
+      dotMatrixParams.influence1EdgeGain = fromDot.influence1EdgeGain + (toDot.influence1EdgeGain - fromDot.influence1EdgeGain) * localProgress;
+      dotMatrixParams.influence1EdgeThreshold = fromDot.influence1EdgeThreshold + (toDot.influence1EdgeThreshold - fromDot.influence1EdgeThreshold) * localProgress;
+      dotMatrixParams.influence1EdgeIslandSize = fromDot.influence1EdgeIslandSize + (toDot.influence1EdgeIslandSize - fromDot.influence1EdgeIslandSize) * localProgress;
+      dotMatrixParams.influence1EdgeExposure = fromDot.influence1EdgeExposure + (toDot.influence1EdgeExposure - fromDot.influence1EdgeExposure) * localProgress;
+      dotMatrixParams.influence1EdgeGamma = fromDot.influence1EdgeGamma + (toDot.influence1EdgeGamma - fromDot.influence1EdgeGamma) * localProgress;
     }
 
     lastSectionIndex = Math.floor(totalScroll);
