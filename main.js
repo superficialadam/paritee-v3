@@ -612,11 +612,11 @@ window.addEventListener('load', function () {
       circle4: { x: -60, y: -260, scale: 2.75, opacity: 0.3, fill: '#0080B0' }, // 2.5x scale
       circle5: { x: 60, y: -10, scale: 2.7, opacity: 0.2, fill: '#0080A0' },    // 3x scale
       dotMatrix: {
-        influence1X: 0.3,  // Position varies ~0.5 from hero
-        influence1Y: 0.7,
-        influence1RadiusX: 0.4,  // Large radius as requested
-        influence1RadiusY: 0.4,
-        influence1Falloff: 1.2,
+        influence1X: 0.8,  // Right side
+        influence1Y: 0.3,  // Upper area
+        influence1RadiusX: 0.3,  // Medium-large radius
+        influence1RadiusY: 0.3,
+        influence1Falloff: 0.3,  // Much softer falloff
         influence1Intensity: 0.8,  // High intensity for intro
         influence1EdgeStart: 0.1,
         influence1EdgeInfluence: 0.9,
@@ -636,11 +636,11 @@ window.addEventListener('load', function () {
       circle4: { x: -280, y: -440, scale: 0.6, opacity: 0.5, fill: '#D0C0E0' }, // Smaller scale
       circle5: { x: 270, y: 80, scale: 0.5, opacity: 0.35, fill: '#B0C0E8' },   // Smaller scale
       dotMatrix: {
-        influence1X: 0.8,  // Position varies ~0.5 from intro
-        influence1Y: 0.2,
+        influence1X: 0.2,  // Left side - flows across screen
+        influence1Y: 0.7,  // Lower area
         influence1RadiusX: 0.05,  // Small radius
         influence1RadiusY: 0.05,
-        influence1Falloff: 2.5,
+        influence1Falloff: 0.8,  // Still soft falloff
         influence1Intensity: 0.1,  // Low intensity for main
         influence1EdgeStart: 0.3,
         influence1EdgeInfluence: 0.5,
@@ -660,11 +660,11 @@ window.addEventListener('load', function () {
       circle4: { x: 460, y: 50, scale: 3.0, opacity: 0.15, fill: '#B090C0' },    // 2.5x scale
       circle5: { x: -340, y: -230, scale: 3.06, opacity: 0.2, fill: '#9090B0' }, // 3x scale
       dotMatrix: {
-        influence1X: 0.2,  
-        influence1Y: 0.8,
-        influence1RadiusX: 0.5,  // Large radius
+        influence1X: 0.3,  // Left-center, flowing clockwise
+        influence1Y: 0.8,  // Bottom area
+        influence1RadiusX: 0.5,  // Larger radius than section1
         influence1RadiusY: 0.5,
-        influence1Falloff: 1.0,
+        influence1Falloff: 0.2,  // Very soft falloff
         influence1Intensity: 0.9,  // High intensity
         influence1EdgeStart: 0.05,
         influence1EdgeInfluence: 0.95,
@@ -684,11 +684,11 @@ window.addEventListener('load', function () {
       circle4: { x: 720, y: 140, scale: 0.7, opacity: 0.25, fill: '#E0D0F0' },  // Smaller scale
       circle5: { x: -530, y: -360, scale: 0.6, opacity: 0.3, fill: '#C8D0F0' }, // Smaller scale
       dotMatrix: {
-        influence1X: 0.7,  
-        influence1Y: 0.3,
+        influence1X: 0.9,  // Right side - continues flow
+        influence1Y: 0.5,  // Center
         influence1RadiusX: 0.03,  // Small radius
         influence1RadiusY: 0.03,
-        influence1Falloff: 3.0,
+        influence1Falloff: 1.0,  // Moderate falloff
         influence1Intensity: 0.05,  // Very low intensity
         influence1EdgeStart: 0.4,
         influence1EdgeInfluence: 0.4,
@@ -708,11 +708,11 @@ window.addEventListener('load', function () {
       circle4: { x: -80, y: 0, scale: 3.1, opacity: 0.12, fill: '#C0A0D0' },     // 2.5x scale
       circle5: { x: 90, y: -220, scale: 2.88, opacity: 0.25, fill: '#A0A0D0' },  // 3x scale
       dotMatrix: {
-        influence1X: 0.6,  
-        influence1Y: 0.4,
-        influence1RadiusX: 0.6,  // Large radius
+        influence1X: 0.7,  // Right side
+        influence1Y: 0.2,  // Top area - flowing pattern
+        influence1RadiusX: 0.6,  // Even larger radius
         influence1RadiusY: 0.6,
-        influence1Falloff: 0.8,
+        influence1Falloff: 0.15,  // Super soft falloff
         influence1Intensity: 0.85,  // High intensity
         influence1EdgeStart: 0.0,
         influence1EdgeInfluence: 1.0,
@@ -732,11 +732,11 @@ window.addEventListener('load', function () {
       circle4: { x: -360, y: 80, scale: 0.8, opacity: 0.2, fill: '#E8D8F0' },   // Smaller scale
       circle5: { x: 330, y: -360, scale: 0.5, opacity: 0.45, fill: '#D0D8F8' }, // Smaller scale
       dotMatrix: {
-        influence1X: 0.1,  
-        influence1Y: 0.9,
+        influence1X: 0.4,  // Center-left
+        influence1Y: 0.6,  // Lower-center
         influence1RadiusX: 0.02,  // Very small radius
         influence1RadiusY: 0.02,
-        influence1Falloff: 3.5,
+        influence1Falloff: 1.2,  // Moderate falloff
         influence1Intensity: 0.02,  // Very low intensity
         influence1EdgeStart: 0.5,
         influence1EdgeInfluence: 0.3,
@@ -756,11 +756,11 @@ window.addEventListener('load', function () {
       circle4: { x: 450, y: -230, scale: 2.55, opacity: 0.5, fill: '#C0B0E0' },  // 2.5x scale
       circle5: { x: -330, y: -340, scale: 2.7, opacity: 0.22, fill: '#A0B0E0' }, // 3x scale
       dotMatrix: {
-        influence1X: 0.4,  
-        influence1Y: 0.6,
-        influence1RadiusX: 0.7,  // Large radius
-        influence1RadiusY: 0.7,
-        influence1Falloff: 0.6,
+        influence1X: 0.2,  // Left side - completing circular flow
+        influence1Y: 0.5,  // Center
+        influence1RadiusX: 0.8,  // Largest radius
+        influence1RadiusY: 0.8,
+        influence1Falloff: 0.1,  // Extremely soft falloff
         influence1Intensity: 0.95,  // Very high intensity
         influence1EdgeStart: 0.0,
         influence1EdgeInfluence: 1.0,
@@ -780,11 +780,11 @@ window.addEventListener('load', function () {
       circle4: { x: 700, y: -380, scale: 0.5, opacity: 0.8, fill: '#E8D8F8' }, // Smaller scale
       circle5: { x: -510, y: -540, scale: 0.4, opacity: 0.35, fill: '#D8E0F8' },// Smaller scale
       dotMatrix: {
-        influence1X: 0.9,  
-        influence1Y: 0.1,
+        influence1X: 0.5,  // Back to center
+        influence1Y: 0.9,  // Bottom
         influence1RadiusX: 0.01,  // Tiny radius
         influence1RadiusY: 0.01,
-        influence1Falloff: 4.0,
+        influence1Falloff: 1.5,  // Moderate falloff
         influence1Intensity: 0.0,  // Zero intensity
         influence1EdgeStart: 0.6,
         influence1EdgeInfluence: 0.2,
