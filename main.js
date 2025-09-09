@@ -1,8 +1,9 @@
 // DEVELOPER SWITCH: Set to true to skip logo and theme animations
 const SKIP_INTRO_ANIMATIONS = true;
+const SKIP_LOGS = true;
 
 function logger(msg) {
-  console.log(msg);
+  SKIP_LOGS || console.log(msg);
 }
 // Wait for the page to fully load
 window.addEventListener('load', function () {
