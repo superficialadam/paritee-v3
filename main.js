@@ -1,9 +1,12 @@
 // DEVELOPER SWITCH: Set to true to skip logo and theme animations
 const SKIP_INTRO_ANIMATIONS = true;
 
+function logger(msg) {
+  console.log(msg);
+}
 // Wait for the page to fully load
 window.addEventListener('load', function () {
-  console.log('Page loaded');
+  logger('Page loaded');
 
   // Initialize dot matrix parameters
   if (window.dotMatrixParams) {
@@ -86,22 +89,22 @@ window.addEventListener('load', function () {
     dotMatrixParams.influence2EdgeExposure = 0.0;
     dotMatrixParams.influence2EdgeGamma = 1.0;
 
-    console.log('Dot matrix parameters initialized');
+    logger('Dot matrix parameters initialized');
   }
 
   // Debug: Check what's available globally
-  console.log('anime:', typeof anime);
-  console.log('animeJS:', typeof animeJS);
-  console.log('window.anime:', typeof window.anime);
+  logger('anime:', typeof anime);
+  logger('animeJS:', typeof animeJS);
+  logger('window.anime:', typeof window.anime);
 
   // Check if anime is loaded (v4 should use global anime object)
   if (typeof anime === 'undefined') {
-    console.error('Anime.js is not loaded!');
+    logger('Anime.js is not loaded!');
     return;
   }
 
-  console.log('Anime.js loaded successfully!');
-  console.log('Available methods:', Object.keys(anime));
+  logger('Anime.js loaded successfully!');
+  logger('Available methods:', Object.keys(anime));
 
   // Destructure the anime.js functions from the global object
   const { animate, utils, onScroll, createTimeline } = anime;
@@ -151,7 +154,7 @@ window.addEventListener('load', function () {
 
   // If skipping intro, immediately set final states
   if (SKIP_INTRO_ANIMATIONS) {
-    console.log('Skipping intro animations - setting final states');
+    logger('Skipping intro animations - setting final states');
 
     // HIDE logos - they should be gone after the intro
     utils.set(logo1, { opacity: 0, width: '240px', left: '50%' });
@@ -355,7 +358,7 @@ window.addEventListener('load', function () {
   const themeTimeline = createTimeline({
     autoplay: !SKIP_INTRO_ANIMATIONS,
     onComplete: function () {
-      console.log('Theme timeline complete, playing hero heading animation');
+      logger('Theme timeline complete, playing hero heading animation');
       // Play the hero heading animation after theme timeline completes
       heroHeadingTimeline.play();
       startScrollListener(); // Start listening to scroll after initial animations
@@ -478,7 +481,7 @@ window.addEventListener('load', function () {
   const heroHeadingTimeline = createTimeline({
     autoplay: SKIP_INTRO_ANIMATIONS,
     onComplete: function () {
-      console.log('Hero heading animation complete, enabling scroll');
+      logger('Hero heading animation complete, enabling scroll');
       // Enable scrolling after all hero animations complete
       scrollBlocked = false;
       // Remove event listeners
@@ -562,7 +565,7 @@ window.addEventListener('load', function () {
     const section = container.closest('.section'); // Get the parent section
     const homeContent = section ? section.querySelector('.homeContent') : null; // Find homeContent in the section
 
-    console.log('Setting up prism animation for:', mainHeading.textContent);
+    logger('Setting up prism animation for:', mainHeading.textContent);
 
     // Create timeline for this heading's animation that resets when out of view
     const headingTimeline = createTimeline({
@@ -635,7 +638,7 @@ window.addEventListener('load', function () {
     }
   });
 
-  console.log('All animations initialized!');
+  logger('All animations initialized!');
 
   // Circle configurations for each section - now with INTRO and MAIN states
   // Base positions from hero, with transformations dialed back by 5x
@@ -961,7 +964,7 @@ window.addEventListener('load', function () {
 
     // Debug: Log current state occasionally
     if (Math.random() < 0.02) {
-      console.log(`Scroll: ${totalScroll.toFixed(2)}, Progress: ${localProgress.toFixed(2)}, From: ${fromConfig.circle1.x}, To: ${toConfig.circle1.x}`);
+      logger(`Scroll: ${totalScroll.toFixed(2)}, Progress: ${localProgress.toFixed(2)}, From: ${fromConfig.circle1.x}, To: ${toConfig.circle1.x}`);
     }
 
     // Apply smooth interpolation for each circle
