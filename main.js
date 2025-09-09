@@ -1,3 +1,6 @@
+// DEVELOPER SWITCH: Set to true to skip logo and theme animations
+const SKIP_INTRO_ANIMATIONS = true;
+
 // Wait for the page to fully load
 window.addEventListener('load', function () {
   console.log('Page loaded');
@@ -103,8 +106,8 @@ window.addEventListener('load', function () {
   // Destructure the anime.js functions from the global object
   const { animate, utils, onScroll, createTimeline } = anime;
 
-  // Prevent scrolling initially by blocking scroll events
-  let scrollBlocked = true;
+  // Prevent scrolling initially by blocking scroll events (unless skipping intro)
+  let scrollBlocked = !SKIP_INTRO_ANIMATIONS;
 
   const blockScroll = (e) => {
     if (scrollBlocked) {
@@ -114,10 +117,12 @@ window.addEventListener('load', function () {
     }
   };
 
-  // Block scroll events
-  window.addEventListener('scroll', blockScroll, { passive: false });
-  window.addEventListener('wheel', blockScroll, { passive: false });
-  window.addEventListener('touchmove', blockScroll, { passive: false });
+  // Block scroll events (unless skipping intro)
+  if (!SKIP_INTRO_ANIMATIONS) {
+    window.addEventListener('scroll', blockScroll, { passive: false });
+    window.addEventListener('wheel', blockScroll, { passive: false });
+    window.addEventListener('touchmove', blockScroll, { passive: false });
+  }
 
   // Set initial state for hero prism headings
   const heroContainer = document.querySelector('#hero .heading-container');
@@ -144,7 +149,59 @@ window.addEventListener('load', function () {
   utils.set(logo2, { opacity: 0 });
   utils.set(logo3, { opacity: 0 });
 
+  // If skipping intro, immediately set final states
+  if (SKIP_INTRO_ANIMATIONS) {
+    console.log('Skipping intro animations - setting final states');
+
+    // HIDE logos - they should be gone after the intro
+    utils.set(logo1, { opacity: 0, width: '240px', left: '50%' });
+    utils.set(logo2, { opacity: 0, width: '240px', left: '50%' });
+    utils.set(logo3, { opacity: 0, width: '240px', left: '50%' });
+
+    // Set hero headings to visible
+    utils.set(heroPrismHeadings[0], { opacity: 1, x: 0, filter: 'blur(0px)' });
+    utils.set(heroPrismHeadings[1], { opacity: 1, x: 0, filter: 'blur(0px)' });
+    utils.set(heroPrismHeadings[2], { opacity: 1, x: 0, filter: 'blur(0px)' });
+    utils.set(heroMainHeading, { opacity: 1 });
+    utils.set(heroHomeContainer, { opacity: 1 });
+
+    // Set theme to light mode
+    utils.set('.bg-light', { opacity: 1 });
+    utils.set('.heading-main', { color: '#1A1A2E' });
+    utils.set('#hero .heading-main', { color: '#1A1A2E' });
+
+    // Set circles to their final positions
+    utils.set('.circle-1', { translateX: 150, translateY: 100, scale: 1.3 });
+    utils.set('.circle-1 circle', { fill: '#C8DDFF' });
+    utils.set('.circle-2', { translateX: -100, translateY: 50, scale: 0.8 });
+    utils.set('.circle-2 circle', { fill: '#E8D8FF' });
+    utils.set('.circle-3', { translateX: -80, translateY: -120, scale: 1.2 });
+    utils.set('.circle-3 circle', { fill: '#C8DDFF' });
+    utils.set('.circle-4', { translateX: 200, translateY: -80, scale: 1.1 });
+    utils.set('.circle-4 circle', { fill: '#E8D8FF' });
+    utils.set('.circle-5', { translateX: -150, translateY: -100, scale: 0.9 });
+    utils.set('.circle-5 circle', { fill: '#C8DDFF' });
+
+    // Set dotMatrix to final state (no influence zones visible)
+    if (window.dotMatrixParams) {
+      dotMatrixParams.influence1Intensity = 0.0;
+      dotMatrixParams.influence2Intensity = 0.0;
+      dotMatrixParams.influence1RadiusX = 0.02;
+      dotMatrixParams.influence1RadiusY = 0.02;
+      dotMatrixParams.influence1Falloff = 2.0;
+      dotMatrixParams.influence2RadiusX = 0.05;
+      dotMatrixParams.influence2RadiusY = 0.05;
+      dotMatrixParams.influence2Falloff = 1.5;
+    }
+
+    // Defer starting scroll listener to ensure everything is initialized
+    setTimeout(() => {
+      startScrollListener();
+    }, 100);
+  }
+
   const heroLogoRevealTl = createTimeline({
+    autoplay: !SKIP_INTRO_ANIMATIONS
   })
     .add(dotMatrixParams, {
       influence1Intensity: 1,
@@ -296,7 +353,7 @@ window.addEventListener('load', function () {
     }, '-=3000');
 
   const themeTimeline = createTimeline({
-    autoplay: true,
+    autoplay: !SKIP_INTRO_ANIMATIONS,
     onComplete: function () {
       console.log('Theme timeline complete, playing hero heading animation');
       // Play the hero heading animation after theme timeline completes
@@ -419,15 +476,17 @@ window.addEventListener('load', function () {
 
   // Create heading animation timeline for hero
   const heroHeadingTimeline = createTimeline({
-    autoplay: false,
+    autoplay: SKIP_INTRO_ANIMATIONS,
     onComplete: function () {
       console.log('Hero heading animation complete, enabling scroll');
       // Enable scrolling after all hero animations complete
       scrollBlocked = false;
       // Remove event listeners
-      window.removeEventListener('scroll', blockScroll);
-      window.removeEventListener('wheel', blockScroll);
-      window.removeEventListener('touchmove', blockScroll);
+      if (!SKIP_INTRO_ANIMATIONS) {
+        window.removeEventListener('scroll', blockScroll);
+        window.removeEventListener('wheel', blockScroll);
+        window.removeEventListener('touchmove', blockScroll);
+      }
     }
   });
 
@@ -904,7 +963,7 @@ window.addEventListener('load', function () {
     if (Math.random() < 0.02) {
       console.log(`Scroll: ${totalScroll.toFixed(2)}, Progress: ${localProgress.toFixed(2)}, From: ${fromConfig.circle1.x}, To: ${toConfig.circle1.x}`);
     }
-    
+
     // Apply smooth interpolation for each circle
     for (let i = 1; i <= 5; i++) {
       const circleKey = `circle${i}`;
