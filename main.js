@@ -539,6 +539,23 @@ window.addEventListener('load', function () {
   });
 
 
+  // Track scroll direction
+  let lastScrollY = window.scrollY;
+  let scrollDirection = 'down';
+  
+  // Update scroll direction on scroll
+  const updateScrollDirection = () => {
+    const currentScrollY = window.scrollY;
+    if (currentScrollY > lastScrollY) {
+      scrollDirection = 'down';
+    } else if (currentScrollY < lastScrollY) {
+      scrollDirection = 'up';
+    }
+    lastScrollY = currentScrollY;
+  };
+  
+  window.addEventListener('scroll', updateScrollDirection, { passive: true });
+
   // Get all section heading containers except hero
   const headingContainers = document.querySelectorAll('.section:not(#hero) .heading-container');
 
@@ -568,25 +585,54 @@ window.addEventListener('load', function () {
 
     logger('Setting up prism animation for:', mainHeading.textContent);
 
-    // Create timeline for this heading's animation that resets when out of view
+    // Track if this section has been animated
+    let hasAnimated = false;
+
+    // Create timeline for this heading's animation
     const headingTimeline = createTimeline({
       autoplay: false
     });
 
-    // Create scroll observer that plays/resets the timeline
+    // Create scroll observer that plays timeline only when scrolling down
     const observer = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
         if (entry.isIntersecting) {
-          // Reset to start positions before playing
-          utils.set(prismHeadings[0], { opacity: 0, x: window.innerWidth });
-          utils.set(prismHeadings[1], { opacity: 0, x: window.innerWidth + 30 });
-          utils.set(prismHeadings[2], { opacity: 0, x: window.innerWidth + 60 });
-          utils.set(mainHeading, { opacity: 0 });
-          if (homeContent) {
-            utils.set(homeContent, { opacity: 0 });
+          // Only animate when scrolling down and hasn't animated yet
+          if (scrollDirection === 'down' && !hasAnimated) {
+            // Reset to start positions before playing
+            utils.set(prismHeadings[0], { opacity: 0, x: window.innerWidth });
+            utils.set(prismHeadings[1], { opacity: 0, x: window.innerWidth + 30 });
+            utils.set(prismHeadings[2], { opacity: 0, x: window.innerWidth + 60 });
+            utils.set(mainHeading, { opacity: 0 });
+            if (homeContent) {
+              utils.set(homeContent, { opacity: 0 });
+            }
+            // Play the timeline
+            headingTimeline.restart();
+            hasAnimated = true;
+          } else if (scrollDirection === 'up' && hasAnimated) {
+            // When scrolling up, ensure elements are in their final state
+            utils.set(prismHeadings[0], { opacity: 1, x: 0, filter: 'blur(0px)' });
+            utils.set(prismHeadings[1], { opacity: 1, x: 0, filter: 'blur(0px)' });
+            utils.set(prismHeadings[2], { opacity: 1, x: 0, filter: 'blur(0px)' });
+            utils.set(mainHeading, { opacity: 1 });
+            if (homeContent) {
+              utils.set(homeContent, { opacity: 1 });
+            }
           }
-          // Play the timeline
-          headingTimeline.restart();
+        } else {
+          // When section goes out of view while scrolling up, reset animation state and hide elements
+          if (scrollDirection === 'up') {
+            hasAnimated = false;
+            // Reset to initial hidden state for next animation
+            utils.set(prismHeadings[0], { opacity: 0, x: window.innerWidth, filter: 'blur(5px)' });
+            utils.set(prismHeadings[1], { opacity: 0, x: window.innerWidth + 30, filter: 'blur(5px)' });
+            utils.set(prismHeadings[2], { opacity: 0, x: window.innerWidth + 60, filter: 'blur(5px)' });
+            utils.set(mainHeading, { opacity: 0 });
+            if (homeContent) {
+              utils.set(homeContent, { opacity: 0 });
+            }
+          }
         }
       });
     }, { threshold: 0.3 });
