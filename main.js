@@ -25,7 +25,7 @@ window.addEventListener('load', function () {
     dotMatrixParams.pointOpacity = 1.0;
 
     // Main Noise - Use dotmatrix.js init values for visibility
-    dotMatrixParams.mainNoiseEnabled = false;
+    dotMatrixParams.mainNoiseEnabled = true;
     dotMatrixParams.noiseAnimated = true;
     dotMatrixParams.noiseScale = 80.0;      // From dotmatrix.js
     dotMatrixParams.noiseSpeed = 20.0;       // From dotmatrix.js
@@ -36,11 +36,11 @@ window.addEventListener('load', function () {
     dotMatrixParams.noiseOctaves = 4;
     dotMatrixParams.noiseLacunarity = 2.0;
     dotMatrixParams.noiseGain = 0.673;      // From dotmatrix.js
-    dotMatrixParams.noiseThreshold = 0.4; // From dotmatrix.js
-    dotMatrixParams.noiseIslandSize = 0.9937;   // From dotmatrix.js
-    dotMatrixParams.noiseExposure = 0.342;     // From dotmatrix.js
+    dotMatrixParams.noiseThreshold = 0.3; // From dotmatrix.js
+    dotMatrixParams.noiseIslandSize = 0.8937;   // From dotmatrix.js
+    dotMatrixParams.noiseExposure = 0.742;     // From dotmatrix.js
     dotMatrixParams.noiseGamma = 0.5;     // From dotmatrix.js
-    dotMatrixParams.noiseMultiplier = 1.0; // From dotmatrix.js
+    dotMatrixParams.noiseMultiplier = 0.4; // From dotmatrix.js
 
     // Influence Zone 1 - Use dotmatrix.js init values
     dotMatrixParams.influence1Enabled = true;
@@ -252,6 +252,7 @@ window.addEventListener('load', function () {
       influence1RadiusX: 2.0,
       influence1RadiusY: 2.0,
       influence1Falloff: 0.1,
+      influence1EdgeScale: 50,
       duration: 2500,
       ease: 'outSine',
       onUpdate: () => window.syncParamsToUniforms && window.syncParamsToUniforms()
