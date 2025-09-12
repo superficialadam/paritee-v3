@@ -40,7 +40,7 @@ window.addEventListener('load', function () {
     dotMatrixParams.noiseIslandSize = 0.8937;   // From dotmatrix.js
     dotMatrixParams.noiseExposure = 0.742;     // From dotmatrix.js
     dotMatrixParams.noiseGamma = 0.5;     // From dotmatrix.js
-    dotMatrixParams.noiseMultiplier = 0.4; // From dotmatrix.js
+    dotMatrixParams.noiseMultiplier = 0.0; // From dotmatrix.js
 
     // Influence Zone 1 - Use dotmatrix.js init values
     dotMatrixParams.influence1Enabled = true;
@@ -258,11 +258,17 @@ window.addEventListener('load', function () {
       onUpdate: () => window.syncParamsToUniforms && window.syncParamsToUniforms()
     })
     .add(dotMatrixParams, {
+      noiseMultiplier: 0.4,
+      duration: 1500,
+      ease: 'outSine',
+      onUpdate: () => window.syncParamsToUniforms && window.syncParamsToUniforms()
+    }, 5000)
+    .add(dotMatrixParams, {
       influence1EdgeThreshold: 0.8,
       duration: 2000,
       ease: 'outSine',
       onUpdate: () => window.syncParamsToUniforms && window.syncParamsToUniforms()
-    }, 6000)
+    }, 5000)
     //LOGO SCALE ANDD FADE
     .add(logo1, {
       opacity: 1.0,
