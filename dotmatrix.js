@@ -379,68 +379,121 @@ attribute float opacity;
 varying vec3 vColor;
 varying float vOpacity;
 
-// Improved hash function using larger prime numbers
-float hash(vec3 p) {
-    p = fract(p * vec3(443.8975, 397.2973, 491.1871));
-    p += dot(p, p.yzx + 19.19);
-    return fract((p.x + p.y) * p.z);
+// Permutation table for consistent pseudo-random gradients
+float mod289(float x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
+
+// Proper 3D Perlin noise implementation
+float perlinNoise3D(vec3 p) {
+    vec3 i0 = floor(p);
+    vec3 f0 = fract(p);
+    
+    // Quintic Hermite interpolation for C2 continuity
+    vec3 u = f0 * f0 * f0 * (f0 * (f0 * 6.0 - 15.0) + 10.0);
+    
+    // Generate permutations for gradient lookup
+    vec4 ix = vec4(i0.x, i0.x + 1.0, i0.x, i0.x + 1.0);
+    vec4 iy = vec4(i0.yy, i0.yy + 1.0);
+    vec4 iz0 = i0.zzzz;
+    vec4 iz1 = i0.zzzz + 1.0;
+    
+    vec4 ixy = permute(permute(ix) + iy);
+    vec4 ixy0 = permute(ixy + iz0);
+    vec4 ixy1 = permute(ixy + iz1);
+    
+    // Gradients: 12 gradient directions evenly distributed
+    vec4 gx0 = ixy0 * (1.0 / 7.0);
+    vec4 gy0 = fract(floor(gx0) * (1.0 / 7.0)) - 0.5;
+    gx0 = fract(gx0);
+    vec4 gz0 = vec4(0.5) - abs(gx0) - abs(gy0);
+    vec4 sz0 = step(gz0, vec4(0.0));
+    gx0 -= sz0 * (step(0.0, gx0) - 0.5);
+    gy0 -= sz0 * (step(0.0, gy0) - 0.5);
+    
+    vec4 gx1 = ixy1 * (1.0 / 7.0);
+    vec4 gy1 = fract(floor(gx1) * (1.0 / 7.0)) - 0.5;
+    gx1 = fract(gx1);
+    vec4 gz1 = vec4(0.5) - abs(gx1) - abs(gy1);
+    vec4 sz1 = step(gz1, vec4(0.0));
+    gx1 -= sz1 * (step(0.0, gx1) - 0.5);
+    gy1 -= sz1 * (step(0.0, gy1) - 0.5);
+    
+    // Compute dot products with gradients
+    vec3 g000 = vec3(gx0.x, gy0.x, gz0.x);
+    vec3 g100 = vec3(gx0.y, gy0.y, gz0.y);
+    vec3 g010 = vec3(gx0.z, gy0.z, gz0.z);
+    vec3 g110 = vec3(gx0.w, gy0.w, gz0.w);
+    vec3 g001 = vec3(gx1.x, gy1.x, gz1.x);
+    vec3 g101 = vec3(gx1.y, gy1.y, gz1.y);
+    vec3 g011 = vec3(gx1.z, gy1.z, gz1.z);
+    vec3 g111 = vec3(gx1.w, gy1.w, gz1.w);
+    
+    // Normalize gradients
+    vec4 norm0 = 1.79284291400159 - 0.85373472095314 * vec4(dot(g000, g000), dot(g100, g100), dot(g010, g010), dot(g110, g110));
+    g000 *= norm0.x;
+    g100 *= norm0.y;
+    g010 *= norm0.z;
+    g110 *= norm0.w;
+    vec4 norm1 = 1.79284291400159 - 0.85373472095314 * vec4(dot(g001, g001), dot(g101, g101), dot(g011, g011), dot(g111, g111));
+    g001 *= norm1.x;
+    g101 *= norm1.y;
+    g011 *= norm1.z;
+    g111 *= norm1.w;
+    
+    // Compute noise contributions from each corner
+    float n000 = dot(g000, f0);
+    float n100 = dot(g100, f0 - vec3(1.0, 0.0, 0.0));
+    float n010 = dot(g010, f0 - vec3(0.0, 1.0, 0.0));
+    float n110 = dot(g110, f0 - vec3(1.0, 1.0, 0.0));
+    float n001 = dot(g001, f0 - vec3(0.0, 0.0, 1.0));
+    float n101 = dot(g101, f0 - vec3(1.0, 0.0, 1.0));
+    float n011 = dot(g011, f0 - vec3(0.0, 1.0, 1.0));
+    float n111 = dot(g111, f0 - vec3(1.0, 1.0, 1.0));
+    
+    // Interpolate contributions
+    vec4 n_x = mix(vec4(n000, n001, n010, n011), vec4(n100, n101, n110, n111), u.x);
+    vec2 n_xy = mix(n_x.xy, n_x.zw, u.y);
+    float n_xyz = mix(n_xy.x, n_xy.y, u.z);
+    
+    // Scale to approximately [-1, 1] range
+    return n_xyz * 2.2;
 }
 
-// Better gradient noise implementation
-float gradientNoise(vec3 p) {
-    vec3 i = floor(p);
-    vec3 f = fract(p);
-    
-    // Quintic interpolation for smoother results
-    vec3 u = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
-    
-    // Generate gradients at corners
-    float n000 = hash(i);
-    float n100 = hash(i + vec3(1.0, 0.0, 0.0));
-    float n010 = hash(i + vec3(0.0, 1.0, 0.0));
-    float n110 = hash(i + vec3(1.0, 1.0, 0.0));
-    float n001 = hash(i + vec3(0.0, 0.0, 1.0));
-    float n101 = hash(i + vec3(1.0, 0.0, 1.0));
-    float n011 = hash(i + vec3(0.0, 1.0, 1.0));
-    float n111 = hash(i + vec3(1.0, 1.0, 1.0));
-    
-    // Trilinear interpolation
-    float x00 = mix(n000, n100, u.x);
-    float x10 = mix(n010, n110, u.x);
-    float x01 = mix(n001, n101, u.x);
-    float x11 = mix(n011, n111, u.x);
-    
-    float y0 = mix(x00, x10, u.y);
-    float y1 = mix(x01, x11, u.y);
-    
-    return mix(y0, y1, u.z);
-}
-
-// FBM with seed offset for different patterns
-float fbmWithSeed(vec3 p, int octaves, float lacunarity, float gain, float seed) {
+// Fractal Brownian Motion using proper Perlin noise
+float fbmPerlin(vec3 p, int octaves, float lacunarity, float gain) {
     if (gain <= 0.0) return 0.5;
     
-    // Add seed offset to create different patterns
-    p += vec3(seed * 137.5, seed * 285.2, 0.0);
-    
     float value = 0.0;
-    float amplitude = 0.5;
+    float amplitude = 1.0;
     float frequency = 1.0;
-    float maxAmplitude = 0.0;
+    float maxValue = 0.0;
+    
+    // Offset each octave slightly to reduce correlation
+    vec3 offset = vec3(0.0);
     
     for (int i = 0; i < 8; i++) {
         if (i >= octaves) break;
         
-        value += amplitude * (gradientNoise(p * frequency) * 2.0 - 1.0);
-        maxAmplitude += amplitude;
+        // Sample noise with frequency and offset
+        vec3 samplePos = p * frequency + offset;
+        value += amplitude * perlinNoise3D(samplePos);
+        maxValue += amplitude;
         
+        // Update for next octave
         frequency *= lacunarity;
         amplitude *= gain;
+        
+        // Shift each octave to decorrelate
+        offset += vec3(17.3, 23.7, 31.9);
     }
     
-    value = value / maxAmplitude;
-    return clamp(value * 0.5 + 0.5, 0.0, 1.0);
+    // Normalize to [0, 1] range
+    return clamp(value / maxValue * 0.5 + 0.5, 0.0, 1.0);
 }
+
+// Removed - no longer needed, using fbmPerlin directly
 
 // Process noise value
 float processNoise(float noise, float threshold, float islandSize, float exposure, float gamma) {
@@ -477,15 +530,23 @@ float calculateInfluence(
     
     // Apply edge noise if enabled
     if (edgeEnabled && distance > edgeStart) {
-        // Calculate edge noise position
+        // Calculate edge noise position with improved setup
         vec3 noisePos = vec3(
             coord.x * edgeScale,
             coord.y * edgeScale,
-            uTime * edgeSpeed
+            seed * 50.0  // Use seed as base Z offset
         );
         
-        // Generate edge noise with seed for variation
-        float edgeNoise = fbmWithSeed(noisePos, edgeOctaves, edgeLacunarity, edgeGain, seed);
+        // Add smooth time-based evolution
+        float timeOffset = uTime * edgeSpeed * 0.02; // Same scaling as main noise
+        noisePos.z += timeOffset;
+        
+        // Add slight diagonal motion to avoid artifacts
+        noisePos.x += timeOffset * 0.1;
+        noisePos.y += timeOffset * 0.05;
+        
+        // Generate edge noise using improved Perlin FBM
+        float edgeNoise = fbmPerlin(noisePos, edgeOctaves, edgeLacunarity, edgeGain);
         
         // Process edge noise
         edgeNoise = processNoise(edgeNoise, edgeThreshold, edgeIslandSize, edgeExposure, edgeGamma);
@@ -499,8 +560,10 @@ float calculateInfluence(
         factor = clamp(factor, 0.0, 1.0);
     }
     
-    // Apply intensity and handle subtraction
+    // Apply intensity
     float result = factor * intensity;
+    
+    // Return with proper sign for addition/subtraction
     return subtract ? -result : result;
 }
 
@@ -516,19 +579,31 @@ void main() {
     
     // Apply main noise if enabled
     if (uMainNoiseEnabled) {
+        // Start with base position scaled by noise scale
         vec3 noisePos = vec3(
-            normalizedCoord.x * uNoiseScale + uNoiseOffsetX,
-            normalizedCoord.y * uNoiseScale + uNoiseOffsetY,
-            uNoiseOffsetZ + uNoiseEvolution
+            normalizedCoord.x * uNoiseScale,
+            normalizedCoord.y * uNoiseScale,
+            0.0
         );
         
+        // Add offsets
+        noisePos.x += uNoiseOffsetX;
+        noisePos.y += uNoiseOffsetY;
+        noisePos.z += uNoiseOffsetZ + uNoiseEvolution;
+        
         if (uNoiseAnimated) {
-            // Use cumulative time for continuous evolution
-            noisePos.z += uTime * uNoiseSpeed;
+            // Use a very small multiplier and offset to avoid integer boundaries
+            // This creates smooth continuous motion through the noise field
+            float timeOffset = uTime * uNoiseSpeed * 0.02; // Much smaller scale
+            noisePos.z += timeOffset;
+            
+            // Add a slight diagonal motion to avoid axis-aligned artifacts
+            noisePos.x += timeOffset * 0.1;
+            noisePos.y += timeOffset * 0.05;
         }
         
-        // Generate FBM noise
-        float noiseValue = fbmWithSeed(noisePos, uNoiseOctaves, uNoiseLacunarity, uNoiseGain, 0.0);
+        // Generate FBM noise using proper Perlin
+        float noiseValue = fbmPerlin(noisePos, uNoiseOctaves, uNoiseLacunarity, uNoiseGain);
         
         // Apply processing chain
         noiseValue = processNoise(noiseValue, uNoiseThreshold, uNoiseIslandSize, uNoiseExposure, uNoiseGamma);
@@ -544,7 +619,13 @@ void main() {
             uInfluence1EdgeThreshold, uInfluence1EdgeIslandSize, uInfluence1EdgeExposure, uInfluence1EdgeGamma,
             1.0
         );
-        finalValue = finalValue + influence;
+        
+        // Apply influence with proper addition/subtraction
+        if (uInfluence1Subtract) {
+            finalValue = max(0.0, finalValue + influence); // influence is already negative
+        } else {
+            finalValue = finalValue + influence;
+        }
     }
     
     // Apply influence zone 2
@@ -556,7 +637,13 @@ void main() {
             uInfluence2EdgeThreshold, uInfluence2EdgeIslandSize, uInfluence2EdgeExposure, uInfluence2EdgeGamma,
             2.0
         );
-        finalValue = finalValue + influence;
+        
+        // Apply influence with proper addition/subtraction
+        if (uInfluence2Subtract) {
+            finalValue = max(0.0, finalValue + influence); // influence is already negative
+        } else {
+            finalValue = finalValue + influence;
+        }
     }
     
     // Clamp final value
