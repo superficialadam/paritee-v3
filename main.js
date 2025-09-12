@@ -27,47 +27,47 @@ window.addEventListener('load', function () {
     // Main Noise - Use dotmatrix.js init values for visibility
     dotMatrixParams.mainNoiseEnabled = false;
     dotMatrixParams.noiseAnimated = true;
-    dotMatrixParams.noiseScale = 20.0;      // From dotmatrix.js
-    dotMatrixParams.noiseSpeed = 5.0;       // From dotmatrix.js
+    dotMatrixParams.noiseScale = 80.0;      // From dotmatrix.js
+    dotMatrixParams.noiseSpeed = 20.0;       // From dotmatrix.js
     dotMatrixParams.noiseOffsetX = -0.9;    // From dotmatrix.js
     dotMatrixParams.noiseOffsetY = 0.0;
     dotMatrixParams.noiseOffsetZ = 0.0;
     dotMatrixParams.noiseEvolution = 0.0;
     dotMatrixParams.noiseOctaves = 4;
     dotMatrixParams.noiseLacunarity = 2.0;
-    dotMatrixParams.noiseGain = 0.873;      // From dotmatrix.js
-    dotMatrixParams.noiseThreshold = 0.5562; // From dotmatrix.js
-    dotMatrixParams.noiseIslandSize = 0.5;   // From dotmatrix.js
-    dotMatrixParams.noiseExposure = 0.0;     // From dotmatrix.js
-    dotMatrixParams.noiseGamma = 1.1542;     // From dotmatrix.js
-    dotMatrixParams.noiseMultiplier = 1.592; // From dotmatrix.js
+    dotMatrixParams.noiseGain = 0.673;      // From dotmatrix.js
+    dotMatrixParams.noiseThreshold = 0.4; // From dotmatrix.js
+    dotMatrixParams.noiseIslandSize = 0.9937;   // From dotmatrix.js
+    dotMatrixParams.noiseExposure = 0.342;     // From dotmatrix.js
+    dotMatrixParams.noiseGamma = 0.5;     // From dotmatrix.js
+    dotMatrixParams.noiseMultiplier = 1.0; // From dotmatrix.js
 
     // Influence Zone 1 - Use dotmatrix.js init values
     dotMatrixParams.influence1Enabled = true;
     dotMatrixParams.influence1Subtract = false;
     dotMatrixParams.influence1X = 0.5;      // From dotmatrix.js
     dotMatrixParams.influence1Y = 0.5;      // From dotmatrix.js
-    dotMatrixParams.influence1RadiusX = 0.5; // From dotmatrix.js
-    dotMatrixParams.influence1RadiusY = 0.5; // From dotmatrix.js
+    dotMatrixParams.influence1RadiusX = 0.04; // From dotmatrix.js
+    dotMatrixParams.influence1RadiusY = 0.04; // From dotmatrix.js
     dotMatrixParams.influence1Falloff = 2.0; // From dotmatrix.js
-    dotMatrixParams.influence1Intensity = 1.0; // From dotmatrix.js - was 0.0!
+    dotMatrixParams.influence1Intensity = 0.0; // From dotmatrix.js - was 0.0!
 
-    // Influence Zone 1 Edge Noise - Use dotmatrix.js init values
+    // Influence Zone 1 Edge Noise - Match main noise exactly
     dotMatrixParams.influence1EdgeEnabled = true;
-    dotMatrixParams.influence1EdgeStart = 1.0;      // From dotmatrix.js
-    dotMatrixParams.influence1EdgeInfluence = 2.0;  // From dotmatrix.js
-    dotMatrixParams.influence1EdgeScale = 80.0;     // From dotmatrix.js
-    dotMatrixParams.influence1EdgeSpeed = 10.0;     // From dotmatrix.js
-    dotMatrixParams.influence1EdgeOctaves = 2;      // From dotmatrix.js
-    dotMatrixParams.influence1EdgeLacunarity = 2.5; // From dotmatrix.js
-    dotMatrixParams.influence1EdgeGain = 0.688;     // From dotmatrix.js
-    dotMatrixParams.influence1EdgeThreshold = 0.1;  // From dotmatrix.js
-    dotMatrixParams.influence1EdgeIslandSize = 0.9937; // From dotmatrix.js
-    dotMatrixParams.influence1EdgeExposure = -0.342;   // From dotmatrix.js
-    dotMatrixParams.influence1EdgeGamma = 1.0;      // From dotmatrix.js
+    dotMatrixParams.influence1EdgeStart = 0.0;      // Lower start point for edge effect
+    dotMatrixParams.influence1EdgeInfluence = 1.5;  // Moderate influence
+    dotMatrixParams.influence1EdgeScale = 60.0;     // Same as main noise
+    dotMatrixParams.influence1EdgeSpeed = 30.0;     // Same as main noise
+    dotMatrixParams.influence1EdgeOctaves = 4;      // Same as main noise
+    dotMatrixParams.influence1EdgeLacunarity = 2.0; // Same as main noise
+    dotMatrixParams.influence1EdgeGain = 0.673;     // Same as main noise
+    dotMatrixParams.influence1EdgeThreshold = 0.4;  // Same as main noise
+    dotMatrixParams.influence1EdgeIslandSize = 0.4937; // Same as main noise
+    dotMatrixParams.influence1EdgeExposure = 0.342;    // Same as main noise
+    dotMatrixParams.influence1EdgeGamma = 0.5;      // Same as main noise
 
     // Influence Zone 2 - DISABLED
-    dotMatrixParams.influence2Enabled = true;
+    dotMatrixParams.influence2Enabled = false;
     dotMatrixParams.influence2Subtract = true;
     dotMatrixParams.influence2X = 0.5;
     dotMatrixParams.influence2Y = 0.5;
@@ -100,8 +100,16 @@ window.addEventListener('load', function () {
         console.log('influence1EdgeEnabled:', dotMatrixParams.influence1EdgeEnabled);
         console.log('influence1EdgeScale:', dotMatrixParams.influence1EdgeScale);
         console.log('influence1EdgeSpeed:', dotMatrixParams.influence1EdgeSpeed);
+        console.log('influence1EdgeGain:', dotMatrixParams.influence1EdgeGain);
+        console.log('influence1EdgeThreshold:', dotMatrixParams.influence1EdgeThreshold);
         window.syncParamsToUniforms();
         console.log('Sync complete.');
+
+        // Force a second sync after a brief delay to ensure all parameters are applied
+        setTimeout(() => {
+          console.log('Second sync to ensure edge noise parameters are applied...');
+          window.syncParamsToUniforms();
+        }, 50);
       } else {
         console.warn('syncParamsToUniforms function not available after timeout');
       }
@@ -241,13 +249,19 @@ window.addEventListener('load', function () {
       onUpdate: () => window.syncParamsToUniforms && window.syncParamsToUniforms()
     })
     .add(dotMatrixParams, {
-      influence1RadiusX: 15.0,
-      influence1RadiusY: 15.0,
+      influence1RadiusX: 2.0,
+      influence1RadiusY: 2.0,
       influence1Falloff: 0.1,
-      duration: 1500,
+      duration: 2500,
       ease: 'outSine',
       onUpdate: () => window.syncParamsToUniforms && window.syncParamsToUniforms()
     })
+    .add(dotMatrixParams, {
+      influence1EdgeThreshold: 0.8,
+      duration: 2000,
+      ease: 'outSine',
+      onUpdate: () => window.syncParamsToUniforms && window.syncParamsToUniforms()
+    }, 6000)
     //LOGO SCALE ANDD FADE
     .add(logo1, {
       opacity: 1.0,
@@ -729,15 +743,15 @@ window.addEventListener('load', function () {
         influence1RadiusY: 0.02,
         influence1Falloff: 2.0,
         influence1Intensity: 0.0,
-        influence1EdgeStart: 0.0,
+        influence1EdgeStart: 0.3,
         influence1EdgeInfluence: 1.0,
         influence1EdgeScale: 40.0,
         influence1EdgeSpeed: 2.0,
-        influence1EdgeGain: 0.077,
-        influence1EdgeThreshold: 0.8192,
-        influence1EdgeIslandSize: 1.5352,
-        influence1EdgeExposure: 0.636,
-        influence1EdgeGamma: 0.1
+        influence1EdgeGain: 0.5,
+        influence1EdgeThreshold: 0.2,
+        influence1EdgeIslandSize: 1.2,
+        influence1EdgeExposure: 0.5,
+        influence1EdgeGamma: 0.8
       }
     },
     section1_intro: {
@@ -758,7 +772,7 @@ window.addEventListener('load', function () {
         influence1EdgeScale: 20.0,  // 20 scale noise as requested
         influence1EdgeSpeed: 2.5,
         influence1EdgeGain: 0.08,
-        influence1EdgeThreshold: 0.8,
+        influence1EdgeThreshold: 0.3,
         influence1EdgeIslandSize: 1.6,
         influence1EdgeExposure: 0.6,
         influence1EdgeGamma: 0.12
@@ -781,8 +795,8 @@ window.addEventListener('load', function () {
         influence1EdgeInfluence: 0.5,
         influence1EdgeScale: 40.0,
         influence1EdgeSpeed: 1.0,
-        influence1EdgeGain: 0.04,
-        influence1EdgeThreshold: 0.9,
+        influence1EdgeGain: 0.5,
+        influence1EdgeThreshold: 0.4,
         influence1EdgeIslandSize: 1.2,
         influence1EdgeExposure: 0.4,
         influence1EdgeGamma: 0.2
@@ -829,8 +843,8 @@ window.addEventListener('load', function () {
         influence1EdgeInfluence: 0.4,
         influence1EdgeScale: 50.0,
         influence1EdgeSpeed: 0.8,
-        influence1EdgeGain: 0.03,
-        influence1EdgeThreshold: 0.95,
+        influence1EdgeGain: 0.4,
+        influence1EdgeThreshold: 0.4,
         influence1EdgeIslandSize: 1.0,
         influence1EdgeExposure: 0.3,
         influence1EdgeGamma: 0.25
@@ -877,8 +891,8 @@ window.addEventListener('load', function () {
         influence1EdgeInfluence: 0.3,
         influence1EdgeScale: 60.0,
         influence1EdgeSpeed: 0.5,
-        influence1EdgeGain: 0.02,
-        influence1EdgeThreshold: 0.98,
+        influence1EdgeGain: 0.3,
+        influence1EdgeThreshold: 0.5,
         influence1EdgeIslandSize: 0.8,
         influence1EdgeExposure: 0.2,
         influence1EdgeGamma: 0.3
@@ -973,8 +987,8 @@ window.addEventListener('load', function () {
         influence1EdgeInfluence: 0.4,
         influence1EdgeScale: 45.0,
         influence1EdgeSpeed: 0.7,
-        influence1EdgeGain: 0.03,
-        influence1EdgeThreshold: 0.92,
+        influence1EdgeGain: 0.4,
+        influence1EdgeThreshold: 0.4,
         influence1EdgeIslandSize: 1.1,
         influence1EdgeExposure: 0.25,
         influence1EdgeGamma: 0.28
@@ -1021,8 +1035,8 @@ window.addEventListener('load', function () {
         influence1EdgeInfluence: 0.3,
         influence1EdgeScale: 55.0,
         influence1EdgeSpeed: 0.6,
-        influence1EdgeGain: 0.025,
-        influence1EdgeThreshold: 0.96,
+        influence1EdgeGain: 0.35,
+        influence1EdgeThreshold: 0.4,
         influence1EdgeIslandSize: 0.9,
         influence1EdgeExposure: 0.2,
         influence1EdgeGamma: 0.32
@@ -1069,8 +1083,8 @@ window.addEventListener('load', function () {
         influence1EdgeInfluence: 0.35,
         influence1EdgeScale: 65.0,
         influence1EdgeSpeed: 0.4,
-        influence1EdgeGain: 0.02,
-        influence1EdgeThreshold: 0.94,
+        influence1EdgeGain: 0.3,
+        influence1EdgeThreshold: 0.4,
         influence1EdgeIslandSize: 0.85,
         influence1EdgeExposure: 0.18,
         influence1EdgeGamma: 0.35

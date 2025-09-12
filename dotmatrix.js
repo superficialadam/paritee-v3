@@ -528,35 +528,49 @@ float calculateInfluence(
     // Base influence with falloff
     float factor = 1.0 - pow(distance, falloff);
     
-    // Apply edge noise if enabled
-    if (edgeEnabled && distance > edgeStart) {
-        // Calculate edge noise position with improved setup
-        vec3 noisePos = vec3(
+    // Apply edge noise if enabled - COMPLETELY REWRITTEN FROM SCRATCH
+    if (edgeEnabled) {
+        // Start with base position scaled by edge noise scale - EXACT SAME AS MAIN NOISE
+        vec3 edgeNoisePos = vec3(
             coord.x * edgeScale,
             coord.y * edgeScale,
-            seed * 50.0  // Use seed as base Z offset
+            0.0
         );
         
-        // Add smooth time-based evolution
-        float timeOffset = uTime * edgeSpeed * 0.02; // Same scaling as main noise
-        noisePos.z += timeOffset;
+        // Add seed offset - EXACT SAME AS MAIN NOISE but with unique seed per zone
+        edgeNoisePos.x += seed * 137.5;
+        edgeNoisePos.y += seed * 285.2;
+        // Don't add seed to z to maintain pure forward evolution - EXACT SAME AS MAIN NOISE
         
-        // Add slight diagonal motion to avoid artifacts
-        noisePos.x += timeOffset * 0.1;
-        noisePos.y += timeOffset * 0.05;
+        // Add time animation - EXACT SAME AS MAIN NOISE
+        if (uNoiseAnimated) {
+            float timeOffset = uTime * edgeSpeed * 0.02; // Same scaling as main noise
+            edgeNoisePos.z += timeOffset;
+            
+            // Add diagonal motion to avoid axis-aligned artifacts - EXACT SAME AS MAIN NOISE
+            edgeNoisePos.x += timeOffset * 0.1;
+            edgeNoisePos.y += timeOffset * 0.05;
+        }
         
-        // Generate edge noise using improved Perlin FBM
-        float edgeNoise = fbmPerlin(noisePos, edgeOctaves, edgeLacunarity, edgeGain);
+        // Generate edge noise using FBM - EXACT SAME AS MAIN NOISE
+        float edgeNoise = fbmPerlin(edgeNoisePos, edgeOctaves, edgeLacunarity, edgeGain);
         
-        // Process edge noise
+        // Process edge noise - EXACT SAME AS MAIN NOISE
         edgeNoise = processNoise(edgeNoise, edgeThreshold, edgeIslandSize, edgeExposure, edgeGamma);
         
-        // Calculate edge weight
-        float edgeWeight = (distance - edgeStart) / (1.0 - edgeStart);
+        // Apply edge noise to the influence zone
+        if (distance >= edgeStart) {
+            // When edgeStart=0, entire zone gets noise. When edgeStart>0, only outer region gets noise
+            float edgeWeight = 1.0;
+            if (edgeStart > 0.0) {
+                edgeWeight = (distance - edgeStart) / (1.0 - edgeStart);
+                edgeWeight = clamp(edgeWeight, 0.0, 1.0);
+            }
+            
+            // Apply noise as modulation of the base factor, not replacement
+            factor = factor * (1.0 + (edgeNoise - 0.5) * 2.0 * edgeInfluence * edgeWeight);
+        }
         
-        // Apply edge noise as modulation
-        float noiseEffect = (edgeNoise - 0.5) * 2.0 * edgeInfluence * edgeWeight;
-        factor = factor + noiseEffect;
         factor = clamp(factor, 0.0, 1.0);
     }
     
