@@ -53,21 +53,21 @@ const params = {
   
   // Size-to-color mapping
   sizeBlack: 0.5,      // Size when point is black
-  sizeWhite: 3.0,      // Size when point is white
+  sizeWhite: 16.0,     // Size when point is white
   
   // Main noise controls
   mainNoiseEnabled: true, // Toggle main noise on/off
-  noiseScale: 3.0,     // Scale of the noise pattern
-  noiseSpeed: 0.5,     // Speed of noise evolution
+  noiseScale: 20.0,    // Scale of the noise pattern
+  noiseSpeed: 5.0,     // Speed of noise evolution
   noiseOctaves: 4,     // Number of octaves for fractal noise
   noiseLacunarity: 2.0, // Frequency multiplier per octave
-  noiseGain: 0.5,      // Amplitude multiplier per octave
-  noiseThreshold: 0.0,  // Black level threshold (cuts off values below)
+  noiseGain: 0.873,    // Amplitude multiplier per octave
+  noiseThreshold: 0.5562,  // Black level threshold (cuts off values below)
   noiseIslandSize: 0.5, // Controls bright island size (remap range)
   noiseExposure: 0.0,  // Exposure adjustment (stops)
-  noiseGamma: 1.0,     // Gamma correction (1 = linear)
-  noiseMultiplier: 1.0, // Final output multiplier (overall fader)
-  noiseOffsetX: 0.0,   // Manual X offset for noise
+  noiseGamma: 1.1542,  // Gamma correction (1 = linear)
+  noiseMultiplier: 1.592, // Final output multiplier (overall fader)
+  noiseOffsetX: -0.9,  // Manual X offset for noise
   noiseOffsetY: 0.0,   // Manual Y offset for noise
   noiseOffsetZ: 0.0,   // Manual Z offset for noise
   noiseEvolution: 0.0, // Evolution/phase offset for noise morphing
@@ -80,21 +80,21 @@ const params = {
   influence1RadiusX: 0.2, // Ellipse radius X (0-1, normalized)
   influence1RadiusY: 0.15, // Ellipse radius Y (0-1, normalized)
   influence1Falloff: 2.0, // Falloff power (1=linear, 2=quadratic, etc)
-  influence1Intensity: 0.5, // Intensity/value of influence
+  influence1Intensity: 1.0, // Intensity/value of influence
   influence1Subtract: false, // If true, subtracts from value instead of adding
   
   // Edge noise for zone 1
   influence1EdgeEnabled: true,
-  influence1EdgeStart: 0.3,      // Where edge noise starts (0=center, 1=edge)
-  influence1EdgeInfluence: 0.3,  // How much the edge noise affects the influence
-  influence1EdgeScale: 5.0,      // Scale of edge noise
-  influence1EdgeSpeed: 0.3,      // Speed of edge noise evolution
+  influence1EdgeStart: 0.0,      // Where edge noise starts (0=center, 1=edge)
+  influence1EdgeInfluence: 2.0,  // How much the edge noise affects the influence
+  influence1EdgeScale: 40.0,     // Scale of edge noise
+  influence1EdgeSpeed: 20.0,     // Speed of edge noise evolution
   influence1EdgeOctaves: 2,      // Octaves for edge noise
   influence1EdgeLacunarity: 2.5, // Lacunarity for edge noise
-  influence1EdgeGain: 0.6,       // Gain for edge noise
+  influence1EdgeGain: 0.688,     // Gain for edge noise
   influence1EdgeThreshold: 0.0,  // Black level threshold for edge noise
-  influence1EdgeIslandSize: 0.5, // Island size for edge noise
-  influence1EdgeExposure: 0.0,   // Exposure for edge noise
+  influence1EdgeIslandSize: 0.9937, // Island size for edge noise
+  influence1EdgeExposure: -0.342,   // Exposure for edge noise
   influence1EdgeGamma: 1.0,      // Gamma for edge noise
   
   // Influence zone 2 controls
@@ -903,6 +903,87 @@ function updatePointByCoord(col, row, properties) {
 // Initialize dot matrix
 createDotMatrix();
 
+// Function to sync dotMatrixParams with shader uniforms
+function syncParamsToUniforms() {
+  if (!dotMaterial) {
+    console.warn('syncParamsToUniforms: dotMaterial not available');
+    return;
+  }
+  
+  console.log('Syncing params - influence1Intensity:', params.influence1Intensity, 
+              'influence1EdgeEnabled:', params.influence1EdgeEnabled,
+              'influence1EdgeScale:', params.influence1EdgeScale);
+  
+  // Update main noise uniforms
+  dotMaterial.uniforms.uMainNoiseEnabled.value = params.mainNoiseEnabled;
+  dotMaterial.uniforms.uNoiseScale.value = params.noiseScale;
+  dotMaterial.uniforms.uNoiseSpeed.value = params.noiseSpeed;
+  dotMaterial.uniforms.uNoiseOffsetX.value = params.noiseOffsetX;
+  dotMaterial.uniforms.uNoiseOffsetY.value = params.noiseOffsetY;
+  dotMaterial.uniforms.uNoiseOffsetZ.value = params.noiseOffsetZ;
+  dotMaterial.uniforms.uNoiseEvolution.value = params.noiseEvolution;
+  dotMaterial.uniforms.uNoiseAnimated.value = params.noiseAnimated;
+  dotMaterial.uniforms.uNoiseOctaves.value = params.noiseOctaves;
+  dotMaterial.uniforms.uNoiseLacunarity.value = params.noiseLacunarity;
+  dotMaterial.uniforms.uNoiseGain.value = params.noiseGain;
+  dotMaterial.uniforms.uNoiseThreshold.value = params.noiseThreshold;
+  dotMaterial.uniforms.uNoiseIslandSize.value = params.noiseIslandSize;
+  dotMaterial.uniforms.uNoiseExposure.value = params.noiseExposure;
+  dotMaterial.uniforms.uNoiseGamma.value = params.noiseGamma;
+  dotMaterial.uniforms.uNoiseMultiplier.value = params.noiseMultiplier;
+  
+  // Update size mapping uniforms
+  dotMaterial.uniforms.uSizeBlack.value = params.sizeBlack;
+  dotMaterial.uniforms.uSizeWhite.value = params.sizeWhite;
+  
+  // Update global uniforms
+  dotMaterial.uniforms.uGlobalOpacity.value = params.pointOpacity;
+  
+  // Update all influence zone 1 uniforms
+  dotMaterial.uniforms.uInfluence1Enabled.value = params.influence1Enabled;
+  dotMaterial.uniforms.uInfluence1Pos.value.set(params.influence1X, params.influence1Y);
+  dotMaterial.uniforms.uInfluence1Radius.value.set(params.influence1RadiusX, params.influence1RadiusY);
+  dotMaterial.uniforms.uInfluence1Falloff.value = params.influence1Falloff;
+  dotMaterial.uniforms.uInfluence1Intensity.value = params.influence1Intensity;
+  dotMaterial.uniforms.uInfluence1Subtract.value = params.influence1Subtract;
+  
+  // Update influence zone 1 edge noise uniforms
+  dotMaterial.uniforms.uInfluence1EdgeEnabled.value = params.influence1EdgeEnabled;
+  dotMaterial.uniforms.uInfluence1EdgeStart.value = params.influence1EdgeStart;
+  dotMaterial.uniforms.uInfluence1EdgeInfluence.value = params.influence1EdgeInfluence;
+  dotMaterial.uniforms.uInfluence1EdgeScale.value = params.influence1EdgeScale;
+  dotMaterial.uniforms.uInfluence1EdgeSpeed.value = params.influence1EdgeSpeed;
+  dotMaterial.uniforms.uInfluence1EdgeOctaves.value = params.influence1EdgeOctaves;
+  dotMaterial.uniforms.uInfluence1EdgeLacunarity.value = params.influence1EdgeLacunarity;
+  dotMaterial.uniforms.uInfluence1EdgeGain.value = params.influence1EdgeGain;
+  dotMaterial.uniforms.uInfluence1EdgeThreshold.value = params.influence1EdgeThreshold;
+  dotMaterial.uniforms.uInfluence1EdgeIslandSize.value = params.influence1EdgeIslandSize;
+  dotMaterial.uniforms.uInfluence1EdgeExposure.value = params.influence1EdgeExposure;
+  dotMaterial.uniforms.uInfluence1EdgeGamma.value = params.influence1EdgeGamma;
+  
+  // Update all influence zone 2 uniforms
+  dotMaterial.uniforms.uInfluence2Enabled.value = params.influence2Enabled;
+  dotMaterial.uniforms.uInfluence2Pos.value.set(params.influence2X, params.influence2Y);
+  dotMaterial.uniforms.uInfluence2Radius.value.set(params.influence2RadiusX, params.influence2RadiusY);
+  dotMaterial.uniforms.uInfluence2Falloff.value = params.influence2Falloff;
+  dotMaterial.uniforms.uInfluence2Intensity.value = params.influence2Intensity;
+  dotMaterial.uniforms.uInfluence2Subtract.value = params.influence2Subtract;
+  
+  // Update influence zone 2 edge noise uniforms
+  dotMaterial.uniforms.uInfluence2EdgeEnabled.value = params.influence2EdgeEnabled;
+  dotMaterial.uniforms.uInfluence2EdgeStart.value = params.influence2EdgeStart;
+  dotMaterial.uniforms.uInfluence2EdgeInfluence.value = params.influence2EdgeInfluence;
+  dotMaterial.uniforms.uInfluence2EdgeScale.value = params.influence2EdgeScale;
+  dotMaterial.uniforms.uInfluence2EdgeSpeed.value = params.influence2EdgeSpeed;
+  dotMaterial.uniforms.uInfluence2EdgeOctaves.value = params.influence2EdgeOctaves;
+  dotMaterial.uniforms.uInfluence2EdgeLacunarity.value = params.influence2EdgeLacunarity;
+  dotMaterial.uniforms.uInfluence2EdgeGain.value = params.influence2EdgeGain;
+  dotMaterial.uniforms.uInfluence2EdgeThreshold.value = params.influence2EdgeThreshold;
+  dotMaterial.uniforms.uInfluence2EdgeIslandSize.value = params.influence2EdgeIslandSize;
+  dotMaterial.uniforms.uInfluence2EdgeExposure.value = params.influence2EdgeExposure;
+  dotMaterial.uniforms.uInfluence2EdgeGamma.value = params.influence2EdgeGamma;
+}
+
 // Expose for DevTools and external animation
 Object.assign(window, { 
   scene, 
@@ -918,6 +999,7 @@ Object.assign(window, {
   updateDotMatrix: () => {
     // No longer needed - noise calculations are done in the vertex shader
   },
+  syncParamsToUniforms,
   recreateDotMatrix: createDotMatrix
 });
 
