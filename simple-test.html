@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Noise Test</title>
+    <style>
+        body { margin: 0; background: #000; color: white; font-family: monospace; }
+        canvas { display: block; border: 1px solid #333; }
+        .controls { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.8); padding: 10px; }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <h3>Simple Noise Test</h3>
+        <label>Scale: <input type="range" id="scale" min="0.1" max="10" step="0.1" value="3"></label><br>
+        <label>Speed: <input type="range" id="speed" min="0" max="2" step="0.1" value="0.5"></label><br>
+        <label>Enabled: <input type="checkbox" id="enabled" checked></label><br>
+        <div id="info"></div>
+    </div>
+    <canvas id="canvas"></canvas>
+    
+    <script type="module">
+        import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+        
+        const canvas = document.getElementById('canvas');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        
+        camera.position.z = 5;
+        
+        // Simple vertex shader with basic noise
+        const vertexShader = `
+            uniform float uTime;
+            uniform float uScale;
+            uniform bool uEnabled;
+            varying float vNoise;
+            
+            // Very simple noise function
+            float simpleNoise(vec3 p) {
+                return fract(sin(dot(p, vec3(12.9898, 78.233, 54.53))) * 43758.5453);
+            }
+            
+            void main() {
+                vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+                gl_Position = projectionMatrix * mvPosition;
+                
+                float noise = 0.5;
+                if (uEnabled) {
+                    vec3 noisePos = position * uScale + vec3(0.0, 0.0, uTime);
+                    noise = simpleNoise(noisePos);
+                }
+                
+                vNoise = noise;
+                gl_PointSize = 5.0 + noise * 15.0;
+            }
+        `;
+        
+        const fragmentShader = `
+            varying float vNoise;
+            
+            void main() {
+                vec2 coord = gl_PointCoord - vec2(0.5);
+                float distance = length(coord);
+                
+                if (distance > 0.5) {
+                    discard;
+                }
+                
+                float alpha = 1.0 - smoothstep(0.4, 0.5, distance);
+                vec3 color = vec3(vNoise);
+                gl_FragColor = vec4(color, alpha);
+            }
+        `;
+        
+        // Create grid of points
+        const geometry = new THREE.BufferGeometry();
+        const positions = [];
+        const gridSize = 20;
+        
+        for (let x = 0; x < gridSize; x++) {
+            for (let y = 0; y < gridSize; y++) {
+                positions.push(
+                    (x - gridSize/2) * 0.3,
+                    (y - gridSize/2) * 0.3,
+                    0
+                );
+            }
+        }
+        
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+        
+        const material = new THREE.ShaderMaterial({
+            vertexShader,
+            fragmentShader,
+            uniforms: {
+                uTime: { value: 0 },
+                uScale: { value: 3.0 },
+                uEnabled: { value: true }
+            },
+            transparent: true
+        });
+        
+        const points = new THREE.Points(geometry, material);
+        scene.add(points);
+        
+        // Controls
+        const scaleSlider = document.getElementById('scale');
+        const speedSlider = document.getElementById('speed');
+        const enabledCheckbox = document.getElementById('enabled');
+        const infoDiv = document.getElementById('info');
+        
+        scaleSlider.addEventListener('input', (e) => {
+            material.uniforms.uScale.value = parseFloat(e.target.value);
+        });
+        
+        speedSlider.addEventListener('input', (e) => {
+            // Speed will be used in animation loop
+        });
+        
+        enabledCheckbox.addEventListener('change', (e) => {
+            material.uniforms.uEnabled.value = e.target.checked;
+        });
+        
+        // Animation
+        let time = 0;
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const speed = parseFloat(speedSlider.value);
+            time += 0.016 * speed; // 60fps baseline
+            
+            material.uniforms.uTime.value = time;
+            
+            // Update info
+            infoDiv.innerHTML = `
+                Time: ${time.toFixed(2)}<br>
+                Scale: ${material.uniforms.uScale.value.toFixed(1)}<br>
+                Enabled: ${material.uniforms.uEnabled.value}<br>
+                Points: ${positions.length / 3}
+            `;
+            
+            renderer.render(scene, camera);
+        }
+        
+        animate();
+        
+        console.log('Simple noise test started');
+    </script>
+</body>
+</html>

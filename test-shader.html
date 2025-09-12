@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Shader Test</title>
+    <style>
+        body { margin: 0; background: #000; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <canvas id="testCanvas"></canvas>
+    <script type="module">
+        import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+        
+        const canvas = document.getElementById('testCanvas');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: canvas });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        
+        camera.position.z = 5;
+        
+        // Test shader with simple noise
+        const vertexShader = `
+            uniform float uTime;
+            varying vec3 vColor;
+            
+            // Simple hash function
+            float hash(vec3 p) {
+                p = fract(p * vec3(127.1, 311.7, 74.7));
+                p += dot(p, p + 19.19);
+                return fract(sin(p.x + p.y + p.z) * 43758.5453);
+            }
+            
+            // Simple gradient function
+            float grad(vec3 p, vec3 f) {
+                float h = hash(p) * 16.0;
+                float u = h < 8.0 ? f.x : f.y;
+                float v = h < 4.0 ? f.y : (h == 12.0 || h == 14.0) ? f.x : f.z;
+                return ((mod(h, 2.0) == 0.0) ? u : -u) + ((mod(h, 4.0) < 2.0) ? v : -v);
+            }
+            
+            // Fade curve
+            float fade(float t) {
+                return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
+            }
+            
+            // 3D Perlin noise
+            float perlinNoise3D(vec3 p) {
+                vec3 i = floor(p);
+                vec3 f = fract(p);
+                
+                float u = fade(f.x);
+                float v = fade(f.y);
+                float w = fade(f.z);
+                
+                float g000 = grad(i, f);
+                float g100 = grad(i + vec3(1.0, 0.0, 0.0), f - vec3(1.0, 0.0, 0.0));
+                float g010 = grad(i + vec3(0.0, 1.0, 0.0), f - vec3(0.0, 1.0, 0.0));
+                float g110 = grad(i + vec3(1.0, 1.0, 0.0), f - vec3(1.0, 1.0, 0.0));
+                float g001 = grad(i + vec3(0.0, 0.0, 1.0), f - vec3(0.0, 0.0, 1.0));
+                float g101 = grad(i + vec3(1.0, 0.0, 1.0), f - vec3(1.0, 0.0, 1.0));
+                float g011 = grad(i + vec3(0.0, 1.0, 1.0), f - vec3(0.0, 1.0, 1.0));
+                float g111 = grad(i + vec3(1.0, 1.0, 1.0), f - vec3(1.0, 1.0, 1.0));
+                
+                float x00 = mix(g000, g100, u);
+                float x10 = mix(g010, g110, u);
+                float x01 = mix(g001, g101, u);
+                float x11 = mix(g011, g111, u);
+                
+                float y0 = mix(x00, x10, v);
+                float y1 = mix(x01, x11, v);
+                
+                float result = mix(y0, y1, w);
+                return (result + 1.0) * 0.5;
+            }
+            
+            void main() {
+                vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+                gl_Position = projectionMatrix * mvPosition;
+                
+                // Test noise at this position
+                vec3 noisePos = position * 2.0 + vec3(0.0, 0.0, uTime);
+                float noise = perlinNoise3D(noisePos);
+                
+                gl_PointSize = 10.0 + noise * 20.0;
+                vColor = vec3(noise);
+            }
+        `;
+        
+        const fragmentShader = `
+            varying vec3 vColor;
+            
+            void main() {
+                vec2 coord = gl_PointCoord - vec2(0.5);
+                float distance = length(coord);
+                
+                if (distance > 0.5) {
+                    discard;
+                }
+                
+                float alpha = 1.0 - smoothstep(0.4, 0.5, distance);
+                gl_FragColor = vec4(vColor, alpha);
+            }
+        `;
+        
+        // Create test points
+        const geometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(100 * 3);
+        
+        for (let i = 0; i < 100; i++) {
+            positions[i * 3] = (Math.random() - 0.5) * 4;
+            positions[i * 3 + 1] = (Math.random() - 0.5) * 4;
+            positions[i * 3 + 2] = 0;
+        }
+        
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        
+        const material = new THREE.ShaderMaterial({
+            vertexShader,
+            fragmentShader,
+            uniforms: {
+                uTime: { value: 0 }
+            },
+            transparent: true
+        });
+        
+        const points = new THREE.Points(geometry, material);
+        scene.add(points);
+        
+        // Animation
+        function animate() {
+            requestAnimationFrame(animate);
+            material.uniforms.uTime.value += 0.01;
+            renderer.render(scene, camera);
+        }
+        
+        animate();
+        
+        console.log('Shader test started - should see animated noise-based points');
+    </script>
+</body>
+</html>

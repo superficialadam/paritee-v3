@@ -297,7 +297,7 @@ function calculateInfluence(x, y, centerX, centerY, radiusX, radiusY, falloff, i
 
 // Update noise texture removed - now handled in shader
 
-// Complete vertex shader with influence zones
+// Vertex shader for GPU-accelerated noise calculations
 const vertexShader = `
 uniform float uPointSize;
 uniform vec2 uResolution;
@@ -323,10 +323,6 @@ uniform float uNoiseExposure;
 uniform float uNoiseGamma;
 uniform float uNoiseMultiplier;
 
-// Size mapping uniforms
-uniform float uSizeBlack;
-uniform float uSizeWhite;
-
 // Influence zone 1 uniforms
 uniform bool uInfluence1Enabled;
 uniform vec2 uInfluence1Pos;
@@ -334,8 +330,6 @@ uniform vec2 uInfluence1Radius;
 uniform float uInfluence1Falloff;
 uniform float uInfluence1Intensity;
 uniform bool uInfluence1Subtract;
-
-// Influence zone 1 edge noise
 uniform bool uInfluence1EdgeEnabled;
 uniform float uInfluence1EdgeStart;
 uniform float uInfluence1EdgeInfluence;
@@ -356,8 +350,6 @@ uniform vec2 uInfluence2Radius;
 uniform float uInfluence2Falloff;
 uniform float uInfluence2Intensity;
 uniform bool uInfluence2Subtract;
-
-// Influence zone 2 edge noise
 uniform bool uInfluence2EdgeEnabled;
 uniform float uInfluence2EdgeStart;
 uniform float uInfluence2EdgeInfluence;
@@ -371,6 +363,10 @@ uniform float uInfluence2EdgeIslandSize;
 uniform float uInfluence2EdgeExposure;
 uniform float uInfluence2EdgeGamma;
 
+// Size mapping uniforms
+uniform float uSizeBlack;
+uniform float uSizeWhite;
+
 attribute vec2 gridCoord;
 attribute float size;
 attribute vec3 color;
@@ -379,70 +375,84 @@ attribute float opacity;
 varying vec3 vColor;
 varying float vOpacity;
 
-// Improved hash function using larger prime numbers
+// Hash function for noise
 float hash(vec3 p) {
-    p = fract(p * vec3(443.8975, 397.2973, 491.1871));
-    p += dot(p, p.yzx + 19.19);
-    return fract((p.x + p.y) * p.z);
+    p = fract(p * vec3(127.1, 311.7, 74.7));
+    p += dot(p, p + 19.19);
+    return fract(sin(p.x + p.y + p.z) * 43758.5453);
 }
 
-// Better gradient noise implementation
-float gradientNoise(vec3 p) {
+// Gradient function for Perlin noise
+float grad(vec3 p, vec3 f) {
+    float h = hash(p) * 16.0;
+    float u = h < 8.0 ? f.x : f.y;
+    float v = h < 4.0 ? f.y : (h == 12.0 || h == 14.0) ? f.x : f.z;
+    return ((mod(h, 2.0) == 0.0) ? u : -u) + ((mod(h, 4.0) < 2.0) ? v : -v);
+}
+
+// Fade curve
+float fade(float t) {
+    return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
+}
+
+// 3D Perlin noise
+float perlinNoise3D(vec3 p) {
     vec3 i = floor(p);
     vec3 f = fract(p);
     
-    // Quintic interpolation for smoother results
-    vec3 u = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
+    float u = fade(f.x);
+    float v = fade(f.y);
+    float w = fade(f.z);
     
-    // Generate gradients at corners
-    float n000 = hash(i);
-    float n100 = hash(i + vec3(1.0, 0.0, 0.0));
-    float n010 = hash(i + vec3(0.0, 1.0, 0.0));
-    float n110 = hash(i + vec3(1.0, 1.0, 0.0));
-    float n001 = hash(i + vec3(0.0, 0.0, 1.0));
-    float n101 = hash(i + vec3(1.0, 0.0, 1.0));
-    float n011 = hash(i + vec3(0.0, 1.0, 1.0));
-    float n111 = hash(i + vec3(1.0, 1.0, 1.0));
+    float g000 = grad(i, f);
+    float g100 = grad(i + vec3(1.0, 0.0, 0.0), f - vec3(1.0, 0.0, 0.0));
+    float g010 = grad(i + vec3(0.0, 1.0, 0.0), f - vec3(0.0, 1.0, 0.0));
+    float g110 = grad(i + vec3(1.0, 1.0, 0.0), f - vec3(1.0, 1.0, 0.0));
+    float g001 = grad(i + vec3(0.0, 0.0, 1.0), f - vec3(0.0, 0.0, 1.0));
+    float g101 = grad(i + vec3(1.0, 0.0, 1.0), f - vec3(1.0, 0.0, 1.0));
+    float g011 = grad(i + vec3(0.0, 1.0, 1.0), f - vec3(0.0, 1.0, 1.0));
+    float g111 = grad(i + vec3(1.0, 1.0, 1.0), f - vec3(1.0, 1.0, 1.0));
     
-    // Trilinear interpolation
-    float x00 = mix(n000, n100, u.x);
-    float x10 = mix(n010, n110, u.x);
-    float x01 = mix(n001, n101, u.x);
-    float x11 = mix(n011, n111, u.x);
+    float x00 = mix(g000, g100, u);
+    float x10 = mix(g010, g110, u);
+    float x01 = mix(g001, g101, u);
+    float x11 = mix(g011, g111, u);
     
-    float y0 = mix(x00, x10, u.y);
-    float y1 = mix(x01, x11, u.y);
+    float y0 = mix(x00, x10, v);
+    float y1 = mix(x01, x11, v);
     
-    return mix(y0, y1, u.z);
+    float result = mix(y0, y1, w);
+    
+    // Normalize to 0-1 range (Perlin noise is roughly -1 to 1)
+    return (result + 1.0) * 0.5;
 }
 
-// FBM with seed offset for different patterns
-float fbmWithSeed(vec3 p, int octaves, float lacunarity, float gain, float seed) {
+// Fractional Brownian Motion
+float fbm(vec3 p, int octaves, float lacunarity, float gain) {
     if (gain <= 0.0) return 0.5;
-    
-    // Add seed offset to create different patterns
-    p += vec3(seed * 137.5, seed * 285.2, 0.0);
     
     float value = 0.0;
     float amplitude = 0.5;
     float frequency = 1.0;
     float maxAmplitude = 0.0;
     
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < 10; i++) {
         if (i >= octaves) break;
         
-        value += amplitude * (gradientNoise(p * frequency) * 2.0 - 1.0);
+        // Add octave contribution
+        value += amplitude * (perlinNoise3D(p * frequency) - 0.5) * 2.0;
         maxAmplitude += amplitude;
         
         frequency *= lacunarity;
         amplitude *= gain;
     }
     
+    // Normalize and map to 0-1 range
     value = value / maxAmplitude;
-    return clamp(value * 0.5 + 0.5, 0.0, 1.0);
+    return clamp(value + 0.5, 0.0, 1.0);
 }
 
-// Process noise value
+// Process noise value through threshold, island size, exposure, gamma
 float processNoise(float noise, float threshold, float islandSize, float exposure, float gamma) {
     if (noise < threshold) {
         return 0.0;
@@ -458,48 +468,14 @@ float processNoise(float noise, float threshold, float islandSize, float exposur
     return clamp(noise, 0.0, 1.0);
 }
 
-// Calculate influence zone with edge noise
-float calculateInfluence(
-    vec2 coord, vec2 center, vec2 radius, float falloff, float intensity, bool subtract,
-    bool edgeEnabled, float edgeStart, float edgeInfluence, float edgeScale, float edgeSpeed,
-    int edgeOctaves, float edgeLacunarity, float edgeGain,
-    float edgeThreshold, float edgeIslandSize, float edgeExposure, float edgeGamma,
-    float seed
-) {
-    // Calculate normalized distance from center
-    vec2 delta = (coord - center) / radius;
-    float distance = length(delta);
+// Calculate elliptical influence
+float calculateInfluence(vec2 pos, vec2 center, vec2 radius, float falloff, float intensity, bool subtract) {
+    vec2 distVec = (pos - center) / radius;
+    float distance = length(distVec);
     
     if (distance >= 1.0) return 0.0;
     
-    // Base influence with falloff
     float factor = 1.0 - pow(distance, falloff);
-    
-    // Apply edge noise if enabled
-    if (edgeEnabled && distance > edgeStart) {
-        // Calculate edge noise position
-        vec3 noisePos = vec3(
-            coord.x * edgeScale,
-            coord.y * edgeScale,
-            uTime * edgeSpeed
-        );
-        
-        // Generate edge noise with seed for variation
-        float edgeNoise = fbmWithSeed(noisePos, edgeOctaves, edgeLacunarity, edgeGain, seed);
-        
-        // Process edge noise
-        edgeNoise = processNoise(edgeNoise, edgeThreshold, edgeIslandSize, edgeExposure, edgeGamma);
-        
-        // Calculate edge weight
-        float edgeWeight = (distance - edgeStart) / (1.0 - edgeStart);
-        
-        // Apply edge noise as modulation
-        float noiseEffect = (edgeNoise - 0.5) * 2.0 * edgeInfluence * edgeWeight;
-        factor = factor + noiseEffect;
-        factor = clamp(factor, 0.0, 1.0);
-    }
-    
-    // Apply intensity and handle subtraction
     float result = factor * intensity;
     return subtract ? -result : result;
 }
@@ -511,8 +487,11 @@ void main() {
     // Normalize grid coordinates to 0-1 range
     vec2 normalizedCoord = gridCoord / uGridSize;
     
-    // Start with base value
-    float finalValue = 0.0;
+    // Start with base noise value
+    float noiseValue = 0.5;
+    
+    // Debug: visualize grid coordinates
+    // noiseValue = normalizedCoord.x;
     
     // Apply main noise if enabled
     if (uMainNoiseEnabled) {
@@ -523,51 +502,93 @@ void main() {
         );
         
         if (uNoiseAnimated) {
-            // Use cumulative time for continuous evolution
-            noisePos.z += uTime * uNoiseSpeed;
+            noisePos.z -= uTime * uNoiseSpeed;
         }
         
         // Generate FBM noise
-        float noiseValue = fbmWithSeed(noisePos, uNoiseOctaves, uNoiseLacunarity, uNoiseGain, 0.0);
+        noiseValue = fbm(noisePos, uNoiseOctaves, uNoiseLacunarity, uNoiseGain);
+        
+        // Debug: test with simple noise first
+        // noiseValue = perlinNoise3D(noisePos);
         
         // Apply processing chain
         noiseValue = processNoise(noiseValue, uNoiseThreshold, uNoiseIslandSize, uNoiseExposure, uNoiseGamma);
-        finalValue = noiseValue * uNoiseMultiplier;
+        noiseValue = noiseValue * uNoiseMultiplier;
+        
+        // Clamp to valid range
+        noiseValue = clamp(noiseValue, 0.0, 1.0);
     }
     
-    // Apply influence zone 1
+    // Apply influence zones
     if (uInfluence1Enabled) {
         float influence = calculateInfluence(
-            normalizedCoord, uInfluence1Pos, uInfluence1Radius, uInfluence1Falloff, uInfluence1Intensity, uInfluence1Subtract,
-            uInfluence1EdgeEnabled, uInfluence1EdgeStart, uInfluence1EdgeInfluence, uInfluence1EdgeScale, uInfluence1EdgeSpeed,
-            uInfluence1EdgeOctaves, uInfluence1EdgeLacunarity, uInfluence1EdgeGain,
-            uInfluence1EdgeThreshold, uInfluence1EdgeIslandSize, uInfluence1EdgeExposure, uInfluence1EdgeGamma,
-            1.0
+            normalizedCoord, uInfluence1Pos, uInfluence1Radius, 
+            uInfluence1Falloff, uInfluence1Intensity, uInfluence1Subtract
         );
-        finalValue = finalValue + influence;
+        
+        // Apply edge noise for influence zone 1
+        if (uInfluence1EdgeEnabled) {
+            vec2 distVec = (normalizedCoord - uInfluence1Pos) / uInfluence1Radius;
+            float distance = length(distVec);
+            
+            if (distance > uInfluence1EdgeStart) {
+                vec3 edgeNoisePos = vec3(
+                    normalizedCoord.x * uInfluence1EdgeScale,
+                    normalizedCoord.y * uInfluence1EdgeScale,
+                    -uTime * uInfluence1EdgeSpeed
+                );
+                
+                float edgeNoise = fbm(edgeNoisePos, uInfluence1EdgeOctaves, uInfluence1EdgeLacunarity, uInfluence1EdgeGain);
+                edgeNoise = processNoise(edgeNoise, uInfluence1EdgeThreshold, uInfluence1EdgeIslandSize, uInfluence1EdgeExposure, uInfluence1EdgeGamma);
+                
+                float edgeWeight = (distance - uInfluence1EdgeStart) / (1.0 - uInfluence1EdgeStart);
+                float noiseEffect = (edgeNoise - 0.5) * 2.0 * uInfluence1EdgeInfluence * edgeWeight;
+                influence += noiseEffect;
+            }
+        }
+        
+        noiseValue += influence;
     }
     
-    // Apply influence zone 2
     if (uInfluence2Enabled) {
         float influence = calculateInfluence(
-            normalizedCoord, uInfluence2Pos, uInfluence2Radius, uInfluence2Falloff, uInfluence2Intensity, uInfluence2Subtract,
-            uInfluence2EdgeEnabled, uInfluence2EdgeStart, uInfluence2EdgeInfluence, uInfluence2EdgeScale, uInfluence2EdgeSpeed,
-            uInfluence2EdgeOctaves, uInfluence2EdgeLacunarity, uInfluence2EdgeGain,
-            uInfluence2EdgeThreshold, uInfluence2EdgeIslandSize, uInfluence2EdgeExposure, uInfluence2EdgeGamma,
-            2.0
+            normalizedCoord, uInfluence2Pos, uInfluence2Radius, 
+            uInfluence2Falloff, uInfluence2Intensity, uInfluence2Subtract
         );
-        finalValue = finalValue + influence;
+        
+        // Apply edge noise for influence zone 2
+        if (uInfluence2EdgeEnabled) {
+            vec2 distVec = (normalizedCoord - uInfluence2Pos) / uInfluence2Radius;
+            float distance = length(distVec);
+            
+            if (distance > uInfluence2EdgeStart) {
+                vec3 edgeNoisePos = vec3(
+                    normalizedCoord.x * uInfluence2EdgeScale,
+                    normalizedCoord.y * uInfluence2EdgeScale,
+                    -uTime * uInfluence2EdgeSpeed
+                );
+                
+                float edgeNoise = fbm(edgeNoisePos, uInfluence2EdgeOctaves, uInfluence2EdgeLacunarity, uInfluence2EdgeGain);
+                edgeNoise = processNoise(edgeNoise, uInfluence2EdgeThreshold, uInfluence2EdgeIslandSize, uInfluence2EdgeExposure, uInfluence2EdgeGamma);
+                
+                float edgeWeight = (distance - uInfluence2EdgeStart) / (1.0 - uInfluence2EdgeStart);
+                float noiseEffect = (edgeNoise - 0.5) * 2.0 * uInfluence2EdgeInfluence * edgeWeight;
+                influence += noiseEffect;
+            }
+        }
+        
+        noiseValue += influence;
     }
     
-    // Clamp final value
-    finalValue = clamp(finalValue, 0.0, 1.0);
+    // Clamp final noise value
+    noiseValue = clamp(noiseValue, 0.0, 1.0);
     
-    // Map to size
-    float pointSize = mix(uSizeBlack, uSizeWhite, finalValue);
+    // Map noise to size
+    float pointSize = mix(uSizeBlack, uSizeWhite, noiseValue);
     gl_PointSize = pointSize;
     
-    // Map to color
-    vColor = vec3(finalValue);
+    // Map noise to color (black to white)
+    vColor = vec3(noiseValue);
     vOpacity = uGlobalOpacity;
 }
 `;
@@ -692,7 +713,7 @@ function createDotMatrix() {
     totalPoints: totalPoints
   };
   
-  // Create material with all uniforms
+  // Create material
   dotMaterial = new THREE.ShaderMaterial({
     vertexShader,
     fragmentShader,
@@ -721,10 +742,6 @@ function createDotMatrix() {
       uNoiseGamma: { value: params.noiseGamma },
       uNoiseMultiplier: { value: params.noiseMultiplier },
       
-      // Size mapping uniforms
-      uSizeBlack: { value: params.sizeBlack },
-      uSizeWhite: { value: params.sizeWhite },
-      
       // Influence zone 1 uniforms
       uInfluence1Enabled: { value: params.influence1Enabled },
       uInfluence1Pos: { value: new THREE.Vector2(params.influence1X, params.influence1Y) },
@@ -732,8 +749,6 @@ function createDotMatrix() {
       uInfluence1Falloff: { value: params.influence1Falloff },
       uInfluence1Intensity: { value: params.influence1Intensity },
       uInfluence1Subtract: { value: params.influence1Subtract },
-      
-      // Influence zone 1 edge noise
       uInfluence1EdgeEnabled: { value: params.influence1EdgeEnabled },
       uInfluence1EdgeStart: { value: params.influence1EdgeStart },
       uInfluence1EdgeInfluence: { value: params.influence1EdgeInfluence },
@@ -754,8 +769,6 @@ function createDotMatrix() {
       uInfluence2Falloff: { value: params.influence2Falloff },
       uInfluence2Intensity: { value: params.influence2Intensity },
       uInfluence2Subtract: { value: params.influence2Subtract },
-      
-      // Influence zone 2 edge noise
       uInfluence2EdgeEnabled: { value: params.influence2EdgeEnabled },
       uInfluence2EdgeStart: { value: params.influence2EdgeStart },
       uInfluence2EdgeInfluence: { value: params.influence2EdgeInfluence },
@@ -767,7 +780,11 @@ function createDotMatrix() {
       uInfluence2EdgeThreshold: { value: params.influence2EdgeThreshold },
       uInfluence2EdgeIslandSize: { value: params.influence2EdgeIslandSize },
       uInfluence2EdgeExposure: { value: params.influence2EdgeExposure },
-      uInfluence2EdgeGamma: { value: params.influence2EdgeGamma }
+      uInfluence2EdgeGamma: { value: params.influence2EdgeGamma },
+      
+      // Size mapping uniforms
+      uSizeBlack: { value: params.sizeBlack },
+      uSizeWhite: { value: params.sizeWhite }
     },
     transparent: true,
     depthWrite: false,
@@ -882,10 +899,7 @@ function setupGUI() {
   const noiseFolder = gui.addFolder('Main Noise');
   noiseFolder.add(params, 'mainNoiseEnabled').name('Enabled')
     .onChange(v => {
-      if (dotMaterial) {
-        dotMaterial.uniforms.uMainNoiseEnabled.value = v;
-        console.log('Main noise enabled:', v);
-      }
+      if (dotMaterial) dotMaterial.uniforms.uMainNoiseEnabled.value = v;
     });
   noiseFolder.add(params, 'noiseAnimated').name('Animated')
     .onChange(v => {
@@ -893,10 +907,7 @@ function setupGUI() {
     });
   noiseFolder.add(params, 'noiseScale').name('Scale').min(0)
     .onChange(v => {
-      if (dotMaterial) {
-        dotMaterial.uniforms.uNoiseScale.value = v;
-        console.log('Noise scale updated:', v);
-      }
+      if (dotMaterial) dotMaterial.uniforms.uNoiseScale.value = v;
     });
   noiseFolder.add(params, 'noiseSpeed').name('Speed').min(0)
     .onChange(v => {
@@ -1237,8 +1248,11 @@ renderer.setAnimationLoop(() => {
     }
   }
   
-  // Update time uniform for animation (influence zones also use it)
-  if (dotMaterial) {
+  // Only update time uniform if noise is animated or influence zones are enabled
+  const needsUpdate = (params.mainNoiseEnabled && params.noiseAnimated) || 
+                      (params.influence1Enabled && params.influence1EdgeEnabled) || 
+                      (params.influence2Enabled && params.influence2EdgeEnabled);
+  if (needsUpdate && dotMaterial) {
     dotMaterial.uniforms.uTime.value = currentTime;
   }
   
@@ -1265,5 +1279,4 @@ function onResize() {
 
 window.addEventListener('resize', onResize);
 
-console.log('Dot Matrix: Simplified GPU noise test. Press H for GUI.');
-console.log('Debug: Check browser console for uniform updates and errors.');
+console.log('Dot Matrix: GPU-accelerated noise with performance optimizations. Press H for GUI.');
