@@ -5,6 +5,7 @@ const SKIP_LOGS = true;
 function logger(msg) {
   SKIP_LOGS || console.log(msg);
 }
+console.log("woho");
 // Wait for the page to fully load
 window.addEventListener('load', function () {
   logger('Page loaded');
