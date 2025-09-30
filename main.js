@@ -735,630 +735,267 @@ window.addEventListener('load', function () {
 
   logger('All animations initialized!');
 
-  // Circle configurations for each section - now with INTRO and MAIN states
-  // Base positions from hero, with transformations dialed back by 5x
-  const circleConfigs = {
-    hero: {
-      circle1: { x: 150, y: 100, scale: 1.3, opacity: 0.4, fill: '#C8DDFF' },
-      circle2: { x: -100, y: 50, scale: 0.8, opacity: 0.3, fill: '#E8D8FF' },
-      circle3: { x: -80, y: -120, scale: 1.2, opacity: 0.35, fill: '#C8DDFF' },
-      circle4: { x: 200, y: -80, scale: 1.1, opacity: 0.45, fill: '#E8D8FF' },
-      circle5: { x: -150, y: -100, scale: 0.9, opacity: 0.3, fill: '#C8DDFF' },
-      dotMatrix: {
-        influence1X: 0.5,
-        influence1Y: 0.5,
-        influence1RadiusX: 0.02,
-        influence1RadiusY: 0.02,
-        influence1Falloff: 2.0,
-        influence1Intensity: 0.0,
-        influence1EdgeStart: 0.3,
-        influence1EdgeInfluence: 1.0,
-        influence1EdgeScale: 40.0,
-        influence1EdgeSpeed: 12.2,
-        influence1EdgeGain: 0.5,
-        influence1EdgeThreshold: 0.2,
-        influence1EdgeIslandSize: 1.2,
-        influence1EdgeExposure: 0.5,
-        influence1EdgeGamma: 0.8
-      }
-    },
-    section1_intro: {
-      circle1: { x: -10, y: 220, scale: 3.9, opacity: 0.25, fill: '#0080B0' },  // 3x scale
-      circle2: { x: 120, y: -90, scale: 2.4, opacity: 0.2, fill: '#0060A0' },   // 3x scale
-      circle3: { x: 100, y: 40, scale: 3.6, opacity: 0.15, fill: '#0070A0' },   // 3x scale
-      circle4: { x: -60, y: -260, scale: 2.75, opacity: 0.3, fill: '#0080B0' }, // 2.5x scale
-      circle5: { x: 60, y: -10, scale: 2.7, opacity: 0.2, fill: '#0080A0' },    // 3x scale
-      dotMatrix: {
-        influence1X: 0.8,  // Right side
-        influence1Y: 0.3,  // Upper area
-        influence1RadiusX: 0.3,  // Medium-large radius
-        influence1RadiusY: 0.3,
-        influence1Falloff: 0.3,  // Much softer falloff
-        influence1Intensity: 0.8,  // High intensity for intro
-        influence1EdgeStart: 0.1,
-        influence1EdgeInfluence: 0.9,
-        influence1EdgeScale: 40.0,
-        influence1EdgeSpeed: 12.2,
-        influence1EdgeGain: 0.08,
-        influence1EdgeThreshold: 0.3,
-        influence1EdgeIslandSize: 1.6,
-        influence1EdgeExposure: 0.6,
-        influence1EdgeGamma: 0.12
-      }
-    },
-    section1_main: {
-      circle1: { x: -250, y: 340, scale: 0.8, opacity: 0.6, fill: '#B8C5E8' },  // Smaller scale
-      circle2: { x: 400, y: -250, scale: 0.5, opacity: 0.3, fill: '#C8B8D8' },  // Smaller scale
-      circle3: { x: 280, y: 200, scale: 0.7, opacity: 0.2, fill: '#A8B8E0' },   // Smaller scale
-      circle4: { x: -280, y: -440, scale: 0.6, opacity: 0.5, fill: '#D0C0E0' }, // Smaller scale
-      circle5: { x: 270, y: 80, scale: 0.5, opacity: 0.35, fill: '#B0C0E8' },   // Smaller scale
-      dotMatrix: {
-        influence1X: 0.2,  // Left side - flows across screen
-        influence1Y: 0.7,  // Lower area
-        influence1RadiusX: 0.05,  // Small radius
-        influence1RadiusY: 0.05,
-        influence1Falloff: 0.8,  // Still soft falloff
-        influence1Intensity: 0.1,  // Low intensity for main
-        influence1EdgeStart: 0.3,
-        influence1EdgeInfluence: 0.5,
-        influence1EdgeScale: 40.0,
-        influence1EdgeSpeed: 12.2,
-        influence1EdgeGain: 0.5,
-        influence1EdgeThreshold: 0.4,
-        influence1EdgeIslandSize: 1.2,
-        influence1EdgeExposure: 0.4,
-        influence1EdgeGamma: 0.2
-      }
-    },
-    section2_intro: {
-      circle1: { x: 350, y: -90, scale: 3.6, opacity: 0.35, fill: '#8090C0' },   // 3x scale
-      circle2: { x: -340, y: 190, scale: 2.64, opacity: 0.1, fill: '#A080B0' },  // 3x scale
-      circle3: { x: -240, y: -310, scale: 3.48, opacity: 0.3, fill: '#7080A0' }, // 3x scale
-      circle4: { x: 460, y: 50, scale: 3.0, opacity: 0.15, fill: '#B090C0' },    // 2.5x scale
-      circle5: { x: -340, y: -230, scale: 3.06, opacity: 0.2, fill: '#9090B0' }, // 3x scale
-      dotMatrix: {
-        influence1X: 0.3,  // Left-center, flowing clockwise
-        influence1Y: 0.8,  // Bottom area
-        influence1RadiusX: 0.5,  // Larger radius than section1
-        influence1RadiusY: 0.5,
-        influence1Falloff: 0.2,  // Very soft falloff
-        influence1Intensity: 0.9,  // High intensity
-        influence1EdgeStart: 0.05,
-        influence1EdgeInfluence: 0.95,
-        influence1EdgeScale: 40.0,
-        influence1EdgeSpeed: 12.2,
-        influence1EdgeGain: 0.09,
-        influence1EdgeThreshold: 0.75,
-        influence1EdgeIslandSize: 1.7,
-        influence1EdgeExposure: 0.65,
-        influence1EdgeGamma: 0.1
-      }
-    },
-    section2_main: {
-      circle1: { x: 610, y: -260, scale: 0.6, opacity: 0.7, fill: '#C0D0F0' },  // Smaller scale
-      circle2: { x: -580, y: 330, scale: 0.4, opacity: 0.15, fill: '#D8C8E8' }, // Smaller scale
-      circle3: { x: -400, y: -500, scale: 0.5, opacity: 0.55, fill: '#B0C0E0' },// Smaller scale
-      circle4: { x: 720, y: 140, scale: 0.7, opacity: 0.25, fill: '#E0D0F0' },  // Smaller scale
-      circle5: { x: -530, y: -360, scale: 0.6, opacity: 0.3, fill: '#C8D0F0' }, // Smaller scale
-      dotMatrix: {
-        influence1X: 0.9,  // Right side - continues flow
-        influence1Y: 0.5,  // Center
-        influence1RadiusX: 0.03,  // Small radius
-        influence1RadiusY: 0.03,
-        influence1Falloff: 1.0,  // Moderate falloff
-        influence1Intensity: 0.05,  // Very low intensity
-        influence1EdgeStart: 0.4,
-        influence1EdgeInfluence: 0.4,
-        influence1EdgeScale: 40.0,
-        influence1EdgeSpeed: 12.2,
-        influence1EdgeGain: 0.4,
-        influence1EdgeThreshold: 0.4,
-        influence1EdgeIslandSize: 1.0,
-        influence1EdgeExposure: 0.3,
-        influence1EdgeGamma: 0.25
-      }
-    },
-    section3_intro: {
-      circle1: { x: -100, y: -100, scale: 3.78, opacity: 0.2, fill: '#90A0D0' }, // 3x scale
-      circle2: { x: 120, y: 230, scale: 2.82, opacity: 0.2, fill: '#B090C0' },   // 3x scale
-      circle3: { x: 90, y: -280, scale: 3.39, opacity: 0.4, fill: '#8090B0' },   // 3x scale
-      circle4: { x: -80, y: 0, scale: 3.1, opacity: 0.12, fill: '#C0A0D0' },     // 2.5x scale
-      circle5: { x: 90, y: -220, scale: 2.88, opacity: 0.25, fill: '#A0A0D0' },  // 3x scale
-      dotMatrix: {
-        influence1X: 0.7,  // Right side
-        influence1Y: 0.2,  // Top area - flowing pattern
-        influence1RadiusX: 0.6,  // Even larger radius
-        influence1RadiusY: 0.6,
-        influence1Falloff: 0.15,  // Super soft falloff
-        influence1Intensity: 0.85,  // High intensity
-        influence1EdgeStart: 0.0,
-        influence1EdgeInfluence: 1.0,
-        influence1EdgeScale: 40.0,
-        influence1EdgeSpeed: 12.2,
-        influence1EdgeGain: 0.1,
-        influence1EdgeThreshold: 0.7,
-        influence1EdgeIslandSize: 1.8,
-        influence1EdgeExposure: 0.7,
-        influence1EdgeGamma: 0.08
-      }
-    },
-    section3_main: {
-      circle1: { x: -350, y: -300, scale: 0.7, opacity: 0.4, fill: '#D0D8F8' }, // Smaller scale
-      circle2: { x: 340, y: 410, scale: 0.5, opacity: 0.35, fill: '#E0D0F0' },  // Smaller scale
-      circle3: { x: 260, y: -400, scale: 0.6, opacity: 0.7, fill: '#C0D0E8' },  // Smaller scale
-      circle4: { x: -360, y: 80, scale: 0.8, opacity: 0.2, fill: '#E8D8F0' },   // Smaller scale
-      circle5: { x: 330, y: -360, scale: 0.5, opacity: 0.45, fill: '#D0D8F8' }, // Smaller scale
-      dotMatrix: {
-        influence1X: 0.4,  // Center-left
-        influence1Y: 0.6,  // Lower-center
-        influence1RadiusX: 0.02,  // Very small radius
-        influence1RadiusY: 0.02,
-        influence1Falloff: 1.2,  // Moderate falloff
-        influence1Intensity: 0.02,  // Very low intensity
-        influence1EdgeStart: 0.5,
-        influence1EdgeInfluence: 0.3,
-        influence1EdgeScale: 40.0,
-        influence1EdgeSpeed: 2.0,
-        influence1EdgeGain: 0.3,
-        influence1EdgeThreshold: 0.5,
-        influence1EdgeIslandSize: 0.8,
-        influence1EdgeExposure: 0.2,
-        influence1EdgeGamma: 0.3
-      }
-    },
-    section4_intro: {
-      circle1: { x: 420, y: 310, scale: 4.08, opacity: 0.3, fill: '#A0B0E0' },  // 3x scale
-      circle2: { x: -330, y: -290, scale: 2.28, opacity: 0.25, fill: '#C0B0E0' },// 3x scale
-      circle3: { x: -280, y: 250, scale: 3.96, opacity: 0.18, fill: '#90A0C0' }, // 3x scale
-      circle4: { x: 450, y: -230, scale: 2.55, opacity: 0.5, fill: '#C0B0E0' },  // 2.5x scale
-      circle5: { x: -330, y: -340, scale: 2.7, opacity: 0.22, fill: '#A0B0E0' }, // 3x scale
-      dotMatrix: {
-        influence1X: 0.2,  // Left side - completing circular flow
-        influence1Y: 0.5,  // Center
-        influence1RadiusX: 0.8,  // Largest radius
-        influence1RadiusY: 0.8,
-        influence1Falloff: 0.1,  // Extremely soft falloff
-        influence1Intensity: 0.95,  // Very high intensity
-        influence1EdgeStart: 0.0,
-        influence1EdgeInfluence: 1.0,
-        influence1EdgeScale: 60.0,
-        influence1EdgeSpeed: 0.5,
-        influence1EdgeGain: 0.12,
-        influence1EdgeThreshold: 0.65,
-        influence1EdgeIslandSize: 2.0,
-        influence1EdgeExposure: 0.75,
-        influence1EdgeGamma: 0.05
-      }
-    },
-    section4_main: {
-      circle1: { x: 690, y: 520, scale: 0.9, opacity: 0.5, fill: '#D8E0F8' },  // Smaller scale
-      circle2: { x: -560, y: -470, scale: 0.4, opacity: 0.4, fill: '#E8D8F8' },// Smaller scale
-      circle3: { x: -480, y: 420, scale: 0.7, opacity: 0.3, fill: '#D0D8F0' }, // Smaller scale
-      circle4: { x: 700, y: -380, scale: 0.5, opacity: 0.8, fill: '#E8D8F8' }, // Smaller scale
-      circle5: { x: -510, y: -540, scale: 0.4, opacity: 0.35, fill: '#D8E0F8' },// Smaller scale
-      dotMatrix: {
-        influence1X: 0.5,  // Back to center
-        influence1Y: 0.9,  // Bottom
-        influence1RadiusX: 0.01,  // Tiny radius
-        influence1RadiusY: 0.01,
-        influence1Falloff: 1.5,  // Moderate falloff
-        influence1Intensity: 0.0,  // Zero intensity
-        influence1EdgeStart: 0.6,
-        influence1EdgeInfluence: 0.2,
-        influence1EdgeScale: 40.0,
-        influence1EdgeSpeed: 9.5,
-        influence1EdgeGain: 0.01,
-        influence1EdgeThreshold: 1.0,
-        influence1EdgeIslandSize: 0.5,
-        influence1EdgeExposure: 0.1,
-        influence1EdgeGamma: 0.4
-      }
-    },
-    section5_intro: {
-      circle1: { x: -450, y: -210, scale: 3.69, opacity: 0.4, fill: '#B0C0F0' }, // 3x scale
-      circle2: { x: 280, y: 380, scale: 2.94, opacity: 0.15, fill: '#D0C0F0' },  // 3x scale
-      circle3: { x: 320, y: -150, scale: 3.57, opacity: 0.35, fill: '#A0B0E0' }, // 3x scale
-      circle4: { x: -340, y: 120, scale: 2.75, opacity: 0.2, fill: '#E0D0F8' },  // 2.5x scale
-      circle5: { x: 380, y: 180, scale: 3.12, opacity: 0.3, fill: '#C0D0F0' },   // 3x scale
-      dotMatrix: {
-        influence1X: 0.6,  // Right-center
-        influence1Y: 0.4,  // Upper-middle
-        influence1RadiusX: 0.7,  // Large radius
-        influence1RadiusY: 0.7,
-        influence1Falloff: 0.2,  // Soft falloff
-        influence1Intensity: 0.9,  // High intensity
-        influence1EdgeStart: 0.0,
-        influence1EdgeInfluence: 1.0,
-        influence1EdgeScale: 50.0,
-        influence1EdgeSpeed: 12.8,
-        influence1EdgeGain: 0.11,
-        influence1EdgeThreshold: 0.7,
-        influence1EdgeIslandSize: 1.9,
-        influence1EdgeExposure: 0.8,
-        influence1EdgeGamma: 0.06
-      }
-    },
-    section5_main: {
-      circle1: { x: -750, y: -340, scale: 0.6, opacity: 0.65, fill: '#E0E8F8' }, // Smaller scale
-      circle2: { x: 480, y: 610, scale: 0.5, opacity: 0.25, fill: '#F0E8F8' },  // Smaller scale
-      circle3: { x: 540, y: -240, scale: 0.6, opacity: 0.6, fill: '#D8E0F0' },  // Smaller scale
-      circle4: { x: -580, y: 200, scale: 0.6, opacity: 0.35, fill: '#F8E8F8' }, // Smaller scale
-      circle5: { x: 650, y: 300, scale: 0.7, opacity: 0.5, fill: '#E8F0F8' },   // Smaller scale
-      dotMatrix: {
-        influence1X: 0.1,  // Far left
-        influence1Y: 0.3,  // Upper area
-        influence1RadiusX: 0.04,  // Small radius
-        influence1RadiusY: 0.04,
-        influence1Falloff: 0.9,  // Medium falloff
-        influence1Intensity: 0.08,  // Low intensity
-        influence1EdgeStart: 0.4,
-        influence1EdgeInfluence: 0.4,
-        influence1EdgeScale: 45.0,
-        influence1EdgeSpeed: 0.7,
-        influence1EdgeGain: 0.4,
-        influence1EdgeThreshold: 0.4,
-        influence1EdgeIslandSize: 1.1,
-        influence1EdgeExposure: 0.25,
-        influence1EdgeGamma: 0.28
-      }
-    },
-    section6_intro: {
-      circle1: { x: 180, y: -420, scale: 3.84, opacity: 0.25, fill: '#A8B8E8' }, // 3x scale
-      circle2: { x: -480, y: 240, scale: 2.58, opacity: 0.35, fill: '#C8B8E8' }, // 3x scale
-      circle3: { x: -360, y: -180, scale: 3.72, opacity: 0.2, fill: '#98A8D8' }, // 3x scale
-      circle4: { x: 540, y: 280, scale: 3.05, opacity: 0.4, fill: '#D8C8F0' },   // 2.5x scale
-      circle5: { x: -420, y: -450, scale: 2.85, opacity: 0.18, fill: '#B8C8E8' },// 3x scale
-      dotMatrix: {
-        influence1X: 0.85,  // Far right
-        influence1Y: 0.6,  // Lower-middle
-        influence1RadiusX: 0.6,  // Large radius
-        influence1RadiusY: 0.6,
-        influence1Falloff: 0.25,  // Soft falloff
-        influence1Intensity: 0.88,  // High intensity
-        influence1EdgeStart: 0.05,
-        influence1EdgeInfluence: 0.92,
-        influence1EdgeScale: 20.0,
-        influence1EdgeSpeed: 3.2,
-        influence1EdgeGain: 0.095,
-        influence1EdgeThreshold: 0.72,
-        influence1EdgeIslandSize: 1.85,
-        influence1EdgeExposure: 0.75,
-        influence1EdgeGamma: 0.08
-      }
-    },
-    section6_main: {
-      circle1: { x: 310, y: -680, scale: 0.8, opacity: 0.45, fill: '#E8F0F8' }, // Smaller scale
-      circle2: { x: -820, y: 410, scale: 0.4, opacity: 0.6, fill: '#F0E0F8' },  // Smaller scale
-      circle3: { x: -610, y: -290, scale: 0.8, opacity: 0.35, fill: '#E0E8F0' }, // Smaller scale
-      circle4: { x: 920, y: 480, scale: 0.6, opacity: 0.7, fill: '#F8F0F8' },   // Smaller scale
-      circle5: { x: -720, y: -720, scale: 0.5, opacity: 0.3, fill: '#F0F8F8' }, // Smaller scale
-      dotMatrix: {
-        influence1X: 0.95,  // Far right edge
-        influence1Y: 0.8,  // Lower area
-        influence1RadiusX: 0.025,  // Very small radius
-        influence1RadiusY: 0.025,
-        influence1Falloff: 1.1,  // Medium falloff
-        influence1Intensity: 0.03,  // Very low intensity
-        influence1EdgeStart: 0.5,
-        influence1EdgeInfluence: 0.3,
-        influence1EdgeScale: 55.0,
-        influence1EdgeSpeed: 0.6,
-        influence1EdgeGain: 0.35,
-        influence1EdgeThreshold: 0.4,
-        influence1EdgeIslandSize: 0.9,
-        influence1EdgeExposure: 0.2,
-        influence1EdgeGamma: 0.32
-      }
-    },
-    section7_intro: {
-      circle1: { x: -280, y: 450, scale: 3.96, opacity: 0.3, fill: '#C0D0F8' },  // 3x scale
-      circle2: { x: 420, y: -320, scale: 2.76, opacity: 0.28, fill: '#E0D0F8' }, // 3x scale
-      circle3: { x: 340, y: 160, scale: 3.45, opacity: 0.38, fill: '#B0C0E8' },  // 3x scale
-      circle4: { x: -380, y: -140, scale: 2.95, opacity: 0.22, fill: '#F0E0F8' },// 2.5x scale
-      circle5: { x: 460, y: 240, scale: 3.24, opacity: 0.26, fill: '#D0E0F8' },  // 3x scale
-      dotMatrix: {
-        influence1X: 0.15,  // Left side
-        influence1Y: 0.75,  // Lower area
-        influence1RadiusX: 0.75,  // Very large radius
-        influence1RadiusY: 0.75,
-        influence1Falloff: 0.18,  // Very soft falloff
-        influence1Intensity: 0.92,  // Very high intensity
-        influence1EdgeStart: 0.0,
-        influence1EdgeInfluence: 1.0,
-        influence1EdgeScale: 20.0,
-        influence1EdgeSpeed: 2.6,
-        influence1EdgeGain: 0.12,
-        influence1EdgeThreshold: 0.68,
-        influence1EdgeIslandSize: 2.1,
-        influence1EdgeExposure: 0.82,
-        influence1EdgeGamma: 0.04
-      }
-    },
-    section7_main: {
-      circle1: { x: -480, y: 730, scale: 0.8, opacity: 0.55, fill: '#F0F8F8' }, // Smaller scale
-      circle2: { x: 720, y: -520, scale: 0.5, opacity: 0.5, fill: '#F8F0F8' },  // Smaller scale
-      circle3: { x: 580, y: 260, scale: 0.7, opacity: 0.65, fill: '#E8F0F8' },  // Smaller scale
-      circle4: { x: -650, y: -230, scale: 0.6, opacity: 0.4, fill: '#F8F8F0' }, // Smaller scale
-      circle5: { x: 790, y: 390, scale: 0.7, opacity: 0.45, fill: '#F8F8F8' },  // Smaller scale
-      dotMatrix: {
-        influence1X: 0.25,  // Left-center
-        influence1Y: 0.1,  // Top area
-        influence1RadiusX: 0.035,  // Small radius
-        influence1RadiusY: 0.035,
-        influence1Falloff: 0.7,  // Medium falloff
-        influence1Intensity: 0.06,  // Low intensity
-        influence1EdgeStart: 0.45,
-        influence1EdgeInfluence: 0.35,
-        influence1EdgeScale: 65.0,
-        influence1EdgeSpeed: 0.4,
-        influence1EdgeGain: 0.3,
-        influence1EdgeThreshold: 0.4,
-        influence1EdgeIslandSize: 0.85,
-        influence1EdgeExposure: 0.18,
-        influence1EdgeGamma: 0.35
-      }
-    },
-    section8_intro: {
-      circle1: { x: 520, y: 180, scale: 4.02, opacity: 0.35, fill: '#D8E8F8' },  // 3x scale
-      circle2: { x: -360, y: -480, scale: 2.88, opacity: 0.32, fill: '#F0E8F8' },// 3x scale
-      circle3: { x: -520, y: 380, scale: 3.81, opacity: 0.25, fill: '#C8D8F0' }, // 3x scale
-      circle4: { x: 620, y: -260, scale: 2.65, opacity: 0.45, fill: '#F8F0F8' }, // 2.5x scale
-      circle5: { x: -480, y: -120, scale: 3.18, opacity: 0.28, fill: '#E8F0F8' },// 3x scale
-      dotMatrix: {
-        influence1X: 0.5,  // Center - full circle completion
-        influence1Y: 0.5,  // Center
-        influence1RadiusX: 0.9,  // Maximum radius
-        influence1RadiusY: 0.9,
-        influence1Falloff: 0.12,  // Extremely soft falloff
-        influence1Intensity: 0.95,  // Maximum intensity
-        influence1EdgeStart: 0.0,
-        influence1EdgeInfluence: 1.0,
-        influence1EdgeScale: 20.0,
-        influence1EdgeSpeed: 4.0,
-        influence1EdgeGain: 0.15,
-        influence1EdgeThreshold: 0.6,
-        influence1EdgeIslandSize: 2.2,
-        influence1EdgeExposure: 0.9,
-        influence1EdgeGamma: 0.02
-      }
-    },
-    section8_main: {
-      circle1: { x: 890, y: 290, scale: 0.9, opacity: 0.6, fill: '#F8F8F8' },   // Smaller scale
-      circle2: { x: -620, y: -780, scale: 0.6, opacity: 0.55, fill: '#F8F8F8' }, // Smaller scale
-      circle3: { x: -890, y: 620, scale: 0.8, opacity: 0.4, fill: '#F8F8F8' },  // Smaller scale
-      circle4: { x: 1060, y: -420, scale: 0.5, opacity: 0.7, fill: '#F8F8F8' }, // Smaller scale
-      circle5: { x: -820, y: -200, scale: 0.6, opacity: 0.5, fill: '#F8F8F8' }, // Smaller scale
-      dotMatrix: {
-        influence1X: 0.5,  // Center - final state
-        influence1Y: 0.5,  // Center
-        influence1RadiusX: 0.005,  // Minimum radius
-        influence1RadiusY: 0.005,
-        influence1Falloff: 2.0,  // Strong falloff
-        influence1Intensity: 0.0,  // Zero intensity - clean slate
-        influence1EdgeStart: 0.8,
-        influence1EdgeInfluence: 0.1,
-        influence1EdgeScale: 100.0,
-        influence1EdgeSpeed: 0.1,
-        influence1EdgeGain: 0.005,
-        influence1EdgeThreshold: 1.0,
-        influence1EdgeIslandSize: 0.3,
-        influence1EdgeExposure: 0.05,
-        influence1EdgeGamma: 0.5
-      }
-    }
+  // Set original circles to their final theme timeline state (they'll remain static)
+  const setCirclesToFinalState = () => {
+    // Final state from theme timeline
+    utils.set('.circle-1', { translateX: 150, translateY: 100, scale: 1.3 });
+    utils.set('.circle-1 circle', { fill: '#C8DDFF' });
+    utils.set('.circle-2', { translateX: -100, translateY: 50, scale: 0.8 });
+    utils.set('.circle-2 circle', { fill: '#E8D8FF' });
+    utils.set('.circle-3', { translateX: -80, translateY: -120, scale: 1.2 });
+    utils.set('.circle-3 circle', { fill: '#C8DDFF' });
+    utils.set('.circle-4', { translateX: 200, translateY: -80, scale: 1.1 });
+    utils.set('.circle-4 circle', { fill: '#E8D8FF' });
+    utils.set('.circle-5', { translateX: -150, translateY: -100, scale: 0.9 });
+    utils.set('.circle-5 circle', { fill: '#C8DDFF' });
   };
 
-  // Get all sections
-  const sections = ['hero', 'section1', 'section2', 'section3', 'section4', 'section5', 'section6', 'section7', 'section8'];
-  let lastSectionIndex = -1;
-
-  // Store target values for direct application
-  let targetValues = {
-    circle1: { x: 150, y: 100, scale: 1.3, opacity: 0.4 },
-    circle2: { x: -100, y: 50, scale: 0.8, opacity: 0.3 },
-    circle3: { x: -80, y: -120, scale: 1.2, opacity: 0.35 },
-    circle4: { x: 200, y: -80, scale: 1.1, opacity: 0.45 },
-    circle5: { x: -150, y: -100, scale: 0.9, opacity: 0.3 }
-  };
-
-  // Helper function to interpolate between hex colors
-  const interpolateColor = (color1, color2, progress) => {
-    // Convert hex to RGB
-    const hex2rgb = (hex) => {
-      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-      return result ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16)
-      } : null;
-    };
-
-    // Convert RGB back to hex
-    const rgb2hex = (r, g, b) => {
-      return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-    };
-
-    const c1 = hex2rgb(color1);
-    const c2 = hex2rgb(color2);
-
-    if (!c1 || !c2) return color1;
-
-    const r = Math.round(c1.r + (c2.r - c1.r) * progress);
-    const g = Math.round(c1.g + (c2.g - c1.g) * progress);
-    const b = Math.round(c1.b + (c2.b - c1.b) * progress);
-
-    return rgb2hex(r, g, b);
-  };
-
-  // Function to calculate and apply values based on scroll
-  const updateCirclesOnScroll = () => {
-    const scrollY = window.scrollY;
+  // Create parallax circles that span the full page height
+  const createParallaxCircles = () => {
     const windowHeight = window.innerHeight;
-    const totalScroll = scrollY / windowHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+    const totalPageHeight = documentHeight + windowHeight * 2; // Extra height for smooth entrance/exit
 
-    // Create a continuous interpolation path through all states
-    // Each section has 2 states (intro at 0.5, main at 1.0)
-    // Hero (0) -> S1_intro (0.5) -> S1_main (1.0) -> S2_intro (1.5) -> S2_main (2.0) etc.
+    // Parallax layers configuration - TESTING WITH VERY VISIBLE CIRCLES
+    const layers = {
+      background: {
+        speed: -0.3, // Opposite direction, slow
+        count: 3, // Very few for testing
+        sizeRange: [200, 300],
+        opacityRange: [1.0, 1.0], // FULL OPACITY
+        colors: ['#FF0000', '#00FF00', '#0000FF'] // BRIGHT RED, GREEN, BLUE
+      },
+      middle: {
+        speed: -0.6, // Opposite direction, medium
+        count: 2, // Very few for testing
+        sizeRange: [250, 350],
+        opacityRange: [1.0, 1.0], // FULL OPACITY
+        colors: ['#FFFF00', '#FF00FF'] // BRIGHT YELLOW, MAGENTA
+      },
+      foreground: {
+        speed: -1.0, // Opposite direction, fast - passes camera in 100vh
+        count: 2, // Very few for testing
+        sizeRange: [300, 400],
+        opacityRange: [1.0, 1.0], // FULL OPACITY
+        colors: ['#00FFFF', '#FFA500'] // BRIGHT CYAN, ORANGE
+      }
+    };
 
-    let fromConfig, toConfig, localProgress;
+    const circleContainer = document.querySelector('body');
+    const parallaxCircles = [];
 
-    if (totalScroll <= 0.5) {
-      // Hero to Section1_intro
-      fromConfig = circleConfigs.hero;
-      toConfig = circleConfigs.section1_intro;
-      localProgress = totalScroll * 2; // 0 to 1
-    } else if (totalScroll <= 1.0) {
-      // Section1_intro to Section1_main
-      fromConfig = circleConfigs.section1_intro;
-      toConfig = circleConfigs.section1_main;
-      localProgress = (totalScroll - 0.5) * 2; // 0 to 1
-    } else if (totalScroll <= 1.5) {
-      // Section1_main to Section2_intro
-      fromConfig = circleConfigs.section1_main;
-      toConfig = circleConfigs.section2_intro;
-      localProgress = (totalScroll - 1.0) * 2; // 0 to 1
-    } else if (totalScroll <= 2.0) {
-      // Section2_intro to Section2_main
-      fromConfig = circleConfigs.section2_intro;
-      toConfig = circleConfigs.section2_main;
-      localProgress = (totalScroll - 1.5) * 2; // 0 to 1
-    } else if (totalScroll <= 2.5) {
-      // Section2_main to Section3_intro
-      fromConfig = circleConfigs.section2_main;
-      toConfig = circleConfigs.section3_intro;
-      localProgress = (totalScroll - 2.0) * 2; // 0 to 1
-    } else if (totalScroll <= 3.0) {
-      // Section3_intro to Section3_main
-      fromConfig = circleConfigs.section3_intro;
-      toConfig = circleConfigs.section3_main;
-      localProgress = (totalScroll - 2.5) * 2; // 0 to 1
-    } else if (totalScroll <= 3.5) {
-      // Section3_main to Section4_intro
-      fromConfig = circleConfigs.section3_main;
-      toConfig = circleConfigs.section4_intro;
-      localProgress = (totalScroll - 3.0) * 2; // 0 to 1
-    } else if (totalScroll <= 4.0) {
-      // Section4_intro to Section4_main
-      fromConfig = circleConfigs.section4_intro;
-      toConfig = circleConfigs.section4_main;
-      localProgress = (totalScroll - 3.5) * 2; // 0 to 1
-    } else if (totalScroll <= 4.5) {
-      // Section4_main to Section5_intro
-      fromConfig = circleConfigs.section4_main;
-      toConfig = circleConfigs.section5_intro;
-      localProgress = (totalScroll - 4.0) * 2; // 0 to 1
-    } else if (totalScroll <= 5.0) {
-      // Section5_intro to Section5_main
-      fromConfig = circleConfigs.section5_intro;
-      toConfig = circleConfigs.section5_main;
-      localProgress = (totalScroll - 4.5) * 2; // 0 to 1
-    } else if (totalScroll <= 5.5) {
-      // Section5_main to Section6_intro
-      fromConfig = circleConfigs.section5_main;
-      toConfig = circleConfigs.section6_intro;
-      localProgress = (totalScroll - 5.0) * 2; // 0 to 1
-    } else if (totalScroll <= 6.0) {
-      // Section6_intro to Section6_main
-      fromConfig = circleConfigs.section6_intro;
-      toConfig = circleConfigs.section6_main;
-      localProgress = (totalScroll - 5.5) * 2; // 0 to 1
-    } else if (totalScroll <= 6.5) {
-      // Section6_main to Section7_intro
-      fromConfig = circleConfigs.section6_main;
-      toConfig = circleConfigs.section7_intro;
-      localProgress = (totalScroll - 6.0) * 2; // 0 to 1
-    } else if (totalScroll <= 7.0) {
-      // Section7_intro to Section7_main
-      fromConfig = circleConfigs.section7_intro;
-      toConfig = circleConfigs.section7_main;
-      localProgress = (totalScroll - 6.5) * 2; // 0 to 1
-    } else if (totalScroll <= 7.5) {
-      // Section7_main to Section8_intro
-      fromConfig = circleConfigs.section7_main;
-      toConfig = circleConfigs.section8_intro;
-      localProgress = (totalScroll - 7.0) * 2; // 0 to 1
-    } else if (totalScroll <= 8.0) {
-      // Section8_intro to Section8_main
-      fromConfig = circleConfigs.section8_intro;
-      toConfig = circleConfigs.section8_main;
-      localProgress = (totalScroll - 7.5) * 2; // 0 to 1
-    } else {
-      // Stay at Section8_main
-      fromConfig = circleConfigs.section8_main;
-      toConfig = circleConfigs.section8_main;
-      localProgress = 1;
-    }
+    Object.entries(layers).forEach(([layerName, config]) => {
+      for (let i = 0; i < config.count; i++) {
+        // Create SVG circle element
+        const svg = document.createElement('svg');
+        svg.classList.add('parallax-circle', `parallax-${layerName}`);
 
-    // Debug: Log current state occasionally
-    if (Math.random() < 0.02) {
-      logger(`Scroll: ${totalScroll.toFixed(2)}, Progress: ${localProgress.toFixed(2)}, From: ${fromConfig.circle1.x}, To: ${toConfig.circle1.x}`);
-    }
+        const size = config.sizeRange[0] + Math.random() * (config.sizeRange[1] - config.sizeRange[0]);
+        const opacity = config.opacityRange[0] + Math.random() * (config.opacityRange[1] - config.opacityRange[0]);
+        const color = config.colors[Math.floor(Math.random() * config.colors.length)];
 
-    // Apply smooth interpolation for each circle
-    for (let i = 1; i <= 5; i++) {
-      const circleKey = `circle${i}`;
-      const from = fromConfig[circleKey];
-      const to = toConfig[circleKey];
+        // Position circles prominently on screen for testing
+        const x = (window.innerWidth / 2) + (Math.random() - 0.5) * 400; // Center with some spread
+        const startY = (window.innerHeight / 2) + (Math.random() - 0.5) * 200; // Center vertically
 
-      // Interpolate position, scale, and opacity
-      const x = from.x + (to.x - from.x) * localProgress;
-      const y = from.y + (to.y - from.y) * localProgress;
-      const scale = from.scale + (to.scale - from.scale) * localProgress;
-      const opacity = from.opacity + (to.opacity - from.opacity) * localProgress;
+        svg.setAttribute('viewBox', `0 0 ${size} ${size}`);
+        svg.style.cssText = `
+          position: fixed;
+          width: ${size}px;
+          height: ${size}px;
+          left: ${x}px;
+          top: ${startY}px;
+          opacity: ${opacity};
+          pointer-events: none;
+          z-index: ${layerName === 'background' ? 9998 : layerName === 'middle' ? 9999 : 10000};
+          transform: translateZ(0);
+        `;
 
-      // Interpolate color smoothly
-      const fill = interpolateColor(from.fill, to.fill, localProgress);
+        // Debug logging for first few circles
+        if (i < 2) {
+          logger(`Created ${layerName} circle ${i}: x=${x.toFixed(0)}, startY=${startY.toFixed(0)}, size=${size.toFixed(0)}`);
+        }
 
-      // Apply transform for position and scale
-      // Use translateX and translateY separately to avoid parsing issues
-      utils.set(`.circle-${i}`, {
-        translateX: x,
-        translateY: y,
-        scale: scale,
-        opacity: opacity
-      });
+        const circle = document.createElement('circle');
+        circle.setAttribute('cx', size / 2);
+        circle.setAttribute('cy', size / 2);
+        circle.setAttribute('r', size / 2);
+        circle.setAttribute('fill', color);
 
-      utils.set(`.circle-${i} circle`, {
-        fill: fill
-      });
-    }
+        svg.appendChild(circle);
+        circleContainer.appendChild(svg);
 
-    // Interpolate and apply dotMatrix parameters
-    if (window.dotMatrixParams && fromConfig.dotMatrix && toConfig.dotMatrix) {
-      const fromDot = fromConfig.dotMatrix;
-      const toDot = toConfig.dotMatrix;
+        // Store circle data for animation
+        parallaxCircles.push({
+          element: svg,
+          speed: config.speed,
+          initialY: startY,
+          x: x
+        });
+      }
+    });
 
-      // Interpolate all dotMatrix parameters
-      dotMatrixParams.influence1X = fromDot.influence1X + (toDot.influence1X - fromDot.influence1X) * localProgress;
-      dotMatrixParams.influence1Y = fromDot.influence1Y + (toDot.influence1Y - fromDot.influence1Y) * localProgress;
-      dotMatrixParams.influence1RadiusX = fromDot.influence1RadiusX + (toDot.influence1RadiusX - fromDot.influence1RadiusX) * localProgress;
-      dotMatrixParams.influence1RadiusY = fromDot.influence1RadiusY + (toDot.influence1RadiusY - fromDot.influence1RadiusY) * localProgress;
-      dotMatrixParams.influence1Falloff = fromDot.influence1Falloff + (toDot.influence1Falloff - fromDot.influence1Falloff) * localProgress;
-      dotMatrixParams.influence1Intensity = fromDot.influence1Intensity + (toDot.influence1Intensity - fromDot.influence1Intensity) * localProgress;
-      dotMatrixParams.influence1EdgeStart = fromDot.influence1EdgeStart + (toDot.influence1EdgeStart - fromDot.influence1EdgeStart) * localProgress;
-      dotMatrixParams.influence1EdgeInfluence = fromDot.influence1EdgeInfluence + (toDot.influence1EdgeInfluence - fromDot.influence1EdgeInfluence) * localProgress;
-      dotMatrixParams.influence1EdgeScale = fromDot.influence1EdgeScale + (toDot.influence1EdgeScale - fromDot.influence1EdgeScale) * localProgress;
-      dotMatrixParams.influence1EdgeSpeed = fromDot.influence1EdgeSpeed + (toDot.influence1EdgeSpeed - fromDot.influence1EdgeSpeed) * localProgress;
-      dotMatrixParams.influence1EdgeGain = fromDot.influence1EdgeGain + (toDot.influence1EdgeGain - fromDot.influence1EdgeGain) * localProgress;
-      dotMatrixParams.influence1EdgeThreshold = fromDot.influence1EdgeThreshold + (toDot.influence1EdgeThreshold - fromDot.influence1EdgeThreshold) * localProgress;
-      dotMatrixParams.influence1EdgeIslandSize = fromDot.influence1EdgeIslandSize + (toDot.influence1EdgeIslandSize - fromDot.influence1EdgeIslandSize) * localProgress;
-      dotMatrixParams.influence1EdgeExposure = fromDot.influence1EdgeExposure + (toDot.influence1EdgeExposure - fromDot.influence1EdgeExposure) * localProgress;
-      dotMatrixParams.influence1EdgeGamma = fromDot.influence1EdgeGamma + (toDot.influence1EdgeGamma - fromDot.influence1EdgeGamma) * localProgress;
+    return parallaxCircles;
+  };
 
-      // Sync the interpolated parameters to the shader uniforms
-      if (window.syncParamsToUniforms) {
-        window.syncParamsToUniforms();
+  // Parallax scroll handler for new circles
+  let parallaxCircles = [];
+
+  const updateParallaxCircles = () => {
+    const scrollY = window.scrollY;
+
+    // Debug logging - more frequent for testing
+    if (Math.random() < 0.1) { // Log more frequently
+      console.log(`PARALLAX UPDATE: scrollY=${scrollY}, circles=${parallaxCircles.length}`);
+      if (parallaxCircles.length > 0) {
+        console.log(`First circle: initialY=${parallaxCircles[0].initialY}, speed=${parallaxCircles[0].speed}`);
       }
     }
 
-    lastSectionIndex = Math.floor(totalScroll);
+    parallaxCircles.forEach((circle, index) => {
+      // Move opposite to scroll direction
+      const newY = circle.initialY + (scrollY * circle.speed);
+      circle.element.style.top = `${newY}px`;
+
+      // Debug first circle movement
+      if (index === 0 && Math.random() < 0.05) {
+        console.log(`Circle 0 moving: initialY=${circle.initialY}, scrollY=${scrollY}, speed=${circle.speed}, newY=${newY}`);
+      }
+    });
+  };
+
+  const initializeParallaxSystem = () => {
+    console.log('=== INITIALIZING PARALLAX SYSTEM ===');
+
+    // Set original circles to their final theme state
+    setCirclesToFinalState();
+
+    // Create new parallax circles
+    console.log('Creating parallax circles...');
+    parallaxCircles = createParallaxCircles();
+    console.log(`=== CREATED ${parallaxCircles.length} PARALLAX CIRCLES ===`);
+
+    // Log each circle for debugging
+    parallaxCircles.forEach((circle, i) => {
+      console.log(`Circle ${i}: x=${circle.x}, initialY=${circle.initialY}, speed=${circle.speed}`);
+    });
+
+    // Start the parallax scroll listener
+    window.addEventListener('scroll', updateParallaxCircles, { passive: true });
+    console.log('=== PARALLAX SCROLL LISTENER ATTACHED ===');
+
+    // Initialize parallax circles on load
+    updateParallaxCircles();
+    console.log('=== PARALLAX SYSTEM INITIALIZED ===');
   };
 
   const startScrollListener = () => {
-    window.addEventListener('scroll', updateCirclesOnScroll);
-    // Initialize circles on load
-    updateCirclesOnScroll();
+    // Initialize the parallax system immediately
+    initializeParallaxSystem();
   };
+
+  // IMMEDIATE TEST - CREATE CIRCLES RIGHT NOW
+  console.log('=== CREATING TEST CIRCLES IMMEDIATELY ===');
+
+  // Create parallax circles distributed across full page height
+  const createFullPageParallax = () => {
+    console.log('=== CREATING FULL PAGE PARALLAX ===');
+
+    // Calculate full page dimensions
+    const pageHeight = Math.max(
+      document.body.scrollHeight,
+      document.body.offsetHeight,
+      document.documentElement.clientHeight,
+      document.documentElement.scrollHeight,
+      document.documentElement.offsetHeight
+    );
+
+    const pageWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    console.log(`Page dimensions: ${pageWidth}x${pageHeight}, Viewport: ${viewportHeight}`);
+
+    // Create three depth layers with circles distributed across full page height
+    const layers = [
+      { name: 'background', count: 15, speed: -0.3, color: '#FF6B6B', size: [80, 150] },
+      { name: 'middle', count: 12, speed: -0.6, color: '#4ECDC4', size: [100, 200] },
+      { name: 'foreground', count: 8, speed: -1.0, color: '#45B7D1', size: [120, 250] }
+    ];
+
+    const allCircles = [];
+
+    layers.forEach(layer => {
+      console.log(`Creating ${layer.count} ${layer.name} circles`);
+
+      for (let i = 0; i < layer.count; i++) {
+        const div = document.createElement('div');
+
+        // Random size within range
+        const size = layer.size[0] + Math.random() * (layer.size[1] - layer.size[0]);
+
+        // Random position across full page
+        const x = Math.random() * (pageWidth - size);
+        const y = Math.random() * (pageHeight + viewportHeight * 2) - viewportHeight; // Extra height for smooth entrance
+
+        div.style.cssText = `
+          position: fixed;
+          width: ${size}px;
+          height: ${size}px;
+          background: ${layer.color};
+          border-radius: 50%;
+          left: ${x}px;
+          top: ${y}px;
+          z-index: ${layer.name === 'background' ? 1 : layer.name === 'middle' ? 2 : 3};
+          opacity: 0.3;
+          pointer-events: none;
+        `;
+
+        document.body.appendChild(div);
+
+        allCircles.push({
+          element: div,
+          initialY: y,
+          speed: layer.speed,
+          layer: layer.name
+        });
+
+        if (i < 2) {
+          console.log(`${layer.name} circle ${i}: x=${x.toFixed(0)}, y=${y.toFixed(0)}, size=${size.toFixed(0)}`);
+        }
+      }
+    });
+
+    console.log(`Total circles created: ${allCircles.length}`);
+
+    // Add scroll listener
+    window.addEventListener('scroll', () => {
+      const scrollY = window.scrollY;
+
+      allCircles.forEach((circle, index) => {
+        const newY = circle.initialY + (scrollY * circle.speed);
+        circle.element.style.top = newY + 'px';
+      });
+
+      // Occasional debug
+      if (Math.random() < 0.02) {
+        console.log(`Scroll: ${scrollY}, moving ${allCircles.length} circles`);
+      }
+    });
+
+    console.log('=== FULL PAGE PARALLAX COMPLETE ===');
+    return allCircles;
+  };
+
+  // Run immediately
+  createFullPageParallax();
+
+  // Force initialize parallax system after everything is loaded
+  setTimeout(() => {
+    if (parallaxCircles.length === 0) {
+      logger('Force initializing parallax system...');
+      initializeParallaxSystem();
+    }
+  }, 1000);
 
   // Background theme transition timeline (this is the main hero animation)
 });
