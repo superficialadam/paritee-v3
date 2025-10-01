@@ -784,9 +784,8 @@ window.addEventListener('load', function () {
       }
     ];
 
-    const sectionColors = [
-      '#FF6B6B', '#4ECDC4', '#FFE66D', '#95E1D3',
-      '#F38181', '#AA96DA', '#FCBAD3', '#A8E6CF'
+    const circleColors = [
+      '#0E2683', '#3B167A', '#5463B2', '#6629CC', '#7D9DD9', '#9EA1D8'
     ];
 
     // Pre-blurred circle images
@@ -829,8 +828,8 @@ window.addEventListener('load', function () {
 
           const brightnessOpacity = 0.2 + (normalizedX * 0.4);
 
-          // Get color with hue shift
-          const baseColor = sectionColors[sectionIndex - 1];
+          // Get random color from palette with hue shift
+          const baseColor = circleColors[Math.floor(Math.random() * circleColors.length)];
           const shiftedColor = adjustHue(baseColor, layer.hueShift);
 
           const absoluteY = sectionTop + (sectionHeight / 2) + yOffset + compensationOffset;
