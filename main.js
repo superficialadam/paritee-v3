@@ -744,16 +744,16 @@ window.addEventListener('load', function () {
       const hue2rgb = (p, q, t) => {
         if (t < 0) t += 1;
         if (t > 1) t -= 1;
-        if (t < 1/6) return p + (q - p) * 6 * t;
-        if (t < 1/2) return q;
-        if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+        if (t < 1 / 6) return p + (q - p) * 6 * t;
+        if (t < 1 / 2) return q;
+        if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
         return p;
       };
       const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
       const p = 2 * l - q;
-      r2 = hue2rgb(p, q, h + 1/3);
+      r2 = hue2rgb(p, q, h + 1 / 3);
       g2 = hue2rgb(p, q, h);
-      b2 = hue2rgb(p, q, h - 1/3);
+      b2 = hue2rgb(p, q, h - 1 / 3);
     }
 
     // Convert back to hex
@@ -818,13 +818,14 @@ window.addEventListener('load', function () {
         yPosition,
         size,
         opacity,
-        sectionIndex,
+        sectionKey,
         noiseOffsetX,
         noiseOffsetY
       } = config;
 
       const circleDiv = document.createElement('div');
-      circleDiv.classList.add(`section${sectionIndex}-circle-layer${layerIndex}`);
+      const sanitizedKey = (sectionKey || 'section').replace(/[^a-zA-Z0-9_-]/g, '');
+      circleDiv.classList.add(`${sanitizedKey}-circle-layer${layerIndex}`);
 
       const baseColor = circleColors[Math.floor(Math.random() * circleColors.length)];
       const shiftedColor = adjustHue(baseColor, layer.hueShift);
@@ -861,9 +862,11 @@ window.addEventListener('load', function () {
       return circleDiv;
     }
 
-    for (let sectionIndex = 1; sectionIndex <= 8; sectionIndex++) {
-      const section = document.querySelector(`#section${sectionIndex}`);
-      if (!section) continue;
+    const contentSections = Array.from(document.querySelectorAll('.section'))
+      .filter(section => section.id && section.id !== 'hero');
+
+    contentSections.forEach((section, index) => {
+      const sectionKey = section.id || `section-${index + 1}`;
 
       const sectionTop = section.offsetTop;
       const sectionHeight = section.offsetHeight;
@@ -902,7 +905,7 @@ window.addEventListener('load', function () {
             yPosition: absoluteY,
             size: randomSize,
             opacity: brightnessOpacity,
-            sectionIndex,
+            sectionKey,
             noiseOffsetX: Math.random() * 1000,
             noiseOffsetY: Math.random() * 1000
           });
@@ -922,15 +925,15 @@ window.addEventListener('load', function () {
           yPosition: edgeY,
           size: bigCircleSize,
           opacity: 0.4,
-          sectionIndex,
+          sectionKey,
           noiseOffsetX: Math.random() * 1000,
           noiseOffsetY: Math.random() * 1000
         });
       });
 
       // 1. Add transition circles between sections
-      if (sectionIndex < 8) {
-        const nextSection = document.querySelector(`#section${sectionIndex + 1}`);
+      if (index < contentSections.length - 1) {
+        const nextSection = contentSections[index + 1];
         if (nextSection) {
           const nextSectionTop = nextSection.offsetTop;
           const transitionY = sectionTop + sectionHeight + ((nextSectionTop - (sectionTop + sectionHeight)) / 2);
@@ -954,14 +957,14 @@ window.addEventListener('load', function () {
               yPosition: transitionY + transitionCompensation,
               size: transitionSize,
               opacity: 0.25,
-              sectionIndex: sectionIndex,
+              sectionKey,
               noiseOffsetX: Math.random() * 1000,
               noiseOffsetY: Math.random() * 1000
             });
           }
         }
       }
-    }
+    });
   }
 
   // 2. Ambient animation with Perlin noise
