@@ -761,6 +761,18 @@ window.addEventListener('load', function () {
     return `#${toHex(r2)}${toHex(g2)}${toHex(b2)}`;
   }
 
+  // Simple Perlin-like noise using multiple sine waves
+  function multiOctaveNoise(x, y, z) {
+    return (
+      Math.sin(x * 0.5 + z) * 0.5 +
+      Math.sin(x * 1.3 + y * 0.7 + z * 1.1) * 0.3 +
+      Math.sin(x * 2.1 + y * 1.9 + z * 0.8) * 0.2
+    );
+  }
+
+  // Store all animated circles for continuous animation
+  const animatedCircles = [];
+
   // Generate section-specific foreground circles using pre-blurred images
   function generateSectionCircles() {
     const foregroundLayers = [
@@ -798,6 +810,57 @@ window.addEventListener('load', function () {
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 
+    function createCircle(config) {
+      const {
+        layer,
+        layerIndex,
+        xPosition,
+        yPosition,
+        size,
+        opacity,
+        sectionIndex,
+        noiseOffsetX,
+        noiseOffsetY
+      } = config;
+
+      const circleDiv = document.createElement('div');
+      circleDiv.classList.add(`section${sectionIndex}-circle-layer${layerIndex}`);
+
+      const baseColor = circleColors[Math.floor(Math.random() * circleColors.length)];
+      const shiftedColor = adjustHue(baseColor, layer.hueShift);
+
+      circleDiv.style.position = 'absolute';
+      circleDiv.style.width = `${size}px`;
+      circleDiv.style.height = `${size}px`;
+      circleDiv.style.left = `${xPosition}px`;
+      circleDiv.style.top = `${yPosition}px`;
+      circleDiv.style.backgroundColor = shiftedColor;
+      circleDiv.style.opacity = opacity;
+      circleDiv.style.maskImage = `url(${circleImages[Math.floor(Math.random() * circleImages.length)]})`;
+      circleDiv.style.webkitMaskImage = circleDiv.style.maskImage;
+      circleDiv.style.maskSize = 'contain';
+      circleDiv.style.webkitMaskSize = 'contain';
+      circleDiv.style.maskRepeat = 'no-repeat';
+      circleDiv.style.webkitMaskRepeat = 'no-repeat';
+      circleDiv.style.maskPosition = 'center';
+      circleDiv.style.webkitMaskPosition = 'center';
+      circleDiv.style.pointerEvents = 'none';
+
+      layer.element.appendChild(circleDiv);
+
+      // Store for animation
+      animatedCircles.push({
+        element: circleDiv,
+        baseX: xPosition,
+        baseY: yPosition,
+        noiseOffsetX,
+        noiseOffsetY,
+        noiseOffsetZ: Math.random() * 100
+      });
+
+      return circleDiv;
+    }
+
     for (let sectionIndex = 1; sectionIndex <= 8; sectionIndex++) {
       const section = document.querySelector(`#section${sectionIndex}`);
       if (!section) continue;
@@ -806,7 +869,6 @@ window.addEventListener('load', function () {
       const sectionHeight = section.offsetHeight;
       const scrollWhenSectionCentered = sectionTop - (viewportHeight / 2) + (sectionHeight / 2);
 
-      // Check if section has "dark" class
       const isDarkSection = section.classList.contains('dark');
 
       // Generate circles for each foreground layer
@@ -819,59 +881,122 @@ window.addEventListener('load', function () {
         for (let i = 0; i < numCircles; i++) {
           const normalizedX = i / (numCircles - 1);
 
-          // Position circles left for dark sections, right for light sections
           let xPosition;
           if (isDarkSection) {
-            // Dark sections: position more to the left (0 to 50% of viewport)
             xPosition = normalizedX * (viewportWidth * 0.5);
           } else {
-            // Light sections: position more to the right (50% to 100% of viewport)
             xPosition = (viewportWidth * 0.5) + (normalizedX * (viewportWidth * 0.5));
           }
           const yOffset = (Math.random() - 0.5) * viewportHeight * 0.6;
 
-          // Size based on layer - more variation within each range
           const sizeRange = layer.sizeRange.max - layer.sizeRange.min;
           const randomSize = layer.sizeRange.min + Math.random() * sizeRange;
-
-          // Use pre-blurred image as mask with colored div
-          const circleDiv = document.createElement('div');
-          circleDiv.classList.add(`section${sectionIndex}-circle-layer${layerIndex}`);
-
           const brightnessOpacity = 0.2 + (normalizedX * 0.4);
 
-          // Get random color from palette with hue shift
-          const baseColor = circleColors[Math.floor(Math.random() * circleColors.length)];
-          const shiftedColor = adjustHue(baseColor, layer.hueShift);
-
           const absoluteY = sectionTop + (sectionHeight / 2) + yOffset + compensationOffset;
-          const absoluteX = xPosition;
 
-          circleDiv.style.position = 'absolute';
-          circleDiv.style.width = `${randomSize}px`;
-          circleDiv.style.height = `${randomSize}px`;
-          circleDiv.style.left = `${absoluteX}px`;
-          circleDiv.style.top = `${absoluteY}px`;
-          circleDiv.style.transform = 'translate(-50%, -50%)';
-          circleDiv.style.backgroundColor = shiftedColor;
-          circleDiv.style.opacity = brightnessOpacity;
-          circleDiv.style.maskImage = `url(${circleImages[i % circleImages.length]})`;
-          circleDiv.style.webkitMaskImage = `url(${circleImages[i % circleImages.length]})`;
-          circleDiv.style.maskSize = 'contain';
-          circleDiv.style.webkitMaskSize = 'contain';
-          circleDiv.style.maskRepeat = 'no-repeat';
-          circleDiv.style.webkitMaskRepeat = 'no-repeat';
-          circleDiv.style.maskPosition = 'center';
-          circleDiv.style.webkitMaskPosition = 'center';
-          circleDiv.style.pointerEvents = 'none';
-
-          layer.element.appendChild(circleDiv);
+          createCircle({
+            layer,
+            layerIndex,
+            xPosition,
+            yPosition: absoluteY,
+            size: randomSize,
+            opacity: brightnessOpacity,
+            sectionIndex,
+            noiseOffsetX: Math.random() * 1000,
+            noiseOffsetY: Math.random() * 1000
+          });
         }
+
+        // 3. Add big edge circle centered vertically
+        const edgeLayer = foregroundLayers[0]; // Use slow layer for big circles
+        const edgeCompensationOffset = scrollWhenSectionCentered * (edgeLayer.multiplier - 1);
+        const bigCircleSize = 1800;
+        const edgeX = isDarkSection ? 0 : viewportWidth;
+        const edgeY = sectionTop + (sectionHeight / 2) + edgeCompensationOffset;
+
+        createCircle({
+          layer: edgeLayer,
+          layerIndex: 0,
+          xPosition: edgeX,
+          yPosition: edgeY,
+          size: bigCircleSize,
+          opacity: 0.4,
+          sectionIndex,
+          noiseOffsetX: Math.random() * 1000,
+          noiseOffsetY: Math.random() * 1000
+        });
       });
+
+      // 1. Add transition circles between sections
+      if (sectionIndex < 8) {
+        const nextSection = document.querySelector(`#section${sectionIndex + 1}`);
+        if (nextSection) {
+          const nextSectionTop = nextSection.offsetTop;
+          const transitionY = sectionTop + sectionHeight + ((nextSectionTop - (sectionTop + sectionHeight)) / 2);
+
+          // Add 2-3 small/medium circles on both sides
+          const transitionCount = Math.floor(Math.random() * 2) + 2;
+          for (let t = 0; t < transitionCount; t++) {
+            const transitionLayer = foregroundLayers[Math.floor(Math.random() * 2) + 1]; // Medium or fast
+            const transitionCompensation = (transitionY - (viewportHeight / 2)) * (transitionLayer.multiplier - 1);
+            const isLeft = Math.random() > 0.5;
+            const transitionX = isLeft ?
+              Math.random() * (viewportWidth * 0.3) :
+              viewportWidth * 0.7 + Math.random() * (viewportWidth * 0.3);
+
+            const transitionSize = 400 + Math.random() * 600;
+
+            createCircle({
+              layer: transitionLayer,
+              layerIndex: 1,
+              xPosition: transitionX,
+              yPosition: transitionY + transitionCompensation,
+              size: transitionSize,
+              opacity: 0.25,
+              sectionIndex: sectionIndex,
+              noiseOffsetX: Math.random() * 1000,
+              noiseOffsetY: Math.random() * 1000
+            });
+          }
+        }
+      }
     }
   }
 
+  // 2. Ambient animation with Perlin noise
+  function animateCircles() {
+    const time = Date.now() * 0.0005; // Slow time progression
+
+    animatedCircles.forEach(circle => {
+      const noiseX = multiOctaveNoise(
+        circle.noiseOffsetX + time,
+        circle.noiseOffsetY,
+        circle.noiseOffsetZ
+      );
+      const noiseY = multiOctaveNoise(
+        circle.noiseOffsetX,
+        circle.noiseOffsetY + time,
+        circle.noiseOffsetZ + 50
+      );
+      const noiseScale = multiOctaveNoise(
+        circle.noiseOffsetX + time * 0.5,
+        circle.noiseOffsetY + time * 0.5,
+        circle.noiseOffsetZ + 100
+      );
+
+      const translateX = noiseX * 30; // ±30px movement
+      const translateY = noiseY * 30;
+      const scale = 1 + (noiseScale * 0.15); // 0.85 to 1.15 scale
+
+      circle.element.style.transform = `translate(calc(-50% + ${translateX}px), calc(-50% + ${translateY}px)) scale(${scale})`;
+    });
+
+    requestAnimationFrame(animateCircles);
+  }
+
   generateSectionCircles();
+  animateCircles(); // Start ambient animation
 
   // Circle configurations for each section - now with INTRO and MAIN states
   // Base positions from hero, with transformations dialed back by 5x
