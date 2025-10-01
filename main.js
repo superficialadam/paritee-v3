@@ -216,11 +216,11 @@ window.addEventListener('load', function () {
       duration: 100,
       ease: 'outExpo',
       onUpdate: () => window.syncParamsToUniforms && window.syncParamsToUniforms()
-    }, 2000)
+    }, 500)
     .add(dotMatrixParams, {
       influence1Intensity: 1,
       influence1Falloff: 0.4,
-      duration: 2000,
+      duration: 1000,
       ease: 'outExpo',
       onUpdate: () => window.syncParamsToUniforms && window.syncParamsToUniforms()
     })
@@ -229,7 +229,7 @@ window.addEventListener('load', function () {
       influence1RadiusY: 2.0,
       influence1Falloff: 0.1,
       influence1EdgeScale: 50,
-      duration: 2500,
+      duration: 1500,
       ease: 'outSine',
       onUpdate: () => window.syncParamsToUniforms && window.syncParamsToUniforms()
     })
@@ -238,124 +238,124 @@ window.addEventListener('load', function () {
       duration: 1500,
       ease: 'outSine',
       onUpdate: () => window.syncParamsToUniforms && window.syncParamsToUniforms()
-    }, 5000)
+    }, 3000)
     .add(dotMatrixParams, {
       influence1EdgeThreshold: 0.8,
       duration: 2000,
       ease: 'outSine',
       onUpdate: () => window.syncParamsToUniforms && window.syncParamsToUniforms()
-    }, 5000)
+    }, 3000)
     //LOGO SCALE ANDD FADE
     .add(logo1, {
       opacity: 1.0,
       duration: 1000,
       ease: 'inOutSine',
-    }, 4500)
+    }, 2500)
     .add(logo1, {
       width: ['200px', '240px'],
       duration: 5000,
-    }, 4500)
+    }, 2500)
     .add(logo2, {
       opacity: 1.0,
       duration: 1000,
       ease: 'inOutSine',
-    }, 4500)
+    }, 2500)
     .add(logo2, {
       width: ['200px', '240px'],
       duration: 5000,
-    }, 4500)
+    }, 2500)
     .add(logo3, {
       opacity: 1.0,
       duration: 1000,
       ease: 'inOutSine',
-    }, 4500)
+    }, 2500)
     .add(logo3, {
       width: ['200px', '240px'],
       duration: 5000,
-    }, 4500)
+    }, 2500)
     //LOGO COLOR SHIFT
     .add(logo1, {
       left: ['50%', '50.1%'],
       duration: 1000,
       ease: 'inOutSine',
-    }, 4500)
+    }, 2500)
     .add(logo1, {
       left: ['50.1%', '50%'],
       duration: 1000,
       ease: 'inOutSine',
-    }, 5500)
+    }, 3500)
     .add(logo2, {
       left: ['50%', '49.9%'],
       duration: 1000,
       ease: 'inOutSine',
-    }, 4500)
+    }, 2500)
     .add(logo2, {
       left: ['49.9%', '50%'],
       duration: 1000,
       ease: 'inOutSine',
-    }, 5500)
+    }, 3500)
 
     //OPACITY GLITCH OUT
     .add(logo1, {
       opacity: 0.0,
       duration: 10,
-    }, 9000)
+    }, 7000)
     .add(logo1, {
       opacity: 1.0,
       duration: 10,
-    }, 9100)
+    }, 7100)
     .add(logo1, {
       opacity: 0.0,
       duration: 10,
-    }, 9150)
+    }, 7150)
     .add(logo1, {
       opacity: 1.0,
       duration: 10,
-    }, 9200)
+    }, 7200)
     .add(logo1, {
       opacity: 0.0,
       duration: 10,
-    }, 9220)
+    }, 7220)
     .add(logo2, {
       opacity: 0.0,
       duration: 10,
-    }, 9000)
-    .add(logo2, {
-      opacity: 1.0,
-      duration: 10,
-    }, 9100)
-    .add(logo2, {
-      opacity: 0.0,
-      duration: 10,
-    }, 9150)
+    }, 7000)
     .add(logo2, {
       opacity: 1.0,
       duration: 10,
-    }, 9200)
+    }, 7100)
     .add(logo2, {
       opacity: 0.0,
       duration: 10,
-    }, 9220)
+    }, 7150)
+    .add(logo2, {
+      opacity: 1.0,
+      duration: 10,
+    }, 7200)
+    .add(logo2, {
+      opacity: 0.0,
+      duration: 10,
+    }, 7220)
     .add(logo3, {
       opacity: 0.0,
       duration: 10,
-    }, 9000)
+    }, 7000)
     .add(logo3, {
       opacity: 1.0,
       duration: 10,
-    }, 9100)
+    }, 7100)
     .add(logo3, {
       opacity: 0.0,
       duration: 10,
-    }, 9150)
+    }, 7150)
     .add(logo3, {
       opacity: 1.0,
       duration: 10,
-    }, 9200)
+    }, 7200)
     .add(logo3, {
       opacity: 0.0,
       duration: 10,
-    }, 9220)
+    }, 7220)
     .add(dotMatrixParams, {
       influence2RadiusX: 1.0,
       influence2RadiusY: 1.0,
@@ -390,7 +390,7 @@ window.addEventListener('load', function () {
 
 
   // 3 second idle state (nothing happens)
-  const idleTime = 5000;
+  const idleTime = 3000;
 
   // Circle 2 expands and lightens first (lead circle)
   themeTimeline.add('.circle-2', {
