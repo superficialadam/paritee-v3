@@ -806,6 +806,9 @@ window.addEventListener('load', function () {
       const sectionHeight = section.offsetHeight;
       const scrollWhenSectionCentered = sectionTop - (viewportHeight / 2) + (sectionHeight / 2);
 
+      // Check if section has "dark" class
+      const isDarkSection = section.classList.contains('dark');
+
       // Generate circles for each foreground layer
       foregroundLayers.forEach((layer, layerIndex) => {
         if (!layer.element) return;
@@ -815,7 +818,16 @@ window.addEventListener('load', function () {
 
         for (let i = 0; i < numCircles; i++) {
           const normalizedX = i / (numCircles - 1);
-          const xPosition = normalizedX * viewportWidth;
+
+          // Position circles left for dark sections, right for light sections
+          let xPosition;
+          if (isDarkSection) {
+            // Dark sections: position more to the left (0 to 50% of viewport)
+            xPosition = normalizedX * (viewportWidth * 0.5);
+          } else {
+            // Light sections: position more to the right (50% to 100% of viewport)
+            xPosition = (viewportWidth * 0.5) + (normalizedX * (viewportWidth * 0.5));
+          }
           const yOffset = (Math.random() - 0.5) * viewportHeight * 0.6;
 
           // Size based on layer - more variation within each range
