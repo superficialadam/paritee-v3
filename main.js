@@ -966,7 +966,7 @@ window.addEventListener('load', function () {
 
   // 2. Ambient animation with Perlin noise
   function animateCircles() {
-    const time = Date.now() * 0.0005; // Slow time progression
+    const time = Date.now() * 0.001; // 2x faster time progression
 
     animatedCircles.forEach(circle => {
       const noiseX = multiOctaveNoise(
@@ -985,8 +985,8 @@ window.addEventListener('load', function () {
         circle.noiseOffsetZ + 100
       );
 
-      const translateX = noiseX * 30; // ±30px movement
-      const translateY = noiseY * 30;
+      const translateX = noiseX * 60; // ±60px movement
+      const translateY = noiseY * 60;
       const scale = 1 + (noiseScale * 0.15); // 0.85 to 1.15 scale
 
       circle.element.style.transform = `translate(calc(-50% + ${translateX}px), calc(-50% + ${translateY}px)) scale(${scale})`;
