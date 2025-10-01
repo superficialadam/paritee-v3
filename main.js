@@ -702,15 +702,87 @@ window.addEventListener('load', function () {
 
   // Parallax multipliers for each layer (defined early for use in functions)
   const parallaxMultipliers = {
-    background: 0.15,  // Slowest - moves 15% of scroll
-    middle: 0.3,       // Medium - moves 30% of scroll
-    foreground: 2.0    // Fastest - moves 200% of scroll (2x faster than DOM)
+    background: 0.15,      // Slowest - moves 15% of scroll
+    middle: 0.3,           // Medium - moves 30% of scroll
+    foregroundSlow: 1.0,   // Slow foreground - moves 100% of scroll (same as DOM)
+    foregroundMedium: 2.0, // Medium foreground - moves 200% of scroll (2x faster than DOM)
+    foregroundFast: 4.0    // Fast foreground - moves 400% of scroll (4x faster than DOM)
   };
+
+  // Helper function to adjust hue of a hex color
+  function adjustHue(hex, hueShift) {
+    // Convert hex to RGB
+    const r = parseInt(hex.slice(1, 3), 16) / 255;
+    const g = parseInt(hex.slice(3, 5), 16) / 255;
+    const b = parseInt(hex.slice(5, 7), 16) / 255;
+
+    // Convert RGB to HSL
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+
+    if (max === min) {
+      h = s = 0;
+    } else {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+        case g: h = ((b - r) / d + 2) / 6; break;
+        case b: h = ((r - g) / d + 4) / 6; break;
+      }
+    }
+
+    // Adjust hue
+    h = (h + hueShift) % 1;
+
+    // Convert HSL back to RGB
+    let r2, g2, b2;
+    if (s === 0) {
+      r2 = g2 = b2 = l;
+    } else {
+      const hue2rgb = (p, q, t) => {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1/6) return p + (q - p) * 6 * t;
+        if (t < 1/2) return q;
+        if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+        return p;
+      };
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      const p = 2 * l - q;
+      r2 = hue2rgb(p, q, h + 1/3);
+      g2 = hue2rgb(p, q, h);
+      b2 = hue2rgb(p, q, h - 1/3);
+    }
+
+    // Convert back to hex
+    const toHex = x => Math.round(x * 255).toString(16).padStart(2, '0');
+    return `#${toHex(r2)}${toHex(g2)}${toHex(b2)}`;
+  }
 
   // Generate section-specific foreground circles
   function generateSectionCircles() {
-    const foregroundLayer = document.querySelector('.parallax-foreground');
-    if (!foregroundLayer) return;
+    const foregroundLayers = [
+      {
+        element: document.querySelector('.parallax-foreground-slow'),
+        multiplier: parallaxMultipliers.foregroundSlow,
+        hueShift: -0.05,
+        sizeRange: { min: 600, max: 1000 } // Large circles, slow speed
+      },
+      {
+        element: document.querySelector('.parallax-foreground-medium'),
+        multiplier: parallaxMultipliers.foregroundMedium,
+        hueShift: 0,
+        sizeRange: { min: 300, max: 600 } // Medium circles, medium speed
+      },
+      {
+        element: document.querySelector('.parallax-foreground-fast'),
+        multiplier: parallaxMultipliers.foregroundFast,
+        hueShift: 0.05,
+        sizeRange: { min: 150, max: 400 } // Small circles, fast speed (in front)
+      }
+    ];
 
     const sectionColors = [
       '#FF6B6B', '#4ECDC4', '#FFE66D', '#95E1D3',
@@ -726,56 +798,59 @@ window.addEventListener('load', function () {
 
       const sectionTop = section.offsetTop;
       const sectionHeight = section.offsetHeight;
-
       const scrollWhenSectionCentered = sectionTop - (viewportHeight / 2) + (sectionHeight / 2);
-      const compensationOffset = scrollWhenSectionCentered * (parallaxMultipliers.foreground - 1);
 
-      const numCircles = Math.floor(Math.random() * 4) + 5;
+      // Generate circles for each foreground layer
+      foregroundLayers.forEach((layer, layerIndex) => {
+        if (!layer.element) return;
 
-      for (let i = 0; i < numCircles; i++) {
-        // Distribute circles across the entire viewport width
-        const normalizedX = i / (numCircles - 1); // 0 to 1 across circles
-        const xPosition = normalizedX * viewportWidth; // Spread across full width
+        const compensationOffset = scrollWhenSectionCentered * (layer.multiplier - 1);
+        const numCircles = Math.floor(Math.random() * 4) + 5;
 
-        // Add some vertical variation
-        const yOffset = (Math.random() - 0.5) * viewportHeight * 0.6; // ±30% viewport height
+        for (let i = 0; i < numCircles; i++) {
+          const normalizedX = i / (numCircles - 1);
+          const xPosition = normalizedX * viewportWidth;
+          const yOffset = (Math.random() - 0.5) * viewportHeight * 0.6;
 
-        // Much larger circles to fill the space
-        const randomSize = 800 + Math.random() * 800; // 800-1600px
+          // Size based on layer - more variation within each range
+          const sizeRange = layer.sizeRange.max - layer.sizeRange.min;
+          const randomSize = layer.sizeRange.min + Math.random() * sizeRange;
 
-        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.classList.add(`section${sectionIndex}-circle`);
-        svg.setAttribute('viewBox', `0 0 ${randomSize} ${randomSize}`);
-        svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+          const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          svg.classList.add(`section${sectionIndex}-circle-layer${layerIndex}`);
+          svg.setAttribute('viewBox', `0 0 ${randomSize} ${randomSize}`);
+          svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
 
-        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        circle.setAttribute('cx', randomSize / 2);
-        circle.setAttribute('cy', randomSize / 2);
-        circle.setAttribute('r', randomSize / 2);
-        circle.setAttribute('fill', sectionColors[sectionIndex - 1]);
+          const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          circle.setAttribute('cx', randomSize / 2);
+          circle.setAttribute('cy', randomSize / 2);
+          circle.setAttribute('r', randomSize / 2);
 
-        svg.appendChild(circle);
+          // Apply hue shift to color
+          const baseColor = sectionColors[sectionIndex - 1];
+          const shiftedColor = adjustHue(baseColor, layer.hueShift);
+          circle.setAttribute('fill', shiftedColor);
 
-        // Calculate opacity based on position (left = brighter/transparent, right = darker/opaque)
-        // normalizedX goes 0 (left) to 1 (right)
-        // Bright = low opacity (transparent), Dark = high opacity (opaque)
-        const brightnessOpacity = 0.2 + (normalizedX * 0.4); // 0.2 on left (bright/transparent), 0.6 on right (dark/opaque)
+          svg.appendChild(circle);
 
-        svg.style.position = 'absolute';
-        svg.style.width = `${randomSize}px`;
-        svg.style.height = `${randomSize}px`;
-        svg.style.filter = 'blur(50px)';
-        svg.style.opacity = brightnessOpacity;
+          const brightnessOpacity = 0.2 + (normalizedX * 0.4);
 
-        const absoluteY = sectionTop + (sectionHeight / 2) + yOffset + compensationOffset;
-        const absoluteX = xPosition;
+          svg.style.position = 'absolute';
+          svg.style.width = `${randomSize}px`;
+          svg.style.height = `${randomSize}px`;
+          svg.style.filter = 'blur(50px)';
+          svg.style.opacity = brightnessOpacity;
 
-        svg.style.left = `${absoluteX}px`;
-        svg.style.top = `${absoluteY}px`;
-        svg.style.transform = 'translate(-50%, -50%)';
+          const absoluteY = sectionTop + (sectionHeight / 2) + yOffset + compensationOffset;
+          const absoluteX = xPosition;
 
-        foregroundLayer.appendChild(svg);
-      }
+          svg.style.left = `${absoluteX}px`;
+          svg.style.top = `${absoluteY}px`;
+          svg.style.transform = 'translate(-50%, -50%)';
+
+          layer.element.appendChild(svg);
+        }
+      });
     }
   }
 
@@ -1249,8 +1324,16 @@ window.addEventListener('load', function () {
       translateY: -scrollY * parallaxMultipliers.middle
     });
 
-    utils.set('.parallax-foreground', {
-      translateY: -scrollY * parallaxMultipliers.foreground
+    utils.set('.parallax-foreground-slow', {
+      translateY: -scrollY * parallaxMultipliers.foregroundSlow
+    });
+
+    utils.set('.parallax-foreground-medium', {
+      translateY: -scrollY * parallaxMultipliers.foregroundMedium
+    });
+
+    utils.set('.parallax-foreground-fast', {
+      translateY: -scrollY * parallaxMultipliers.foregroundFast
     });
 
     // Still interpolate dotMatrix parameters based on scroll position

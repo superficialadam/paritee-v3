@@ -45,7 +45,9 @@
 /* Parallax layers */
 .parallax-background,
 .parallax-middle,
-.parallax-foreground {
+.parallax-foreground-slow,
+.parallax-foreground-medium,
+.parallax-foreground-fast {
   position: absolute;
   top: 0;
   left: 0;
