@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 
 const TEXTURE_PATHS = [
-  'images/blurred-circle-small.png',
-  'images/blurred-circle-small-1.png',
-  'images/blurred-circle-small-2.png'
+  'blurred-circle-small.png',
+  'blurred-circle-small-1.png',
+  'blurred-circle-small-2.png'
 ];
 
 const LAYERS = [
