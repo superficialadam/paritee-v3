@@ -717,13 +717,8 @@ window.addEventListener('load', function () {
       '#F38181', '#AA96DA', '#FCBAD3', '#A8E6CF'
     ];
 
-    const heroTemplate = [
-      { x: 150, y: 100, size: 400 },
-      { x: -100, y: 50, size: 300 },
-      { x: -80, y: -120, size: 250 },
-      { x: 200, y: -80, size: 180 },
-      { x: -150, y: -100, size: 220 }
-    ];
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
 
     for (let sectionIndex = 1; sectionIndex <= 8; sectionIndex++) {
       const section = document.querySelector(`#section${sectionIndex}`);
@@ -731,23 +726,22 @@ window.addEventListener('load', function () {
 
       const sectionTop = section.offsetTop;
       const sectionHeight = section.offsetHeight;
-      const windowHeight = window.innerHeight;
 
-      const scrollWhenSectionCentered = sectionTop - (windowHeight / 2) + (sectionHeight / 2);
-      // Since foreground moves faster (2.0x), it moves ahead. To compensate:
-      // At scroll position S, section DOM position moves up by S
-      // Foreground layer moves up by (S * 2.0), so it moves 2x as fast
-      // Circle needs to start LOWER (positive offset) to compensate for faster upward movement
-      // When we scroll S, foreground moves -S*2.0, section moves -S, difference is S*(2.0-1) = S*1.0
+      const scrollWhenSectionCentered = sectionTop - (viewportHeight / 2) + (sectionHeight / 2);
       const compensationOffset = scrollWhenSectionCentered * (parallaxMultipliers.foreground - 1);
 
       const numCircles = Math.floor(Math.random() * 4) + 5;
 
       for (let i = 0; i < numCircles; i++) {
-        const template = heroTemplate[i % heroTemplate.length];
-        const randomX = template.x + (Math.random() - 0.5) * 200;
-        const randomY = template.y + (Math.random() - 0.5) * 200;
-        const randomSize = template.size * (0.8 + Math.random() * 0.4);
+        // Distribute circles across the entire viewport width
+        const normalizedX = i / (numCircles - 1); // 0 to 1 across circles
+        const xPosition = normalizedX * viewportWidth; // Spread across full width
+
+        // Add some vertical variation
+        const yOffset = (Math.random() - 0.5) * viewportHeight * 0.6; // ±30% viewport height
+
+        // Much larger circles to fill the space
+        const randomSize = 800 + Math.random() * 800; // 800-1600px
 
         const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         svg.classList.add(`section${sectionIndex}-circle`);
@@ -762,14 +756,19 @@ window.addEventListener('load', function () {
 
         svg.appendChild(circle);
 
+        // Calculate opacity based on position (left = brighter/transparent, right = darker/opaque)
+        // normalizedX goes 0 (left) to 1 (right)
+        // Bright = low opacity (transparent), Dark = high opacity (opaque)
+        const brightnessOpacity = 0.2 + (normalizedX * 0.4); // 0.2 on left (bright/transparent), 0.6 on right (dark/opaque)
+
         svg.style.position = 'absolute';
         svg.style.width = `${randomSize}px`;
         svg.style.height = `${randomSize}px`;
         svg.style.filter = 'blur(50px)';
-        svg.style.opacity = '0.4';
+        svg.style.opacity = brightnessOpacity;
 
-        const absoluteY = sectionTop + (sectionHeight / 2) + randomY + compensationOffset;
-        const absoluteX = (window.innerWidth / 2) + randomX;
+        const absoluteY = sectionTop + (sectionHeight / 2) + yOffset + compensationOffset;
+        const absoluteX = xPosition;
 
         svg.style.left = `${absoluteX}px`;
         svg.style.top = `${absoluteY}px`;
