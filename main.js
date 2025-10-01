@@ -761,32 +761,39 @@ window.addEventListener('load', function () {
     return `#${toHex(r2)}${toHex(g2)}${toHex(b2)}`;
   }
 
-  // Generate section-specific foreground circles
+  // Generate section-specific foreground circles using pre-blurred images
   function generateSectionCircles() {
     const foregroundLayers = [
       {
         element: document.querySelector('.parallax-foreground-slow'),
         multiplier: parallaxMultipliers.foregroundSlow,
         hueShift: -0.05,
-        sizeRange: { min: 600, max: 1000 } // Large circles, slow speed
+        sizeRange: { min: 1200, max: 2000 } // Large circles, slow speed (2x)
       },
       {
         element: document.querySelector('.parallax-foreground-medium'),
         multiplier: parallaxMultipliers.foregroundMedium,
         hueShift: 0,
-        sizeRange: { min: 300, max: 600 } // Medium circles, medium speed
+        sizeRange: { min: 600, max: 1200 } // Medium circles, medium speed (2x)
       },
       {
         element: document.querySelector('.parallax-foreground-fast'),
         multiplier: parallaxMultipliers.foregroundFast,
         hueShift: 0.05,
-        sizeRange: { min: 150, max: 400 } // Small circles, fast speed (in front)
+        sizeRange: { min: 300, max: 800 } // Small circles, fast speed (in front) (2x)
       }
     ];
 
     const sectionColors = [
       '#FF6B6B', '#4ECDC4', '#FFE66D', '#95E1D3',
       '#F38181', '#AA96DA', '#FCBAD3', '#A8E6CF'
+    ];
+
+    // Pre-blurred circle images
+    const circleImages = [
+      'images/blurred-circle-small.png',
+      'images/blurred-circle-small-1.png',
+      'images/blurred-circle-small-2.png'
     ];
 
     const viewportWidth = window.innerWidth;
@@ -816,39 +823,38 @@ window.addEventListener('load', function () {
           const sizeRange = layer.sizeRange.max - layer.sizeRange.min;
           const randomSize = layer.sizeRange.min + Math.random() * sizeRange;
 
-          const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-          svg.classList.add(`section${sectionIndex}-circle-layer${layerIndex}`);
-          svg.setAttribute('viewBox', `0 0 ${randomSize} ${randomSize}`);
-          svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-
-          const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-          circle.setAttribute('cx', randomSize / 2);
-          circle.setAttribute('cy', randomSize / 2);
-          circle.setAttribute('r', randomSize / 2);
-
-          // Apply hue shift to color
-          const baseColor = sectionColors[sectionIndex - 1];
-          const shiftedColor = adjustHue(baseColor, layer.hueShift);
-          circle.setAttribute('fill', shiftedColor);
-
-          svg.appendChild(circle);
+          // Use pre-blurred image as mask with colored div
+          const circleDiv = document.createElement('div');
+          circleDiv.classList.add(`section${sectionIndex}-circle-layer${layerIndex}`);
 
           const brightnessOpacity = 0.2 + (normalizedX * 0.4);
 
-          svg.style.position = 'absolute';
-          svg.style.width = `${randomSize}px`;
-          svg.style.height = `${randomSize}px`;
-          svg.style.filter = 'blur(50px)';
-          svg.style.opacity = brightnessOpacity;
+          // Get color with hue shift
+          const baseColor = sectionColors[sectionIndex - 1];
+          const shiftedColor = adjustHue(baseColor, layer.hueShift);
 
           const absoluteY = sectionTop + (sectionHeight / 2) + yOffset + compensationOffset;
           const absoluteX = xPosition;
 
-          svg.style.left = `${absoluteX}px`;
-          svg.style.top = `${absoluteY}px`;
-          svg.style.transform = 'translate(-50%, -50%)';
+          circleDiv.style.position = 'absolute';
+          circleDiv.style.width = `${randomSize}px`;
+          circleDiv.style.height = `${randomSize}px`;
+          circleDiv.style.left = `${absoluteX}px`;
+          circleDiv.style.top = `${absoluteY}px`;
+          circleDiv.style.transform = 'translate(-50%, -50%)';
+          circleDiv.style.backgroundColor = shiftedColor;
+          circleDiv.style.opacity = brightnessOpacity;
+          circleDiv.style.maskImage = `url(${circleImages[i % circleImages.length]})`;
+          circleDiv.style.webkitMaskImage = `url(${circleImages[i % circleImages.length]})`;
+          circleDiv.style.maskSize = 'contain';
+          circleDiv.style.webkitMaskSize = 'contain';
+          circleDiv.style.maskRepeat = 'no-repeat';
+          circleDiv.style.webkitMaskRepeat = 'no-repeat';
+          circleDiv.style.maskPosition = 'center';
+          circleDiv.style.webkitMaskPosition = 'center';
+          circleDiv.style.pointerEvents = 'none';
 
-          layer.element.appendChild(svg);
+          layer.element.appendChild(circleDiv);
         }
       });
     }
