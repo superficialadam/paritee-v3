@@ -924,9 +924,6 @@ function syncParamsToUniforms() {
     return;
   }
   
-  console.log('Syncing params - influence1Intensity:', params.influence1Intensity, 
-              'influence1EdgeEnabled:', params.influence1EdgeEnabled,
-              'influence1EdgeScale:', params.influence1EdgeScale);
   
   // Update main noise uniforms
   dotMaterial.uniforms.uMainNoiseEnabled.value = params.mainNoiseEnabled;

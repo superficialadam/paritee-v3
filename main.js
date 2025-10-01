@@ -5,10 +5,9 @@ const SKIP_LOGS = true;
 function logger(msg) {
   SKIP_LOGS || console.log(msg);
 }
-console.log("woho");
+
 // Wait for the page to fully load
 window.addEventListener('load', function () {
-  logger('Page loaded');
 
   // Initialize dot matrix parameters
   if (window.dotMatrixParams) {
@@ -91,45 +90,22 @@ window.addEventListener('load', function () {
     dotMatrixParams.influence2EdgeExposure = 0.0;
     dotMatrixParams.influence2EdgeGamma = 1.0;
 
-    logger('Dot matrix parameters initialized');
-
     // Defer sync to ensure dotMatrix is fully initialized
     setTimeout(() => {
       if (window.syncParamsToUniforms) {
-        console.log('Syncing initial dotMatrix parameters to shader uniforms...');
-        console.log('influence1Intensity:', dotMatrixParams.influence1Intensity);
-        console.log('influence1EdgeEnabled:', dotMatrixParams.influence1EdgeEnabled);
-        console.log('influence1EdgeScale:', dotMatrixParams.influence1EdgeScale);
-        console.log('influence1EdgeSpeed:', dotMatrixParams.influence1EdgeSpeed);
-        console.log('influence1EdgeGain:', dotMatrixParams.influence1EdgeGain);
-        console.log('influence1EdgeThreshold:', dotMatrixParams.influence1EdgeThreshold);
         window.syncParamsToUniforms();
-        console.log('Sync complete.');
-
-        // Force a second sync after a brief delay to ensure all parameters are applied
         setTimeout(() => {
-          console.log('Second sync to ensure edge noise parameters are applied...');
           window.syncParamsToUniforms();
         }, 50);
-      } else {
-        console.warn('syncParamsToUniforms function not available after timeout');
       }
     }, 100);
   }
 
-  // Debug: Check what's available globally
-  logger('anime:', typeof anime);
-  logger('animeJS:', typeof animeJS);
-  logger('window.anime:', typeof window.anime);
-
   // Check if anime is loaded (v4 should use global anime object)
   if (typeof anime === 'undefined') {
-    logger('Anime.js is not loaded!');
+    console.error('Anime.js is not loaded!');
     return;
   }
-
-  logger('Anime.js loaded successfully!');
-  logger('Available methods:', Object.keys(anime));
 
   // Destructure the anime.js functions from the global object
   const { animate, utils, onScroll, createTimeline } = anime;
@@ -179,7 +155,6 @@ window.addEventListener('load', function () {
 
   // If skipping intro, immediately set final states
   if (SKIP_INTRO_ANIMATIONS) {
-    logger('Skipping intro animations - setting final states');
 
     // HIDE logos - they should be gone after the intro
     utils.set(logo1, { opacity: 0, width: '240px', left: '50%' });
@@ -407,11 +382,8 @@ window.addEventListener('load', function () {
   const themeTimeline = createTimeline({
     autoplay: !SKIP_INTRO_ANIMATIONS,
     onComplete: function () {
-      logger('Theme timeline complete, playing hero heading animation');
-      // Play the hero heading animation after theme timeline completes
       heroHeadingTimeline.play();
-      startScrollListener(); // Start listening to scroll after initial animations
-
+      startScrollListener();
     },
   });
 
@@ -530,10 +502,7 @@ window.addEventListener('load', function () {
   const heroHeadingTimeline = createTimeline({
     autoplay: SKIP_INTRO_ANIMATIONS,
     onComplete: function () {
-      logger('Hero heading animation complete, enabling scroll');
-      // Enable scrolling after all hero animations complete
       scrollBlocked = false;
-      // Remove event listeners
       if (!SKIP_INTRO_ANIMATIONS) {
         window.removeEventListener('scroll', blockScroll);
         window.removeEventListener('wheel', blockScroll);
@@ -630,8 +599,6 @@ window.addEventListener('load', function () {
     const mainHeading = container.querySelector('.heading-main');
     const section = container.closest('.section'); // Get the parent section
     const homeContent = section ? section.querySelector('.homeContent') : null; // Find homeContent in the section
-
-    logger('Setting up prism animation for:', mainHeading.textContent);
 
     // Track if this section has been animated
     let hasAnimated = false;
@@ -733,7 +700,87 @@ window.addEventListener('load', function () {
     }
   });
 
-  logger('All animations initialized!');
+  // Parallax multipliers for each layer (defined early for use in functions)
+  const parallaxMultipliers = {
+    background: 0.15,  // Slowest - moves 15% of scroll
+    middle: 0.3,       // Medium - moves 30% of scroll
+    foreground: 2.0    // Fastest - moves 200% of scroll (2x faster than DOM)
+  };
+
+  // Generate section-specific foreground circles
+  function generateSectionCircles() {
+    const foregroundLayer = document.querySelector('.parallax-foreground');
+    if (!foregroundLayer) return;
+
+    const sectionColors = [
+      '#FF6B6B', '#4ECDC4', '#FFE66D', '#95E1D3',
+      '#F38181', '#AA96DA', '#FCBAD3', '#A8E6CF'
+    ];
+
+    const heroTemplate = [
+      { x: 150, y: 100, size: 400 },
+      { x: -100, y: 50, size: 300 },
+      { x: -80, y: -120, size: 250 },
+      { x: 200, y: -80, size: 180 },
+      { x: -150, y: -100, size: 220 }
+    ];
+
+    for (let sectionIndex = 1; sectionIndex <= 8; sectionIndex++) {
+      const section = document.querySelector(`#section${sectionIndex}`);
+      if (!section) continue;
+
+      const sectionTop = section.offsetTop;
+      const sectionHeight = section.offsetHeight;
+      const windowHeight = window.innerHeight;
+
+      const scrollWhenSectionCentered = sectionTop - (windowHeight / 2) + (sectionHeight / 2);
+      // Since foreground moves faster (2.0x), it moves ahead. To compensate:
+      // At scroll position S, section DOM position moves up by S
+      // Foreground layer moves up by (S * 2.0), so it moves 2x as fast
+      // Circle needs to start LOWER (positive offset) to compensate for faster upward movement
+      // When we scroll S, foreground moves -S*2.0, section moves -S, difference is S*(2.0-1) = S*1.0
+      const compensationOffset = scrollWhenSectionCentered * (parallaxMultipliers.foreground - 1);
+
+      const numCircles = Math.floor(Math.random() * 4) + 5;
+
+      for (let i = 0; i < numCircles; i++) {
+        const template = heroTemplate[i % heroTemplate.length];
+        const randomX = template.x + (Math.random() - 0.5) * 200;
+        const randomY = template.y + (Math.random() - 0.5) * 200;
+        const randomSize = template.size * (0.8 + Math.random() * 0.4);
+
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.classList.add(`section${sectionIndex}-circle`);
+        svg.setAttribute('viewBox', `0 0 ${randomSize} ${randomSize}`);
+        svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', randomSize / 2);
+        circle.setAttribute('cy', randomSize / 2);
+        circle.setAttribute('r', randomSize / 2);
+        circle.setAttribute('fill', sectionColors[sectionIndex - 1]);
+
+        svg.appendChild(circle);
+
+        svg.style.position = 'absolute';
+        svg.style.width = `${randomSize}px`;
+        svg.style.height = `${randomSize}px`;
+        svg.style.filter = 'blur(50px)';
+        svg.style.opacity = '0.4';
+
+        const absoluteY = sectionTop + (sectionHeight / 2) + randomY + compensationOffset;
+        const absoluteX = (window.innerWidth / 2) + randomX;
+
+        svg.style.left = `${absoluteX}px`;
+        svg.style.top = `${absoluteY}px`;
+        svg.style.transform = 'translate(-50%, -50%)';
+
+        foregroundLayer.appendChild(svg);
+      }
+    }
+  }
+
+  generateSectionCircles();
 
   // Circle configurations for each section - now with INTRO and MAIN states
   // Base positions from hero, with transformations dialed back by 5x
@@ -1188,13 +1235,6 @@ window.addEventListener('load', function () {
     const b = Math.round(c1.b + (c2.b - c1.b) * progress);
 
     return rgb2hex(r, g, b);
-  };
-
-  // Parallax multipliers for each layer
-  const parallaxMultipliers = {
-    background: 0.15,  // Slowest - moves 15% of scroll
-    middle: 0.3,       // Medium - moves 30% of scroll
-    foreground: 0.5    // Fastest - moves 50% of scroll
   };
 
   // Function to apply parallax effect based on scroll
