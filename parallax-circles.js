@@ -9,7 +9,7 @@ const TEXTURE_PATHS = [
 const LAYERS = [
   { key: 'slow', multiplier: 0.35, depth: -40, sizeRange: [900, 1600], hueShift: -0.05 },
   { key: 'medium', multiplier: 0.7, depth: -30, sizeRange: [600, 1100], hueShift: 0 },
-  { key: 'fast', multiplier: 1.1, depth: -20, sizeRange: [320, 650], hueShift: 0.05 }
+  { key: 'fast', multiplier: 2.2, depth: -20, sizeRange: [320, 650], hueShift: 0.05 }
 ];
 
 const COLOR_POOL = ['#0E2683', '#3B167A', '#5463B2', '#6629CC', '#7D9DD9', '#9EA1D8'];
@@ -25,7 +25,6 @@ let planeGeometry;
 let textures = [];
 let viewportWidth = window.innerWidth;
 let viewportHeight = window.innerHeight;
-let observer;
 
 function adjustHue(hex, hueShift) {
   const r = parseInt(hex.slice(1, 3), 16) / 255;
@@ -136,6 +135,8 @@ function updateCamera() {
 }
 
 function getSections() {
+  sectionMeta.clear();
+
   const sections = Array.from(document.querySelectorAll('.section'))
     .filter(section => section.id && section.id !== 'hero');
 
@@ -171,19 +172,28 @@ function buildSectionDefinitions(meta) {
       const baseColor = COLOR_POOL[Math.floor(Math.random() * COLOR_POOL.length)];
       const tintedColor = adjustHue(baseColor, layer.hueShift);
 
-      const basePageX = isDark
-        ? normalizedX * (viewportWidth * 0.5)
-        : (viewportWidth * 0.5) + normalizedX * (viewportWidth * 0.5);
+      const leftStart = viewportWidth * 0.05;
+      const leftEnd = viewportWidth * 0.45;
+      const rightStart = viewportWidth * 0.55;
+      const rightEnd = viewportWidth * 0.95;
 
-      const yOffset = (Math.random() - 0.5) * viewportHeight * 0.6;
+      const basePageX = isDark
+        ? leftStart + normalizedX * (leftEnd - leftStart)
+        : rightStart + normalizedX * (rightEnd - rightStart);
+
+      const yOffsetRange = layer.key === 'fast' ? 0.6 : 0.4;
+      const yOffset = (Math.random() - 0.5) * viewportHeight * yOffsetRange;
       const size = randomBetween(layer.sizeRange[0], layer.sizeRange[1]);
       const opacity = 0.22 + normalizedX * 0.4;
+
+      const centerBaseline = (layer.multiplier * sectionCenterY) + (1 - layer.multiplier) * (viewportHeight / 2);
+      const basePageY = centerBaseline + yOffset;
 
       definitions.push({
         ownerKey: key,
         layerKey: layer.key,
         basePageX,
-        basePageY: sectionCenterY + yOffset,
+        basePageY,
         parallaxMultiplier: layer.multiplier,
         size,
         opacity,
@@ -204,12 +214,15 @@ function buildSectionDefinitions(meta) {
     slowLayer.hueShift
   );
 
+  const edgeMultiplier = slowLayer.multiplier * 0.6;
+  const edgeBaseline = (edgeMultiplier * sectionCenterY) + (1 - edgeMultiplier) * (viewportHeight / 2);
+
   definitions.push({
     ownerKey: key,
     layerKey: 'edge',
     basePageX: isDark ? 0 : viewportWidth,
-    basePageY: sectionCenterY,
-    parallaxMultiplier: slowLayer.multiplier * 0.6,
+    basePageY: edgeBaseline,
+    parallaxMultiplier: edgeMultiplier,
     size: 1600,
     opacity: 0.38,
     color: edgeColor,
@@ -235,16 +248,24 @@ function buildSectionDefinitions(meta) {
       const baseColor = COLOR_POOL[Math.floor(Math.random() * COLOR_POOL.length)];
       const tintedColor = adjustHue(baseColor, layer.hueShift);
 
-      const isLeft = Math.random() > 0.5;
+      const isLeft = isDark;
+      const leftStart = viewportWidth * 0.05;
+      const leftEnd = viewportWidth * 0.45;
+      const rightStart = viewportWidth * 0.55;
+      const rightEnd = viewportWidth * 0.95;
+
       const transitionX = isLeft
-        ? Math.random() * (viewportWidth * 0.3)
-        : viewportWidth * 0.7 + Math.random() * (viewportWidth * 0.3);
+        ? leftStart + Math.random() * (leftEnd - leftStart)
+        : rightStart + Math.random() * (rightEnd - rightStart);
+
+      const transitionBaseline = (layer.multiplier * transitionY) + (1 - layer.multiplier) * (viewportHeight / 2);
+      const transitionOffset = (Math.random() - 0.5) * viewportHeight * 0.25;
 
       definitions.push({
         ownerKey: key,
         layerKey: `${layer.key}-transition`,
         basePageX: transitionX,
-        basePageY: transitionY,
+        basePageY: transitionBaseline + transitionOffset,
         parallaxMultiplier: layer.multiplier,
         size: randomBetween(420, 780),
         opacity: 0.24,
@@ -317,6 +338,17 @@ function removeSectionCircles(key) {
   sectionGroups.delete(key);
 }
 
+function clearAllSections() {
+  const keys = Array.from(sectionGroups.keys());
+  keys.forEach(removeSectionCircles);
+}
+
+function rebuildAllSections() {
+  clearAllSections();
+  const sections = getSections();
+  sections.forEach(section => ensureSectionCircles(section.dataset.circleKey));
+}
+
 function updateMeshes(time) {
   const scrollY = window.scrollY;
 
@@ -341,48 +373,6 @@ function animate() {
   requestAnimationFrame(animate);
 }
 
-function isFarOutside(entry) {
-  const margin = viewportHeight * 1.5;
-  return entry.boundingClientRect.bottom < -margin || entry.boundingClientRect.top > margin;
-}
-
-function setupObservers(sections) {
-  if (!('IntersectionObserver' in window)) {
-    sections.forEach(section => ensureSectionCircles(section.dataset.circleKey));
-    return;
-  }
-
-  observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      const key = entry.target.dataset.circleKey;
-      if (!key) {
-        return;
-      }
-
-      if (entry.isIntersecting) {
-        ensureSectionCircles(key);
-      } else if (isFarOutside(entry)) {
-        removeSectionCircles(key);
-      }
-    });
-  }, {
-    root: null,
-    rootMargin: '45% 0px',
-    threshold: [0, 0.15]
-  });
-
-  sections.forEach(section => observer.observe(section));
-}
-
-function refreshActiveSections() {
-  const activeKeys = Array.from(sectionGroups.keys());
-  activeKeys.forEach(removeSectionCircles);
-
-  activeKeys.forEach(key => {
-    ensureSectionCircles(key);
-  });
-}
-
 function handleResize() {
   viewportWidth = window.innerWidth;
   viewportHeight = window.innerHeight;
@@ -393,7 +383,7 @@ function handleResize() {
   updateCamera();
   camera.updateProjectionMatrix();
 
-  refreshActiveSections();
+  rebuildAllSections();
 }
 
 async function initParallaxCircles() {
@@ -410,24 +400,12 @@ async function initParallaxCircles() {
   }
   setupThree(container);
 
-  const sections = getSections();
-  setupObservers(sections);
+  rebuildAllSections();
 
   window.addEventListener('resize', handleResize);
   window.addEventListener('orientationchange', handleResize);
 
-  ensureInitialSections(sections);
   animate();
-}
-
-function ensureInitialSections(sections) {
-  sections.forEach(section => {
-    const key = section.dataset.circleKey;
-    const rect = section.getBoundingClientRect();
-    if (rect.bottom > -viewportHeight * 0.25 && rect.top < viewportHeight * 1.25) {
-      ensureSectionCircles(key);
-    }
-  });
 }
 
 if (document.readyState === 'loading') {
