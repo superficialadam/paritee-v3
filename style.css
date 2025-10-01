@@ -42,6 +42,17 @@
   overflow: hidden;
 }
 
+/* Parallax layers */
+.parallax-background,
+.parallax-middle,
+.parallax-foreground {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
 .bg-circles svg {
   position: absolute;
   filter: blur(50px);

@@ -1190,137 +1190,104 @@ window.addEventListener('load', function () {
     return rgb2hex(r, g, b);
   };
 
-  // Function to calculate and apply values based on scroll
+  // Parallax multipliers for each layer
+  const parallaxMultipliers = {
+    background: 0.15,  // Slowest - moves 15% of scroll
+    middle: 0.3,       // Medium - moves 30% of scroll
+    foreground: 0.5    // Fastest - moves 50% of scroll
+  };
+
+  // Function to apply parallax effect based on scroll
   const updateCirclesOnScroll = () => {
     const scrollY = window.scrollY;
+
+    // Apply parallax to each layer (inverse scroll = upward movement)
+    utils.set('.parallax-background', {
+      translateY: -scrollY * parallaxMultipliers.background
+    });
+
+    utils.set('.parallax-middle', {
+      translateY: -scrollY * parallaxMultipliers.middle
+    });
+
+    utils.set('.parallax-foreground', {
+      translateY: -scrollY * parallaxMultipliers.foreground
+    });
+
+    // Still interpolate dotMatrix parameters based on scroll position
     const windowHeight = window.innerHeight;
     const totalScroll = scrollY / windowHeight;
-
-    // Create a continuous interpolation path through all states
-    // Each section has 2 states (intro at 0.5, main at 1.0)
-    // Hero (0) -> S1_intro (0.5) -> S1_main (1.0) -> S2_intro (1.5) -> S2_main (2.0) etc.
 
     let fromConfig, toConfig, localProgress;
 
     if (totalScroll <= 0.5) {
-      // Hero to Section1_intro
       fromConfig = circleConfigs.hero;
       toConfig = circleConfigs.section1_intro;
-      localProgress = totalScroll * 2; // 0 to 1
+      localProgress = totalScroll * 2;
     } else if (totalScroll <= 1.0) {
-      // Section1_intro to Section1_main
       fromConfig = circleConfigs.section1_intro;
       toConfig = circleConfigs.section1_main;
-      localProgress = (totalScroll - 0.5) * 2; // 0 to 1
+      localProgress = (totalScroll - 0.5) * 2;
     } else if (totalScroll <= 1.5) {
-      // Section1_main to Section2_intro
       fromConfig = circleConfigs.section1_main;
       toConfig = circleConfigs.section2_intro;
-      localProgress = (totalScroll - 1.0) * 2; // 0 to 1
+      localProgress = (totalScroll - 1.0) * 2;
     } else if (totalScroll <= 2.0) {
-      // Section2_intro to Section2_main
       fromConfig = circleConfigs.section2_intro;
       toConfig = circleConfigs.section2_main;
-      localProgress = (totalScroll - 1.5) * 2; // 0 to 1
+      localProgress = (totalScroll - 1.5) * 2;
     } else if (totalScroll <= 2.5) {
-      // Section2_main to Section3_intro
       fromConfig = circleConfigs.section2_main;
       toConfig = circleConfigs.section3_intro;
-      localProgress = (totalScroll - 2.0) * 2; // 0 to 1
+      localProgress = (totalScroll - 2.0) * 2;
     } else if (totalScroll <= 3.0) {
-      // Section3_intro to Section3_main
       fromConfig = circleConfigs.section3_intro;
       toConfig = circleConfigs.section3_main;
-      localProgress = (totalScroll - 2.5) * 2; // 0 to 1
+      localProgress = (totalScroll - 2.5) * 2;
     } else if (totalScroll <= 3.5) {
-      // Section3_main to Section4_intro
       fromConfig = circleConfigs.section3_main;
       toConfig = circleConfigs.section4_intro;
-      localProgress = (totalScroll - 3.0) * 2; // 0 to 1
+      localProgress = (totalScroll - 3.0) * 2;
     } else if (totalScroll <= 4.0) {
-      // Section4_intro to Section4_main
       fromConfig = circleConfigs.section4_intro;
       toConfig = circleConfigs.section4_main;
-      localProgress = (totalScroll - 3.5) * 2; // 0 to 1
+      localProgress = (totalScroll - 3.5) * 2;
     } else if (totalScroll <= 4.5) {
-      // Section4_main to Section5_intro
       fromConfig = circleConfigs.section4_main;
       toConfig = circleConfigs.section5_intro;
-      localProgress = (totalScroll - 4.0) * 2; // 0 to 1
+      localProgress = (totalScroll - 4.0) * 2;
     } else if (totalScroll <= 5.0) {
-      // Section5_intro to Section5_main
       fromConfig = circleConfigs.section5_intro;
       toConfig = circleConfigs.section5_main;
-      localProgress = (totalScroll - 4.5) * 2; // 0 to 1
+      localProgress = (totalScroll - 4.5) * 2;
     } else if (totalScroll <= 5.5) {
-      // Section5_main to Section6_intro
       fromConfig = circleConfigs.section5_main;
       toConfig = circleConfigs.section6_intro;
-      localProgress = (totalScroll - 5.0) * 2; // 0 to 1
+      localProgress = (totalScroll - 5.0) * 2;
     } else if (totalScroll <= 6.0) {
-      // Section6_intro to Section6_main
       fromConfig = circleConfigs.section6_intro;
       toConfig = circleConfigs.section6_main;
-      localProgress = (totalScroll - 5.5) * 2; // 0 to 1
+      localProgress = (totalScroll - 5.5) * 2;
     } else if (totalScroll <= 6.5) {
-      // Section6_main to Section7_intro
       fromConfig = circleConfigs.section6_main;
       toConfig = circleConfigs.section7_intro;
-      localProgress = (totalScroll - 6.0) * 2; // 0 to 1
+      localProgress = (totalScroll - 6.0) * 2;
     } else if (totalScroll <= 7.0) {
-      // Section7_intro to Section7_main
       fromConfig = circleConfigs.section7_intro;
       toConfig = circleConfigs.section7_main;
-      localProgress = (totalScroll - 6.5) * 2; // 0 to 1
+      localProgress = (totalScroll - 6.5) * 2;
     } else if (totalScroll <= 7.5) {
-      // Section7_main to Section8_intro
       fromConfig = circleConfigs.section7_main;
       toConfig = circleConfigs.section8_intro;
-      localProgress = (totalScroll - 7.0) * 2; // 0 to 1
+      localProgress = (totalScroll - 7.0) * 2;
     } else if (totalScroll <= 8.0) {
-      // Section8_intro to Section8_main
       fromConfig = circleConfigs.section8_intro;
       toConfig = circleConfigs.section8_main;
-      localProgress = (totalScroll - 7.5) * 2; // 0 to 1
+      localProgress = (totalScroll - 7.5) * 2;
     } else {
-      // Stay at Section8_main
       fromConfig = circleConfigs.section8_main;
       toConfig = circleConfigs.section8_main;
       localProgress = 1;
-    }
-
-    // Debug: Log current state occasionally
-    if (Math.random() < 0.02) {
-      logger(`Scroll: ${totalScroll.toFixed(2)}, Progress: ${localProgress.toFixed(2)}, From: ${fromConfig.circle1.x}, To: ${toConfig.circle1.x}`);
-    }
-
-    // Apply smooth interpolation for each circle
-    for (let i = 1; i <= 5; i++) {
-      const circleKey = `circle${i}`;
-      const from = fromConfig[circleKey];
-      const to = toConfig[circleKey];
-
-      // Interpolate position, scale, and opacity
-      const x = from.x + (to.x - from.x) * localProgress;
-      const y = from.y + (to.y - from.y) * localProgress;
-      const scale = from.scale + (to.scale - from.scale) * localProgress;
-      const opacity = from.opacity + (to.opacity - from.opacity) * localProgress;
-
-      // Interpolate color smoothly
-      const fill = interpolateColor(from.fill, to.fill, localProgress);
-
-      // Apply transform for position and scale
-      // Use translateX and translateY separately to avoid parsing issues
-      utils.set(`.circle-${i}`, {
-        translateX: x,
-        translateY: y,
-        scale: scale,
-        opacity: opacity
-      });
-
-      utils.set(`.circle-${i} circle`, {
-        fill: fill
-      });
     }
 
     // Interpolate and apply dotMatrix parameters
