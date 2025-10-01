@@ -26,6 +26,14 @@ let textures = [];
 let viewportWidth = window.innerWidth;
 let viewportHeight = window.innerHeight;
 
+function multiOctaveNoise(x, y, z) {
+  return (
+    Math.sin(x * 0.5 + z) * 0.5 +
+    Math.sin(x * 1.3 + y * 0.7 + z * 1.1) * 0.3 +
+    Math.sin(x * 2.1 + y * 1.9 + z * 0.8) * 0.2
+  );
+}
+
 function adjustHue(hex, hueShift) {
   const r = parseInt(hex.slice(1, 3), 16) / 255;
   const g = parseInt(hex.slice(3, 5), 16) / 255;
@@ -181,13 +189,18 @@ function buildSectionDefinitions(meta) {
         ? leftStart + normalizedX * (leftEnd - leftStart)
         : rightStart + normalizedX * (rightEnd - rightStart);
 
-      const yOffsetRange = layer.key === 'fast' ? 0.6 : 0.4;
+      const yOffsetRange = layer.key === 'fast' ? 0.65 : 0.45;
       const yOffset = (Math.random() - 0.5) * viewportHeight * yOffsetRange;
       const size = randomBetween(layer.sizeRange[0], layer.sizeRange[1]);
       const opacity = 0.22 + normalizedX * 0.4;
 
       const centerBaseline = (layer.multiplier * sectionCenterY) + (1 - layer.multiplier) * (viewportHeight / 2);
       const basePageY = centerBaseline + yOffset;
+
+      const baseAmplitude = layer.key === 'fast'
+        ? Math.max(size * 0.35, 160)
+        : Math.max(size * 0.22, 120);
+      const scaleVariance = layer.key === 'fast' ? 0.18 : 0.14;
 
       definitions.push({
         ownerKey: key,
@@ -202,8 +215,14 @@ function buildSectionDefinitions(meta) {
         textureIndex: Math.floor(Math.random() * textures.length),
         noisePhaseX: Math.random() * Math.PI * 2,
         noisePhaseY: Math.random() * Math.PI * 2,
-        noiseSpeed: 0.15 + Math.random() * 0.25,
-        noiseAmplitude: size * 0.015
+        noiseSpeed: 0.18 + Math.random() * 0.25,
+        noiseAmplitude: baseAmplitude,
+        noiseSeeds: {
+          x: Math.random() * 1000,
+          y: Math.random() * 1000,
+          z: Math.random() * 1000
+        },
+        scaleJitter: scaleVariance + Math.random() * 0.06
       });
     }
   });
@@ -216,6 +235,8 @@ function buildSectionDefinitions(meta) {
 
   const edgeMultiplier = slowLayer.multiplier * 0.6;
   const edgeBaseline = (edgeMultiplier * sectionCenterY) + (1 - edgeMultiplier) * (viewportHeight / 2);
+
+  const edgeNoiseAmplitude = Math.max(240, viewportHeight * 0.35);
 
   definitions.push({
     ownerKey: key,
@@ -230,8 +251,14 @@ function buildSectionDefinitions(meta) {
     textureIndex: Math.floor(Math.random() * textures.length),
     noisePhaseX: Math.random() * Math.PI * 2,
     noisePhaseY: Math.random() * Math.PI * 2,
-    noiseSpeed: 0.08 + Math.random() * 0.12,
-    noiseAmplitude: 35
+    noiseSpeed: 0.12 + Math.random() * 0.16,
+    noiseAmplitude: edgeNoiseAmplitude,
+    noiseSeeds: {
+      x: Math.random() * 1000,
+      y: Math.random() * 1000,
+      z: Math.random() * 1000
+    },
+    scaleJitter: 0.12 + Math.random() * 0.05
   });
 
   const sortedMeta = Array.from(sectionMeta.values()).sort((a, b) => a.index - b.index);
@@ -259,7 +286,8 @@ function buildSectionDefinitions(meta) {
         : rightStart + Math.random() * (rightEnd - rightStart);
 
       const transitionBaseline = (layer.multiplier * transitionY) + (1 - layer.multiplier) * (viewportHeight / 2);
-      const transitionOffset = (Math.random() - 0.5) * viewportHeight * 0.25;
+      const transitionOffset = (Math.random() - 0.5) * viewportHeight * 0.35;
+      const transitionAmplitude = Math.max(200, viewportHeight * 0.35);
 
       definitions.push({
         ownerKey: key,
@@ -274,8 +302,14 @@ function buildSectionDefinitions(meta) {
         textureIndex: Math.floor(Math.random() * textures.length),
         noisePhaseX: Math.random() * Math.PI * 2,
         noisePhaseY: Math.random() * Math.PI * 2,
-        noiseSpeed: 0.18 + Math.random() * 0.2,
-        noiseAmplitude: 50
+        noiseSpeed: 0.24 + Math.random() * 0.25,
+        noiseAmplitude: transitionAmplitude,
+        noiseSeeds: {
+          x: Math.random() * 1000,
+          y: Math.random() * 1000,
+          z: Math.random() * 1000
+        },
+        scaleJitter: 0.16 + Math.random() * 0.06
       });
     }
   }
@@ -296,6 +330,7 @@ function createMesh(definition) {
   const mesh = new THREE.Mesh(planeGeometry, material);
   mesh.userData = definition;
   mesh.scale.set(definition.size, definition.size, 1);
+  mesh.userData.baseSize = definition.size;
   mesh.position.z = definition.depth;
   mesh.renderOrder = definition.depth;
 
@@ -355,14 +390,25 @@ function updateMeshes(time) {
   activeMeshes.forEach(mesh => {
     const data = mesh.userData;
     const relativeX = data.basePageX - viewportWidth / 2;
-    const worldX = relativeX + Math.sin(time * data.noiseSpeed + data.noisePhaseX) * data.noiseAmplitude;
+    const seeds = data.noiseSeeds || { x: 0, y: 0, z: 0 };
+    const timeFactor = time * data.noiseSpeed;
+
+    const noiseX = multiOctaveNoise(seeds.x + timeFactor, seeds.y, seeds.z);
+    const noiseY = multiOctaveNoise(seeds.x, seeds.y + timeFactor, seeds.z + 50);
+    const noiseS = multiOctaveNoise(seeds.x + timeFactor * 0.5, seeds.y + timeFactor * 0.5, seeds.z + 100);
 
     const effectivePageY = data.basePageY - scrollY * (data.parallaxMultiplier - 1);
     const relativeY = effectivePageY - scrollY;
-    const worldY = viewportHeight / 2 - relativeY + Math.cos(time * data.noiseSpeed + data.noisePhaseY) * data.noiseAmplitude;
+
+    const worldX = relativeX + noiseX * data.noiseAmplitude;
+    const worldY = viewportHeight / 2 - relativeY + noiseY * (data.noiseAmplitude * 0.85);
 
     mesh.position.x = worldX;
     mesh.position.y = worldY;
+
+    const scaleFactor = 1 + noiseS * data.scaleJitter;
+    const targetSize = data.baseSize * scaleFactor;
+    mesh.scale.set(targetSize, targetSize, 1);
   });
 }
 
