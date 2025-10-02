@@ -299,63 +299,63 @@ window.addEventListener('load', function () {
     .add(logo1, {
       opacity: 0.0,
       duration: 10,
-    }, 7000)
+    }, 6000)
     .add(logo1, {
       opacity: 1.0,
       duration: 10,
-    }, 7100)
+    }, 6100)
     .add(logo1, {
       opacity: 0.0,
       duration: 10,
-    }, 7150)
+    }, 6150)
     .add(logo1, {
       opacity: 1.0,
       duration: 10,
-    }, 7200)
+    }, 6200)
     .add(logo1, {
       opacity: 0.0,
       duration: 10,
-    }, 7220)
+    }, 6220)
     .add(logo2, {
       opacity: 0.0,
       duration: 10,
-    }, 7000)
-    .add(logo2, {
-      opacity: 1.0,
-      duration: 10,
-    }, 7100)
-    .add(logo2, {
-      opacity: 0.0,
-      duration: 10,
-    }, 7150)
+    }, 6000)
     .add(logo2, {
       opacity: 1.0,
       duration: 10,
-    }, 7200)
+    }, 6100)
     .add(logo2, {
       opacity: 0.0,
       duration: 10,
-    }, 7220)
+    }, 6150)
+    .add(logo2, {
+      opacity: 1.0,
+      duration: 10,
+    }, 6200)
+    .add(logo2, {
+      opacity: 0.0,
+      duration: 10,
+    }, 6220)
     .add(logo3, {
       opacity: 0.0,
       duration: 10,
-    }, 7000)
+    }, 6000)
     .add(logo3, {
       opacity: 1.0,
       duration: 10,
-    }, 7100)
+    }, 6100)
     .add(logo3, {
       opacity: 0.0,
       duration: 10,
-    }, 7150)
+    }, 6150)
     .add(logo3, {
       opacity: 1.0,
       duration: 10,
-    }, 7200)
+    }, 6200)
     .add(logo3, {
       opacity: 0.0,
       duration: 10,
-    }, 7220)
+    }, 6220)
     .add(dotMatrixParams, {
       influence2RadiusX: 1.0,
       influence2RadiusY: 1.0,
@@ -381,8 +381,9 @@ window.addEventListener('load', function () {
 
   const themeTimeline = createTimeline({
     autoplay: !SKIP_INTRO_ANIMATIONS,
+    delay: 3500,
     onComplete: function () {
-      heroHeadingTimeline.play();
+      //heroHeadingTimeline.play();
       startScrollListener();
     },
   });
@@ -420,22 +421,22 @@ window.addEventListener('load', function () {
   // Animate background gradient to much brighter mode
   themeTimeline.add('.bg-light', {
     opacity: [0, 1],
-    duration: 3500,
-    ease: 'inOutSine'
+    duration: 1500,
+    ease: 'outSine'
   }, followDelay);
 
   // Animate main heading text colors to dark for light mode
   themeTimeline.add('.heading-main', {
     color: ['#333333', '#1A1A2E'],
-    duration: 3500,
-    ease: 'inOutSine'
+    duration: 1500,
+    ease: 'outSine'
   }, followDelay);
 
   // Transition hero main heading text to dark
   themeTimeline.add('#hero .heading-main', {
     color: ['#333333', '#1A1A2E'],
-    duration: 3500,
-    ease: 'inOutSine'
+    duration: 1500,
+    ease: 'outSine'
   }, followDelay);
 
   // Animate circle 1 - move, scale and color change
@@ -443,14 +444,14 @@ window.addEventListener('load', function () {
     translateX: [0, 150],  // Keep base position
     translateY: [0, 100],   // Keep base position
     scale: [1, 1.3],
-    duration: 3000,
-    ease: 'inOutQuad'
+    duration: 1000,
+    ease: 'outSine'
   }, followDelay + 200);
 
   themeTimeline.add('.circle-1 circle', {
     fill: ['#0E2683', '#C8DDFF'],
-    duration: 3000,
-    ease: 'inOutSine'
+    duration: 1000,
+    ease: 'outSine'
   }, followDelay + 200);
 
   // Animate circle 3 - move, scale and color change
@@ -458,14 +459,14 @@ window.addEventListener('load', function () {
     translateX: [0, -80],
     translateY: [0, -120],
     scale: [1, 1.2],
-    duration: 3000,
-    ease: 'inOutQuad'
+    duration: 1000,
+    ease: 'outSine'
   }, followDelay + 400);
 
   themeTimeline.add('.circle-3 circle', {
     fill: ['#0E2683', '#C8DDFF'],
-    duration: 3000,
-    ease: 'inOutSine'
+    duration: 1000,
+    ease: 'outSine'
   }, followDelay + 400);
 
   // Animate circle 4 - move, scale and color change
@@ -473,14 +474,14 @@ window.addEventListener('load', function () {
     translateX: [0, 200],  // Keep base position
     translateY: [0, -80],   // Keep base position
     scale: [1, 1.1],
-    duration: 3000,
-    ease: 'inOutQuad'
+    duration: 1000,
+    ease: 'outSine'
   }, followDelay + 600);
 
   themeTimeline.add('.circle-4 circle', {
     fill: ['#3B167A', '#E8D8FF'],
-    duration: 3000,
-    ease: 'inOutSine'
+    duration: 1000,
+    ease: 'outSine'
   }, followDelay + 600);
 
   // Animate circle 5 - move, scale and color change
@@ -488,19 +489,20 @@ window.addEventListener('load', function () {
     translateX: [0, -150],  // Keep base position
     translateY: [0, -100],   // Keep base position
     scale: [1, 0.9],
-    duration: 3000,
-    ease: 'inOutQuad'
+    duration: 1000,
+    ease: 'outSine'
   }, followDelay + 800);
 
   themeTimeline.add('.circle-5 circle', {
     fill: ['#0E2683', '#C8DDFF'],
-    duration: 3000,
-    ease: 'inOutSine'
+    duration: 1000,
+    ease: 'outSine'
   }, followDelay + 800);
 
   // Create heading animation timeline for hero
   const heroHeadingTimeline = createTimeline({
-    autoplay: SKIP_INTRO_ANIMATIONS,
+    autoplay: true,
+    delay: 6000,
     onComplete: function () {
       scrollBlocked = false;
       if (!SKIP_INTRO_ANIMATIONS) {
@@ -512,7 +514,7 @@ window.addEventListener('load', function () {
   });
 
   // Add prism animations for hero section (same as section-1)
-  let heroPrismTime = 600;
+  let heroPrismTime = 1200;
   let heroPrismStart = window.innerWidth - 300;
 
   // Animate cyan layer - movement, opacity and blur together
@@ -521,7 +523,7 @@ window.addEventListener('load', function () {
     x: [heroPrismStart, 0],
     filter: ['blur(5px)', 'blur(0px)'],
     duration: heroPrismTime,
-    ease: 'outSine'
+    ease: 'inExpo'
   }, 0);
 
   // Animate purple layer - movement, opacity and blur together
@@ -530,7 +532,7 @@ window.addEventListener('load', function () {
     x: [heroPrismStart + 1, 0],
     filter: ['blur(5px)', 'blur(0px)'],
     duration: heroPrismTime,
-    ease: 'outSine'
+    ease: 'inExpo'
   }, 30);
 
   // Animate yellow layer - movement, opacity and blur together
@@ -539,7 +541,7 @@ window.addEventListener('load', function () {
     x: [heroPrismStart + 2, 0],
     filter: ['blur(5px)', 'blur(0px)'],
     duration: heroPrismTime,
-    ease: 'outSine'
+    ease: 'inExpo'
   }, 50);
 
   // Quickly fade in the dark grey text after prism settles
