@@ -1304,42 +1304,51 @@ window.addEventListener('load', function () {
     updateCirclesOnScroll();
   };
 
-  // Globe visibility observer - fade in/out based on .globe sections
+  // Globe visibility and rotation control based on .globe sections
   const globeSections = document.querySelectorAll('.section.globe');
   if (globeSections.length > 0) {
-    // Create observer for globe sections
-    const globeObserver = new IntersectionObserver(function (entries) {
-      let shouldShowGlobe = false;
+    // Update globe rotation and opacity based on scroll position within globe sections
+    const updateGlobeScroll = () => {
+      if (window.globeRotation === undefined || window.globeOpacity === undefined) return;
 
-      entries.forEach(function (entry) {
-        // Check if any globe section is in view with at least 25% visible
-        if (entry.intersectionRatio >= 0.25) {
-          shouldShowGlobe = true;
-        }
-      });
+      // Get the first globe section for scroll calculations
+      const globeSection = globeSections[0];
+      const rect = globeSection.getBoundingClientRect();
+      const sectionTop = rect.top + window.scrollY;
+      const sectionBottom = sectionTop + rect.height;
+      const currentScroll = window.scrollY;
+      const windowHeight = window.innerHeight;
 
-      // Animate globe opacity
-      if (shouldShowGlobe && window.globeOpacity !== undefined) {
-        animate(window, {
-          globeOpacity: [window.globeOpacity, 1],
-          duration: 800,
-          ease: 'outSine'
-        });
-      } else if (!shouldShowGlobe && window.globeOpacity !== undefined) {
-        animate(window, {
-          globeOpacity: [window.globeOpacity, 0],
-          duration: 800,
-          ease: 'outSine'
-        });
+      // Calculate when section starts appearing (top entering viewport bottom)
+      const startScroll = sectionTop - windowHeight;
+      // Calculate when section finishes disappearing (bottom leaving viewport top)
+      const endScroll = sectionBottom;
+
+      // Calculate scroll progress through the visible range (0 to 1)
+      const scrollRange = endScroll - startScroll;
+      const scrollProgress = (currentScroll - startScroll) / scrollRange;
+      const clampedProgress = Math.max(0, Math.min(1, scrollProgress));
+
+      // Interpolate rotation from 130 to 30 degrees across entire scroll range
+      const startRotation = 130;
+      const endRotation = 30;
+      const newRotation = startRotation + (endRotation - startRotation) * clampedProgress;
+      window.globeRotation = newRotation;
+
+      // Calculate opacity - fade in over first 50% of scroll, fade out over last 50%
+      let opacity = 0;
+      if (clampedProgress < 0.5) {
+        // Fade in from 0 to 1 over first 50%
+        opacity = clampedProgress / 0.5;
+      } else {
+        // Fade out from 1 to 0 over last 50%
+        opacity = (1 - clampedProgress) / 0.5;
       }
-    }, {
-      threshold: [0, 0.25, 0.5, 0.75, 1] // Multiple thresholds to detect visibility changes
-    });
+      window.globeOpacity = opacity;
+    };
 
-    // Observe all globe sections
-    globeSections.forEach(section => {
-      globeObserver.observe(section);
-    });
+    // Add scroll listener for globe rotation and opacity
+    window.addEventListener('scroll', updateGlobeScroll, { passive: true });
   }
 
   // Background theme transition timeline (this is the main hero animation)

@@ -6,7 +6,7 @@ const DOT_DENSITY = 250;       // Dots per latitude row (higher = more dots)
 const CITY_DOT_SIZE = 20.0;    // Size of city dots
 const GLOBE_RADIUS = 1;
 const CAMERA_FOV = 45;         // Camera field of view
-const CAMERA_HORIZONTAL_ROTATION = 70;   // Horizontal rotation in degrees (0-360)
+const CAMERA_HORIZONTAL_ROTATION = 130;   // Horizontal rotation in degrees (0-360)
 const CAMERA_VERTICAL_ROTATION = 40;     // Vertical rotation in degrees (-90 to 90)
 const CAMERA_DISTANCE = 2.3;              // Distance from globe center
 // ======================
@@ -228,11 +228,20 @@ async function initGlobe() {
 
   // Expose globe opacity control for external use (e.g., main.js)
   window.globeOpacity = 0;
+  window.globeRotation = CAMERA_HORIZONTAL_ROTATION; // Start at initial rotation
 
-  // Update material opacity on each render
+  // Update material opacity and camera rotation on each render
   function updateGlobeOpacity() {
     if (material && material.uniforms && material.uniforms.uGlobeOpacity) {
       material.uniforms.uGlobeOpacity.value = window.globeOpacity;
+    }
+  }
+
+  function updateGlobeRotation() {
+    if (container) {
+      const pos = getCameraPosition(window.globeRotation, CAMERA_VERTICAL_ROTATION, CAMERA_DISTANCE);
+      camera.position.set(pos.x, pos.y, pos.z);
+      camera.lookAt(0, 0, 0);
     }
   }
 
@@ -299,9 +308,10 @@ async function initGlobe() {
       }
     }
 
-    // Update globe opacity if embedded
+    // Update globe opacity and rotation if embedded
     if (container) {
       updateGlobeOpacity();
+      updateGlobeRotation();
     }
 
     renderer.render(scene, camera);
