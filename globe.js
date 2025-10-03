@@ -58,239 +58,259 @@ function getCameraPosition(horizontalDeg, verticalDeg, distance) {
   return { x, y, z };
 }
 
-const canvas = document.getElementById('globe');
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(CAMERA_FOV, window.innerWidth / window.innerHeight, 0.1, 1000);
+let renderer;
+let camera;
+let scene;
+let points;
 
-const cameraPos = getCameraPosition(CAMERA_HORIZONTAL_ROTATION, CAMERA_VERTICAL_ROTATION, CAMERA_DISTANCE);
-camera.position.set(cameraPos.x, cameraPos.y, cameraPos.z);
+async function initGlobe() {
+  // Try to find container or canvas element
+  const container = document.querySelector('.bg-globe');
+  const canvas = document.getElementById('globe');
 
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.setClearColor(0x000000);
+  if (!container && !canvas) {
+    return;
+  }
 
-// Load world texture
-const textureLoader = new THREE.TextureLoader();
-const worldTexture = await textureLoader.loadAsync('GlobeTexture.jpg');
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(CAMERA_FOV, window.innerWidth / window.innerHeight, 0.1, 1000);
 
-// Calculate city positions
-const cityPositions = CITIES.map(city => ({
-  name: city.name,
-  position: latLonToPosition(city.lat, city.lon)
-}));
+  const cameraPos = getCameraPosition(CAMERA_HORIZONTAL_ROTATION, CAMERA_VERTICAL_ROTATION, CAMERA_DISTANCE);
+  camera.position.set(cameraPos.x, cameraPos.y, cameraPos.z);
 
-// Point camera at center of globe
-camera.lookAt(0, 0, 0);
+  // Setup renderer differently based on context
+  if (container) {
+    // Embedded in index.html - create canvas and append to container
+    renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x000000, 0);
+    renderer.domElement.id = 'globe-canvas';
+    renderer.domElement.style.position = 'absolute';
+    renderer.domElement.style.top = '0';
+    renderer.domElement.style.left = '0';
+    renderer.domElement.style.width = '100%';
+    renderer.domElement.style.height = '100%';
+    renderer.domElement.style.pointerEvents = 'none';
+    renderer.domElement.style.zIndex = '-1';
+    container.appendChild(renderer.domElement);
+  } else {
+    // Standalone globe.html - use existing canvas
+    renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setClearColor(0x000000);
+  }
 
-// Create globe dots
-const DOTS_PER_ROW = DOT_DENSITY; // Latitude divisions
-const DOTS_PER_COL = DOT_DENSITY * 2; // Longitude divisions
+  // Load world texture
+  const textureLoader = new THREE.TextureLoader();
+  const worldTexture = await textureLoader.loadAsync('GlobeTexture.jpg');
 
-const positions = [];
-const sizes = [];
-const dotPositions = []; // Store as Vector3 for distance calculations
+  // Calculate city positions
+  const cityPositions = CITIES.map(city => ({
+    name: city.name,
+    position: latLonToPosition(city.lat, city.lon)
+  }));
 
-// Sample texture to get land data
-const canvas2d = document.createElement('canvas');
-const ctx = canvas2d.getContext('2d');
-canvas2d.width = worldTexture.image.width;
-canvas2d.height = worldTexture.image.height;
-ctx.drawImage(worldTexture.image, 0, 0);
-const imageData = ctx.getImageData(0, 0, canvas2d.width, canvas2d.height);
+  // Point camera at center of globe
+  camera.lookAt(0, 0, 0);
 
-// Create points on sphere where texture is white
-for (let lat = 0; lat < DOTS_PER_ROW; lat++) {
-  for (let lon = 0; lon < DOTS_PER_COL; lon++) {
-    const phi = (lat / DOTS_PER_ROW) * Math.PI; // 0 to PI
-    const theta = (lon / DOTS_PER_COL) * Math.PI * 2; // 0 to 2PI
+  // Create globe dots
+  const DOTS_PER_ROW = DOT_DENSITY;
+  const DOTS_PER_COL = DOT_DENSITY * 2;
 
-    // Sample texture at this UV coordinate (equirectangular mapping)
-    const u = lon / DOTS_PER_COL;
-    const v = 1.0 - (lat / DOTS_PER_ROW); // Flip V for proper texture orientation
-    const x = Math.floor(u * imageData.width);
-    const y = Math.floor(v * imageData.height);
-    const idx = (y * imageData.width + x) * 4;
-    const brightness = imageData.data[idx]; // R channel
+  const positions = [];
+  const sizes = [];
+  const dotPositions = [];
 
-    // Only create dots where texture is white (land)
-    if (brightness > 128) {
-      // Convert spherical to cartesian
-      const px = -GLOBE_RADIUS * Math.sin(phi) * Math.cos(theta); // Negate X to mirror horizontally
-      const py = -GLOBE_RADIUS * Math.cos(phi); // Negate Y to flip
-      const pz = GLOBE_RADIUS * Math.sin(phi) * Math.sin(theta);
+  // Sample texture to get land data
+  const canvas2d = document.createElement('canvas');
+  const ctx = canvas2d.getContext('2d');
+  canvas2d.width = worldTexture.image.width;
+  canvas2d.height = worldTexture.image.height;
+  ctx.drawImage(worldTexture.image, 0, 0);
+  const imageData = ctx.getImageData(0, 0, canvas2d.width, canvas2d.height);
 
-      positions.push(px, py, pz);
-      sizes.push(DOT_SIZE);
-      dotPositions.push(new THREE.Vector3(px, py, pz));
+  // Create points on sphere where texture is white
+  for (let lat = 0; lat < DOTS_PER_ROW; lat++) {
+    for (let lon = 0; lon < DOTS_PER_COL; lon++) {
+      const phi = (lat / DOTS_PER_ROW) * Math.PI;
+      const theta = (lon / DOTS_PER_COL) * Math.PI * 2;
+
+      const u = lon / DOTS_PER_COL;
+      const v = 1.0 - (lat / DOTS_PER_ROW);
+      const x = Math.floor(u * imageData.width);
+      const y = Math.floor(v * imageData.height);
+      const idx = (y * imageData.width + x) * 4;
+      const brightness = imageData.data[idx];
+
+      if (brightness > 128) {
+        const px = -GLOBE_RADIUS * Math.sin(phi) * Math.cos(theta);
+        const py = -GLOBE_RADIUS * Math.cos(phi);
+        const pz = GLOBE_RADIUS * Math.sin(phi) * Math.sin(theta);
+
+        positions.push(px, py, pz);
+        sizes.push(DOT_SIZE);
+        dotPositions.push(new THREE.Vector3(px, py, pz));
+      }
     }
   }
-}
 
-// Find closest dot to each city and make it larger
-cityPositions.forEach(city => {
-  let closestDotIndex = -1;
-  let closestDistance = Infinity;
+  // Find closest dot to each city and make it larger
+  cityPositions.forEach(city => {
+    let closestDotIndex = -1;
+    let closestDistance = Infinity;
 
-  dotPositions.forEach((dotPos, index) => {
-    const distance = dotPos.distanceTo(city.position);
-    if (distance < closestDistance) {
-      closestDistance = distance;
-      closestDotIndex = index;
+    dotPositions.forEach((dotPos, index) => {
+      const distance = dotPos.distanceTo(city.position);
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestDotIndex = index;
+      }
+    });
+
+    if (closestDotIndex !== -1) {
+      sizes[closestDotIndex] = CITY_DOT_SIZE;
     }
   });
 
-  if (closestDotIndex !== -1) {
-    sizes[closestDotIndex] = CITY_DOT_SIZE;
-  }
-});
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
 
-const geometry = new THREE.BufferGeometry();
-geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-geometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
+  // Custom shader material for backface culling
+  const vertexShader = `
+    attribute float size;
+    varying float vVisible;
 
-// Custom shader material for backface culling
-const vertexShader = `
-  attribute float size;
-  varying float vVisible;
+    void main() {
+      vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+      gl_Position = projectionMatrix * mvPosition;
+      gl_PointSize = size;
 
-  void main() {
-    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-    gl_Position = projectionMatrix * mvPosition;
-    gl_PointSize = size;
+      vec3 worldNormal = normalize(position);
+      vec3 viewDirection = normalize(cameraPosition - (modelMatrix * vec4(position, 1.0)).xyz);
+      float facing = dot(worldNormal, viewDirection);
 
-    // Calculate if dot faces camera (backface culling)
-    vec3 worldNormal = normalize(position); // For a sphere, normal = position
-    vec3 viewDirection = normalize(cameraPosition - (modelMatrix * vec4(position, 1.0)).xyz);
-    float facing = dot(worldNormal, viewDirection);
-
-    // Only visible if facing camera
-    vVisible = step(0.0, facing);
-  }
-`;
-
-const fragmentShader = `
-  varying float vVisible;
-
-  void main() {
-    if (vVisible < 0.5) discard;
-
-    // Draw circular dots
-    vec2 center = gl_PointCoord - vec2(0.5);
-    float dist = length(center);
-    if (dist > 0.5) discard;
-
-    // Smooth edge
-    float alpha = 1.0 - smoothstep(0.4, 0.5, dist);
-    gl_FragColor = vec4(1.0, 1.0, 1.0, alpha);
-  }
-`;
-
-const material = new THREE.ShaderMaterial({
-  vertexShader,
-  fragmentShader,
-  transparent: true,
-  depthWrite: false,
-  blending: THREE.AdditiveBlending
-});
-
-const points = new THREE.Points(geometry, material);
-scene.add(points);
-
-// Camera animation state
-let currentHorizontal = CAMERA_HORIZONTAL_ROTATION;
-let currentVertical = CAMERA_VERTICAL_ROTATION;
-let targetHorizontal = CAMERA_HORIZONTAL_ROTATION;
-let targetVertical = CAMERA_VERTICAL_ROTATION;
-let isAnimating = false;
-
-// Convert cartesian to spherical camera angles
-function cartesianToAngles(x, y, z) {
-  const distance = Math.sqrt(x * x + y * y + z * z);
-  const verticalRad = Math.asin(y / distance);
-  const horizontalRad = Math.atan2(x, z);
-
-  return {
-    horizontal: horizontalRad * (180 / Math.PI),
-    vertical: verticalRad * (180 / Math.PI)
-  };
-}
-
-// Animate camera to center a city
-function animateToCity(citySlug) {
-  const city = CITIES.find(c => c.slug === citySlug);
-  if (!city) return;
-
-  // Get city position on sphere
-  const cityPos = latLonToPosition(city.lat, city.lon);
-
-  // Camera should be at this direction, at CAMERA_DISTANCE away
-  const targetPos = cityPos.normalize().multiplyScalar(CAMERA_DISTANCE);
-
-  // Convert to angles
-  const angles = cartesianToAngles(targetPos.x, targetPos.y, targetPos.z);
-
-  targetHorizontal = angles.horizontal;
-  targetVertical = angles.vertical;
-  isAnimating = true;
-}
-
-// Smooth lerp with easing
-function easeOutCubic(t) {
-  return 1 - Math.pow(1 - t, 3);
-}
-
-// Animation loop
-function animate() {
-  requestAnimationFrame(animate);
-
-  // Animate camera rotation
-  if (isAnimating) {
-    const speed = 0.05;
-    const dx = targetHorizontal - currentHorizontal;
-    const dy = targetVertical - currentVertical;
-
-    // Handle wrapping for horizontal rotation
-    let shortestDx = dx;
-    if (Math.abs(dx) > 180) {
-      shortestDx = dx > 0 ? dx - 360 : dx + 360;
+      vVisible = step(0.0, facing);
     }
+  `;
 
-    currentHorizontal += shortestDx * speed;
-    currentVertical += dy * speed;
+  const fragmentShader = `
+    varying float vVisible;
 
-    // Normalize horizontal to 0-360
-    if (currentHorizontal < 0) currentHorizontal += 360;
-    if (currentHorizontal >= 360) currentHorizontal -= 360;
+    void main() {
+      if (vVisible < 0.5) discard;
 
-    // Update camera position
-    const pos = getCameraPosition(currentHorizontal, currentVertical, CAMERA_DISTANCE);
-    camera.position.set(pos.x, pos.y, pos.z);
-    camera.lookAt(0, 0, 0);
+      vec2 center = gl_PointCoord - vec2(0.5);
+      float dist = length(center);
+      if (dist > 0.5) discard;
 
-    // Stop animating when close enough
-    if (Math.abs(shortestDx) < 0.1 && Math.abs(dy) < 0.1) {
-      isAnimating = false;
+      float alpha = 1.0 - smoothstep(0.4, 0.5, dist);
+      gl_FragColor = vec4(1.0, 1.0, 1.0, alpha);
     }
-  }
+  `;
 
-  renderer.render(scene, camera);
-}
-
-animate();
-
-// City navigation click handlers
-document.querySelectorAll('.city-link').forEach(link => {
-  link.addEventListener('click', (e) => {
-    e.preventDefault();
-    const citySlug = link.getAttribute('data-city');
-    animateToCity(citySlug);
+  const material = new THREE.ShaderMaterial({
+    vertexShader,
+    fragmentShader,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending
   });
-});
 
-// Handle resize
-window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
+  points = new THREE.Points(geometry, material);
+  scene.add(points);
+
+  // Camera animation state (only for standalone with city links)
+  let currentHorizontal = CAMERA_HORIZONTAL_ROTATION;
+  let currentVertical = CAMERA_VERTICAL_ROTATION;
+  let targetHorizontal = CAMERA_HORIZONTAL_ROTATION;
+  let targetVertical = CAMERA_VERTICAL_ROTATION;
+  let isAnimating = false;
+
+  // Convert cartesian to spherical camera angles
+  function cartesianToAngles(x, y, z) {
+    const distance = Math.sqrt(x * x + y * y + z * z);
+    const verticalRad = Math.asin(y / distance);
+    const horizontalRad = Math.atan2(x, z);
+
+    return {
+      horizontal: horizontalRad * (180 / Math.PI),
+      vertical: verticalRad * (180 / Math.PI)
+    };
+  }
+
+  // Animate camera to center a city
+  function animateToCity(citySlug) {
+    const city = CITIES.find(c => c.slug === citySlug);
+    if (!city) return;
+
+    const cityPos = latLonToPosition(city.lat, city.lon);
+    const targetPos = cityPos.normalize().multiplyScalar(CAMERA_DISTANCE);
+    const angles = cartesianToAngles(targetPos.x, targetPos.y, targetPos.z);
+
+    targetHorizontal = angles.horizontal;
+    targetVertical = angles.vertical;
+    isAnimating = true;
+  }
+
+  // Animation loop
+  function animate() {
+    requestAnimationFrame(animate);
+
+    // Only animate camera if we have city links (standalone mode)
+    if (canvas && isAnimating) {
+      const speed = 0.05;
+      const dx = targetHorizontal - currentHorizontal;
+      const dy = targetVertical - currentVertical;
+
+      let shortestDx = dx;
+      if (Math.abs(dx) > 180) {
+        shortestDx = dx > 0 ? dx - 360 : dx + 360;
+      }
+
+      currentHorizontal += shortestDx * speed;
+      currentVertical += dy * speed;
+
+      if (currentHorizontal < 0) currentHorizontal += 360;
+      if (currentHorizontal >= 360) currentHorizontal -= 360;
+
+      const pos = getCameraPosition(currentHorizontal, currentVertical, CAMERA_DISTANCE);
+      camera.position.set(pos.x, pos.y, pos.z);
+      camera.lookAt(0, 0, 0);
+
+      if (Math.abs(shortestDx) < 0.1 && Math.abs(dy) < 0.1) {
+        isAnimating = false;
+      }
+    }
+
+    renderer.render(scene, camera);
+  }
+
+  animate();
+
+  // City navigation click handlers (only for standalone mode)
+  if (canvas) {
+    document.querySelectorAll('.city-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const citySlug = link.getAttribute('data-city');
+        animateToCity(citySlug);
+      });
+    });
+  }
+
+  // Handle resize
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initGlobe);
+} else {
+  initGlobe();
+}
