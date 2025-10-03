@@ -212,11 +212,15 @@ async function initGlobe() {
     }
   `;
 
+  // In standalone mode (canvas), globe should be visible by default
+  // In embedded mode (container), main.js will control opacity
+  const initialOpacity = canvas ? 1 : 0;
+
   const material = new THREE.ShaderMaterial({
     vertexShader,
     fragmentShader,
     uniforms: {
-      uGlobeOpacity: { value: 0 }
+      uGlobeOpacity: { value: initialOpacity }
     },
     transparent: true,
     depthWrite: false,
@@ -227,7 +231,7 @@ async function initGlobe() {
   scene.add(points);
 
   // Expose globe opacity control for external use (e.g., main.js)
-  window.globeOpacity = 0;
+  window.globeOpacity = initialOpacity;
   window.globeRotation = CAMERA_HORIZONTAL_ROTATION; // Start at initial rotation
 
   // Update material opacity and camera rotation on each render
