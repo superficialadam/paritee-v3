@@ -2,10 +2,52 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 // ===== PARAMETERS =====
-const DOT_SIZE = 8.0;          // Size of each dot
+const DOT_SIZE = 2.0;          // Size of each dot
 const DOT_DENSITY = 280;       // Dots per latitude row (higher = more dots)
+const CITY_DOT_SIZE = 20.0;    // Size of city dots
 const GLOBE_RADIUS = 1;
 // ======================
+
+// Cities with lat/long coordinates
+const CITIES = [
+  { name: 'Copenhagen', lat: 55.6761, lon: 12.5683 },
+  { name: 'Oslo', lat: 59.9139, lon: 10.7522 },
+  { name: 'Stockholm', lat: 59.3293, lon: 18.0686 },
+  { name: 'Berlin', lat: 52.5200, lon: 13.4050 },
+  { name: 'Brussels', lat: 50.8503, lon: 4.3517 },
+  { name: 'Frankfurt', lat: 50.1109, lon: 8.6821 },
+  { name: 'Munich', lat: 48.1351, lon: 11.5820 },
+  { name: 'Paris', lat: 48.8566, lon: 2.3522 },
+  { name: 'Madrid', lat: 40.4168, lon: -3.7038 },
+  { name: 'Dubai', lat: 25.2048, lon: 55.2708 },
+  { name: 'London', lat: 51.5074, lon: -0.1278 },
+  { name: 'Dublin', lat: 53.3498, lon: -6.2603 },
+  { name: 'New York', lat: 40.7128, lon: -74.0060 },
+  { name: 'Minneapolis', lat: 44.9778, lon: -93.2650 },
+  { name: 'Washington D.C', lat: 38.9072, lon: -77.0369 },
+  { name: 'San Francisco', lat: 37.7749, lon: -122.4194 }
+];
+
+// Convert lat/lon to 3D position on sphere (matching the dot generation formula)
+function latLonToPosition(lat, lon) {
+  // lat: -90 to +90 degrees -> phi: 0 to PI (south to north)
+  // lon: -180 to +180 degrees -> theta: 0 to 2PI
+  const phi = (lat + 90) * (Math.PI / 180); // -90° -> 0, +90° -> PI
+  const theta = ((lon + 180) / 360) * Math.PI * 2; // -180° -> 0, +180° -> 2PI
+
+  // Match the exact formula used for dots
+  const x = -GLOBE_RADIUS * Math.sin(phi) * Math.cos(theta);
+  const y = -GLOBE_RADIUS * Math.cos(phi);
+  const z = GLOBE_RADIUS * Math.sin(phi) * Math.sin(theta);
+
+  return new THREE.Vector3(x, y, z);
+}
+
+// Calculate city positions
+const cityPositions = CITIES.map(city => ({
+  name: city.name,
+  position: latLonToPosition(city.lat, city.lon)
+}));
 
 const canvas = document.getElementById('globe');
 const scene = new THREE.Scene();
@@ -34,6 +76,7 @@ const DOTS_PER_COL = DOT_DENSITY * 2; // Longitude divisions
 
 const positions = [];
 const sizes = [];
+const dotPositions = []; // Store as Vector3 for distance calculations
 
 // Sample texture to get land data
 const canvas2d = document.createElement('canvas');
@@ -66,9 +109,28 @@ for (let lat = 0; lat < DOTS_PER_ROW; lat++) {
 
       positions.push(px, py, pz);
       sizes.push(DOT_SIZE);
+      dotPositions.push(new THREE.Vector3(px, py, pz));
     }
   }
 }
+
+// Find closest dot to each city and make it larger
+cityPositions.forEach(city => {
+  let closestDotIndex = -1;
+  let closestDistance = Infinity;
+
+  dotPositions.forEach((dotPos, index) => {
+    const distance = dotPos.distanceTo(city.position);
+    if (distance < closestDistance) {
+      closestDistance = distance;
+      closestDotIndex = index;
+    }
+  });
+
+  if (closestDotIndex !== -1) {
+    sizes[closestDotIndex] = CITY_DOT_SIZE;
+  }
+});
 
 const geometry = new THREE.BufferGeometry();
 geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
