@@ -197,6 +197,7 @@ async function initGlobe() {
   `;
 
   const fragmentShader = `
+    uniform float uGlobeOpacity;
     varying float vVisible;
 
     void main() {
@@ -207,13 +208,16 @@ async function initGlobe() {
       if (dist > 0.5) discard;
 
       float alpha = 1.0 - smoothstep(0.4, 0.5, dist);
-      gl_FragColor = vec4(1.0, 1.0, 1.0, alpha);
+      gl_FragColor = vec4(1.0, 1.0, 1.0, alpha * uGlobeOpacity);
     }
   `;
 
   const material = new THREE.ShaderMaterial({
     vertexShader,
     fragmentShader,
+    uniforms: {
+      uGlobeOpacity: { value: 0 }
+    },
     transparent: true,
     depthWrite: false,
     blending: THREE.AdditiveBlending
@@ -221,6 +225,16 @@ async function initGlobe() {
 
   points = new THREE.Points(geometry, material);
   scene.add(points);
+
+  // Expose globe opacity control for external use (e.g., main.js)
+  window.globeOpacity = 0;
+
+  // Update material opacity on each render
+  function updateGlobeOpacity() {
+    if (material && material.uniforms && material.uniforms.uGlobeOpacity) {
+      material.uniforms.uGlobeOpacity.value = window.globeOpacity;
+    }
+  }
 
   // Camera animation state (only for standalone with city links)
   let currentHorizontal = CAMERA_HORIZONTAL_ROTATION;
@@ -283,6 +297,11 @@ async function initGlobe() {
       if (Math.abs(shortestDx) < 0.1 && Math.abs(dy) < 0.1) {
         isAnimating = false;
       }
+    }
+
+    // Update globe opacity if embedded
+    if (container) {
+      updateGlobeOpacity();
     }
 
     renderer.render(scene, camera);

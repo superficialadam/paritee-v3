@@ -1304,5 +1304,43 @@ window.addEventListener('load', function () {
     updateCirclesOnScroll();
   };
 
+  // Globe visibility observer - fade in/out based on .globe sections
+  const globeSections = document.querySelectorAll('.section.globe');
+  if (globeSections.length > 0) {
+    // Create observer for globe sections
+    const globeObserver = new IntersectionObserver(function (entries) {
+      let shouldShowGlobe = false;
+
+      entries.forEach(function (entry) {
+        // Check if any globe section is in view with at least 25% visible
+        if (entry.intersectionRatio >= 0.25) {
+          shouldShowGlobe = true;
+        }
+      });
+
+      // Animate globe opacity
+      if (shouldShowGlobe && window.globeOpacity !== undefined) {
+        animate(window, {
+          globeOpacity: [window.globeOpacity, 1],
+          duration: 800,
+          ease: 'outSine'
+        });
+      } else if (!shouldShowGlobe && window.globeOpacity !== undefined) {
+        animate(window, {
+          globeOpacity: [window.globeOpacity, 0],
+          duration: 800,
+          ease: 'outSine'
+        });
+      }
+    }, {
+      threshold: [0, 0.25, 0.5, 0.75, 1] // Multiple thresholds to detect visibility changes
+    });
+
+    // Observe all globe sections
+    globeSections.forEach(section => {
+      globeObserver.observe(section);
+    });
+  }
+
   // Background theme transition timeline (this is the main hero animation)
 });
