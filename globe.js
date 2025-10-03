@@ -1,11 +1,14 @@
 import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 // ===== PARAMETERS =====
 const DOT_SIZE = 2.0;          // Size of each dot
 const DOT_DENSITY = 280;       // Dots per latitude row (higher = more dots)
 const CITY_DOT_SIZE = 20.0;    // Size of city dots
 const GLOBE_RADIUS = 1;
+const CAMERA_FOV = 45;         // Camera field of view
+const CAMERA_HORIZONTAL_ROTATION = 80;   // Horizontal rotation in degrees (0-360)
+const CAMERA_VERTICAL_ROTATION = 30;     // Vertical rotation in degrees (-90 to 90)
+const CAMERA_DISTANCE = 3;              // Distance from globe center
 // ======================
 
 // Cities with lat/long coordinates
@@ -43,32 +46,42 @@ function latLonToPosition(lat, lon) {
   return new THREE.Vector3(x, y, z);
 }
 
-// Calculate city positions
-const cityPositions = CITIES.map(city => ({
-  name: city.name,
-  position: latLonToPosition(city.lat, city.lon)
-}));
+// Convert spherical camera coordinates to cartesian
+function getCameraPosition(horizontalDeg, verticalDeg, distance) {
+  const horizontalRad = horizontalDeg * (Math.PI / 180);
+  const verticalRad = verticalDeg * (Math.PI / 180);
+
+  const x = distance * Math.cos(verticalRad) * Math.sin(horizontalRad);
+  const y = distance * Math.sin(verticalRad);
+  const z = distance * Math.cos(verticalRad) * Math.cos(horizontalRad);
+
+  return { x, y, z };
+}
 
 const canvas = document.getElementById('globe');
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.z = 3;
+const camera = new THREE.PerspectiveCamera(CAMERA_FOV, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+const cameraPos = getCameraPosition(CAMERA_HORIZONTAL_ROTATION, CAMERA_VERTICAL_ROTATION, CAMERA_DISTANCE);
+camera.position.set(cameraPos.x, cameraPos.y, cameraPos.z);
 
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setClearColor(0x000000);
 
-// OrbitControls
-const controls = new OrbitControls(camera, canvas);
-controls.enableDamping = true;
-controls.dampingFactor = 0.05;
-controls.minDistance = 1.5;
-controls.maxDistance = 10;
-
 // Load world texture
 const textureLoader = new THREE.TextureLoader();
 const worldTexture = await textureLoader.loadAsync('GlobeTexture.jpg');
+
+// Calculate city positions
+const cityPositions = CITIES.map(city => ({
+  name: city.name,
+  position: latLonToPosition(city.lat, city.lon)
+}));
+
+// Point camera at center of globe
+camera.lookAt(0, 0, 0);
 
 // Create globe dots
 const DOTS_PER_ROW = DOT_DENSITY; // Latitude divisions
@@ -187,7 +200,6 @@ scene.add(points);
 // Animation loop
 function animate() {
   requestAnimationFrame(animate);
-  controls.update();
   renderer.render(scene, camera);
 }
 
