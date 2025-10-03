@@ -13,14 +13,57 @@
     body {
       background: #000;
       overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
     #globe {
       display: block;
+    }
+    #city-nav {
+      position: fixed;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 90%;
+    }
+    .city-link {
+      color: #fff;
+      text-decoration: none;
+      font-size: 14px;
+      cursor: pointer;
+      opacity: 0.6;
+      transition: opacity 0.3s;
+      user-select: none;
+    }
+    .city-link:hover {
+      opacity: 1;
     }
   </style>
 </head>
 <body>
   <canvas id="globe"></canvas>
+
+  <div id="city-nav">
+    <a class="city-link" data-city="copenhagen">Copenhagen</a>
+    <a class="city-link" data-city="oslo">Oslo</a>
+    <a class="city-link" data-city="stockholm">Stockholm</a>
+    <a class="city-link" data-city="berlin">Berlin</a>
+    <a class="city-link" data-city="brussels">Brussels</a>
+    <a class="city-link" data-city="frankfurt">Frankfurt</a>
+    <a class="city-link" data-city="munich">Munich</a>
+    <a class="city-link" data-city="paris">Paris</a>
+    <a class="city-link" data-city="madrid">Madrid</a>
+    <a class="city-link" data-city="dubai">Dubai</a>
+    <a class="city-link" data-city="london">London</a>
+    <a class="city-link" data-city="dublin">Dublin</a>
+    <a class="city-link" data-city="newyork">New York</a>
+    <a class="city-link" data-city="minneapolis">Minneapolis</a>
+    <a class="city-link" data-city="washington">Washington D.C</a>
+    <a class="city-link" data-city="sanfrancisco">San Francisco</a>
+  </div>
 
   <script type="importmap">
     {

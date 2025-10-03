@@ -1,34 +1,34 @@
 import * as THREE from 'three';
 
 // ===== PARAMETERS =====
-const DOT_SIZE = 2.0;          // Size of each dot
-const DOT_DENSITY = 280;       // Dots per latitude row (higher = more dots)
+const DOT_SIZE = 4.0;          // Size of each dot
+const DOT_DENSITY = 250;       // Dots per latitude row (higher = more dots)
 const CITY_DOT_SIZE = 20.0;    // Size of city dots
 const GLOBE_RADIUS = 1;
 const CAMERA_FOV = 45;         // Camera field of view
-const CAMERA_HORIZONTAL_ROTATION = 80;   // Horizontal rotation in degrees (0-360)
-const CAMERA_VERTICAL_ROTATION = 30;     // Vertical rotation in degrees (-90 to 90)
-const CAMERA_DISTANCE = 3;              // Distance from globe center
+const CAMERA_HORIZONTAL_ROTATION = 70;   // Horizontal rotation in degrees (0-360)
+const CAMERA_VERTICAL_ROTATION = 40;     // Vertical rotation in degrees (-90 to 90)
+const CAMERA_DISTANCE = 2.3;              // Distance from globe center
 // ======================
 
 // Cities with lat/long coordinates
 const CITIES = [
-  { name: 'Copenhagen', lat: 55.6761, lon: 12.5683 },
-  { name: 'Oslo', lat: 59.9139, lon: 10.7522 },
-  { name: 'Stockholm', lat: 59.3293, lon: 18.0686 },
-  { name: 'Berlin', lat: 52.5200, lon: 13.4050 },
-  { name: 'Brussels', lat: 50.8503, lon: 4.3517 },
-  { name: 'Frankfurt', lat: 50.1109, lon: 8.6821 },
-  { name: 'Munich', lat: 48.1351, lon: 11.5820 },
-  { name: 'Paris', lat: 48.8566, lon: 2.3522 },
-  { name: 'Madrid', lat: 40.4168, lon: -3.7038 },
-  { name: 'Dubai', lat: 25.2048, lon: 55.2708 },
-  { name: 'London', lat: 51.5074, lon: -0.1278 },
-  { name: 'Dublin', lat: 53.3498, lon: -6.2603 },
-  { name: 'New York', lat: 40.7128, lon: -74.0060 },
-  { name: 'Minneapolis', lat: 44.9778, lon: -93.2650 },
-  { name: 'Washington D.C', lat: 38.9072, lon: -77.0369 },
-  { name: 'San Francisco', lat: 37.7749, lon: -122.4194 }
+  { name: 'Copenhagen', slug: 'copenhagen', lat: 55.6761, lon: 12.5683 },
+  { name: 'Oslo', slug: 'oslo', lat: 59.9139, lon: 10.7522 },
+  { name: 'Stockholm', slug: 'stockholm', lat: 59.3293, lon: 18.0686 },
+  { name: 'Berlin', slug: 'berlin', lat: 52.5200, lon: 13.4050 },
+  { name: 'Brussels', slug: 'brussels', lat: 50.8503, lon: 4.3517 },
+  { name: 'Frankfurt', slug: 'frankfurt', lat: 50.1109, lon: 8.6821 },
+  { name: 'Munich', slug: 'munich', lat: 48.1351, lon: 11.5820 },
+  { name: 'Paris', slug: 'paris', lat: 48.8566, lon: 2.3522 },
+  { name: 'Madrid', slug: 'madrid', lat: 40.4168, lon: -3.7038 },
+  { name: 'Dubai', slug: 'dubai', lat: 25.2048, lon: 55.2708 },
+  { name: 'London', slug: 'london', lat: 51.5074, lon: -0.1278 },
+  { name: 'Dublin', slug: 'dublin', lat: 53.3498, lon: -6.2603 },
+  { name: 'New York', slug: 'newyork', lat: 40.7128, lon: -74.0060 },
+  { name: 'Minneapolis', slug: 'minneapolis', lat: 44.9778, lon: -93.2650 },
+  { name: 'Washington D.C', slug: 'washington', lat: 38.9072, lon: -77.0369 },
+  { name: 'San Francisco', slug: 'sanfrancisco', lat: 37.7749, lon: -122.4194 }
 ];
 
 // Convert lat/lon to 3D position on sphere (matching the dot generation formula)
@@ -197,13 +197,96 @@ const material = new THREE.ShaderMaterial({
 const points = new THREE.Points(geometry, material);
 scene.add(points);
 
+// Camera animation state
+let currentHorizontal = CAMERA_HORIZONTAL_ROTATION;
+let currentVertical = CAMERA_VERTICAL_ROTATION;
+let targetHorizontal = CAMERA_HORIZONTAL_ROTATION;
+let targetVertical = CAMERA_VERTICAL_ROTATION;
+let isAnimating = false;
+
+// Convert cartesian to spherical camera angles
+function cartesianToAngles(x, y, z) {
+  const distance = Math.sqrt(x * x + y * y + z * z);
+  const verticalRad = Math.asin(y / distance);
+  const horizontalRad = Math.atan2(x, z);
+
+  return {
+    horizontal: horizontalRad * (180 / Math.PI),
+    vertical: verticalRad * (180 / Math.PI)
+  };
+}
+
+// Animate camera to center a city
+function animateToCity(citySlug) {
+  const city = CITIES.find(c => c.slug === citySlug);
+  if (!city) return;
+
+  // Get city position on sphere
+  const cityPos = latLonToPosition(city.lat, city.lon);
+
+  // Camera should be at this direction, at CAMERA_DISTANCE away
+  const targetPos = cityPos.normalize().multiplyScalar(CAMERA_DISTANCE);
+
+  // Convert to angles
+  const angles = cartesianToAngles(targetPos.x, targetPos.y, targetPos.z);
+
+  targetHorizontal = angles.horizontal;
+  targetVertical = angles.vertical;
+  isAnimating = true;
+}
+
+// Smooth lerp with easing
+function easeOutCubic(t) {
+  return 1 - Math.pow(1 - t, 3);
+}
+
 // Animation loop
 function animate() {
   requestAnimationFrame(animate);
+
+  // Animate camera rotation
+  if (isAnimating) {
+    const speed = 0.05;
+    const dx = targetHorizontal - currentHorizontal;
+    const dy = targetVertical - currentVertical;
+
+    // Handle wrapping for horizontal rotation
+    let shortestDx = dx;
+    if (Math.abs(dx) > 180) {
+      shortestDx = dx > 0 ? dx - 360 : dx + 360;
+    }
+
+    currentHorizontal += shortestDx * speed;
+    currentVertical += dy * speed;
+
+    // Normalize horizontal to 0-360
+    if (currentHorizontal < 0) currentHorizontal += 360;
+    if (currentHorizontal >= 360) currentHorizontal -= 360;
+
+    // Update camera position
+    const pos = getCameraPosition(currentHorizontal, currentVertical, CAMERA_DISTANCE);
+    camera.position.set(pos.x, pos.y, pos.z);
+    camera.lookAt(0, 0, 0);
+
+    // Stop animating when close enough
+    if (Math.abs(shortestDx) < 0.1 && Math.abs(dy) < 0.1) {
+      isAnimating = false;
+    }
+  }
+
   renderer.render(scene, camera);
 }
 
 animate();
+
+// City navigation click handlers
+document.querySelectorAll('.city-link').forEach(link => {
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+    const citySlug = link.getAttribute('data-city');
+    animateToCity(citySlug);
+  });
+});
 
 // Handle resize
 window.addEventListener('resize', () => {
