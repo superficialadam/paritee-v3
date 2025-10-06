@@ -1,34 +1,34 @@
-import * as THREE from 'three';
+import * as THREE from "three";
 
 // ===== PARAMETERS =====
-const DOT_SIZE = 4.0;          // Size of each dot
-const DOT_DENSITY = 250;       // Dots per latitude row (higher = more dots)
-const CITY_DOT_SIZE = 20.0;    // Size of city dots
+const DOT_SIZE = 4.0; // Size of each dot
+const DOT_DENSITY = 120; // Dots per latitude row (REDUCED from 250 for performance)
+const CITY_DOT_SIZE = 20.0; // Size of city dots
 const GLOBE_RADIUS = 1;
-const CAMERA_FOV = 45;         // Camera field of view
-const CAMERA_HORIZONTAL_ROTATION = 130;   // Horizontal rotation in degrees (0-360)
-const CAMERA_VERTICAL_ROTATION = 40;     // Vertical rotation in degrees (-90 to 90)
-const CAMERA_DISTANCE = 2.3;              // Distance from globe center
+const CAMERA_FOV = 45; // Camera field of view
+const CAMERA_HORIZONTAL_ROTATION = 130; // Horizontal rotation in degrees (0-360)
+const CAMERA_VERTICAL_ROTATION = 40; // Vertical rotation in degrees (-90 to 90)
+const CAMERA_DISTANCE = 2.3; // Distance from globe center
 // ======================
 
 // Cities with lat/long coordinates
 const CITIES = [
-  { name: 'Copenhagen', slug: 'copenhagen', lat: 55.6761, lon: 12.5683 },
-  { name: 'Oslo', slug: 'oslo', lat: 59.9139, lon: 10.7522 },
-  { name: 'Stockholm', slug: 'stockholm', lat: 59.3293, lon: 18.0686 },
-  { name: 'Berlin', slug: 'berlin', lat: 52.5200, lon: 13.4050 },
-  { name: 'Brussels', slug: 'brussels', lat: 50.8503, lon: 4.3517 },
-  { name: 'Frankfurt', slug: 'frankfurt', lat: 50.1109, lon: 8.6821 },
-  { name: 'Munich', slug: 'munich', lat: 48.1351, lon: 11.5820 },
-  { name: 'Paris', slug: 'paris', lat: 48.8566, lon: 2.3522 },
-  { name: 'Madrid', slug: 'madrid', lat: 40.4168, lon: -3.7038 },
-  { name: 'Dubai', slug: 'dubai', lat: 25.2048, lon: 55.2708 },
-  { name: 'London', slug: 'london', lat: 51.5074, lon: -0.1278 },
-  { name: 'Dublin', slug: 'dublin', lat: 53.3498, lon: -6.2603 },
-  { name: 'New York', slug: 'newyork', lat: 40.7128, lon: -74.0060 },
-  { name: 'Minneapolis', slug: 'minneapolis', lat: 44.9778, lon: -93.2650 },
-  { name: 'Washington D.C', slug: 'washington', lat: 38.9072, lon: -77.0369 },
-  { name: 'San Francisco', slug: 'sanfrancisco', lat: 37.7749, lon: -122.4194 }
+  { name: "Copenhagen", slug: "copenhagen", lat: 55.6761, lon: 12.5683 },
+  { name: "Oslo", slug: "oslo", lat: 59.9139, lon: 10.7522 },
+  { name: "Stockholm", slug: "stockholm", lat: 59.3293, lon: 18.0686 },
+  { name: "Berlin", slug: "berlin", lat: 52.52, lon: 13.405 },
+  { name: "Brussels", slug: "brussels", lat: 50.8503, lon: 4.3517 },
+  { name: "Frankfurt", slug: "frankfurt", lat: 50.1109, lon: 8.6821 },
+  { name: "Munich", slug: "munich", lat: 48.1351, lon: 11.582 },
+  { name: "Paris", slug: "paris", lat: 48.8566, lon: 2.3522 },
+  { name: "Madrid", slug: "madrid", lat: 40.4168, lon: -3.7038 },
+  { name: "Dubai", slug: "dubai", lat: 25.2048, lon: 55.2708 },
+  { name: "London", slug: "london", lat: 51.5074, lon: -0.1278 },
+  { name: "Dublin", slug: "dublin", lat: 53.3498, lon: -6.2603 },
+  { name: "New York", slug: "newyork", lat: 40.7128, lon: -74.006 },
+  { name: "Minneapolis", slug: "minneapolis", lat: 44.9778, lon: -93.265 },
+  { name: "Washington D.C", slug: "washington", lat: 38.9072, lon: -77.0369 },
+  { name: "San Francisco", slug: "sanfrancisco", lat: 37.7749, lon: -122.4194 },
 ];
 
 // Convert lat/lon to 3D position on sphere (matching the dot generation formula)
@@ -65,51 +65,68 @@ let points;
 
 async function initGlobe() {
   // Try to find container or canvas element
-  const container = document.querySelector('.bg-globe');
-  const canvas = document.getElementById('globe');
+  const container = document.querySelector(".bg-globe");
+  const canvas = document.getElementById("globe");
 
   if (!container && !canvas) {
     return;
   }
 
   scene = new THREE.Scene();
-  camera = new THREE.PerspectiveCamera(CAMERA_FOV, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera = new THREE.PerspectiveCamera(
+    CAMERA_FOV,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    1000,
+  );
 
-  const cameraPos = getCameraPosition(CAMERA_HORIZONTAL_ROTATION, CAMERA_VERTICAL_ROTATION, CAMERA_DISTANCE);
+  const cameraPos = getCameraPosition(
+    CAMERA_HORIZONTAL_ROTATION,
+    CAMERA_VERTICAL_ROTATION,
+    CAMERA_DISTANCE,
+  );
   camera.position.set(cameraPos.x, cameraPos.y, cameraPos.z);
 
   // Setup renderer differently based on context
   if (container) {
-    // Embedded in index.html - create canvas and append to container
-    renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    // Embedded in a page with .bg-globe container - create canvas and append
+    // Optimized: antialias off, pixelRatio capped at 1.5 for performance
+    renderer = new THREE.WebGLRenderer({
+      alpha: true,
+      antialias: false,
+      powerPreference: "high-performance",
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(0x000000, 0);
-    renderer.domElement.id = 'globe-canvas';
-    renderer.domElement.style.position = 'absolute';
-    renderer.domElement.style.top = '0';
-    renderer.domElement.style.left = '0';
-    renderer.domElement.style.width = '100%';
-    renderer.domElement.style.height = '100%';
-    renderer.domElement.style.pointerEvents = 'none';
-    renderer.domElement.style.zIndex = '-1';
+    renderer.domElement.id = "globe-canvas";
+    renderer.domElement.style.position = "fixed";
+    renderer.domElement.style.top = "0";
+    renderer.domElement.style.left = "0";
+    renderer.domElement.style.width = "100%";
+    renderer.domElement.style.height = "100vh";
+    renderer.domElement.style.pointerEvents = "none";
     container.appendChild(renderer.domElement);
   } else {
     // Standalone globe.html - use existing canvas
-    renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: false,
+      powerPreference: "high-performance",
+    });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.setClearColor(0x000000);
   }
 
   // Load world texture
   const textureLoader = new THREE.TextureLoader();
-  const worldTexture = await textureLoader.loadAsync('GlobeTexture.jpg');
+  const worldTexture = await textureLoader.loadAsync("GlobeTexture.jpg");
 
   // Calculate city positions
-  const cityPositions = CITIES.map(city => ({
+  const cityPositions = CITIES.map((city) => ({
     name: city.name,
-    position: latLonToPosition(city.lat, city.lon)
+    position: latLonToPosition(city.lat, city.lon),
   }));
 
   // Point camera at center of globe
@@ -124,8 +141,8 @@ async function initGlobe() {
   const dotPositions = [];
 
   // Sample texture to get land data
-  const canvas2d = document.createElement('canvas');
-  const ctx = canvas2d.getContext('2d');
+  const canvas2d = document.createElement("canvas");
+  const ctx = canvas2d.getContext("2d");
   canvas2d.width = worldTexture.image.width;
   canvas2d.height = worldTexture.image.height;
   ctx.drawImage(worldTexture.image, 0, 0);
@@ -138,7 +155,7 @@ async function initGlobe() {
       const theta = (lon / DOTS_PER_COL) * Math.PI * 2;
 
       const u = lon / DOTS_PER_COL;
-      const v = 1.0 - (lat / DOTS_PER_ROW);
+      const v = 1.0 - lat / DOTS_PER_ROW;
       const x = Math.floor(u * imageData.width);
       const y = Math.floor(v * imageData.height);
       const idx = (y * imageData.width + x) * 4;
@@ -157,14 +174,19 @@ async function initGlobe() {
   }
 
   // Find closest dot to each city and make it larger
-  cityPositions.forEach(city => {
+  // Optimized: use squared distance to avoid expensive sqrt() calls
+  cityPositions.forEach((city) => {
     let closestDotIndex = -1;
-    let closestDistance = Infinity;
+    let closestDistanceSq = Infinity;
 
     dotPositions.forEach((dotPos, index) => {
-      const distance = dotPos.distanceTo(city.position);
-      if (distance < closestDistance) {
-        closestDistance = distance;
+      const dx = dotPos.x - city.position.x;
+      const dy = dotPos.y - city.position.y;
+      const dz = dotPos.z - city.position.z;
+      const distanceSq = dx * dx + dy * dy + dz * dz;
+
+      if (distanceSq < closestDistanceSq) {
+        closestDistanceSq = distanceSq;
         closestDotIndex = index;
       }
     });
@@ -174,9 +196,15 @@ async function initGlobe() {
     }
   });
 
+  // Log actual point count for performance monitoring
+  console.log(`Globe rendered with ${positions.length / 3} points`);
+
   const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-  geometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
+  geometry.setAttribute(
+    "position",
+    new THREE.Float32BufferAttribute(positions, 3),
+  );
+  geometry.setAttribute("size", new THREE.Float32BufferAttribute(sizes, 1));
 
   // Custom shader material for backface culling
   const vertexShader = `
@@ -213,18 +241,18 @@ async function initGlobe() {
   `;
 
   // In standalone mode (canvas), globe should be visible by default
-  // In embedded mode (container), main.js will control opacity
-  const initialOpacity = canvas ? 1 : 0;
+  // In embedded mode (container), globe should be visible unless main.js sets it to 0
+  const initialOpacity = canvas ? 1 : 1;
 
   const material = new THREE.ShaderMaterial({
     vertexShader,
     fragmentShader,
     uniforms: {
-      uGlobeOpacity: { value: initialOpacity }
+      uGlobeOpacity: { value: initialOpacity },
     },
     transparent: true,
     depthWrite: false,
-    blending: THREE.AdditiveBlending
+    blending: THREE.AdditiveBlending,
   });
 
   points = new THREE.Points(geometry, material);
@@ -243,7 +271,11 @@ async function initGlobe() {
 
   function updateGlobeRotation() {
     if (container) {
-      const pos = getCameraPosition(window.globeRotation, CAMERA_VERTICAL_ROTATION, CAMERA_DISTANCE);
+      const pos = getCameraPosition(
+        window.globeRotation,
+        CAMERA_VERTICAL_ROTATION,
+        CAMERA_DISTANCE,
+      );
       camera.position.set(pos.x, pos.y, pos.z);
       camera.lookAt(0, 0, 0);
     }
@@ -264,13 +296,13 @@ async function initGlobe() {
 
     return {
       horizontal: horizontalRad * (180 / Math.PI),
-      vertical: verticalRad * (180 / Math.PI)
+      vertical: verticalRad * (180 / Math.PI),
     };
   }
 
   // Animate camera to center a city
   function animateToCity(citySlug) {
-    const city = CITIES.find(c => c.slug === citySlug);
+    const city = CITIES.find((c) => c.slug === citySlug);
     if (!city) return;
 
     const cityPos = latLonToPosition(city.lat, city.lon);
@@ -282,12 +314,18 @@ async function initGlobe() {
     isAnimating = true;
   }
 
+  // Track if we need to render
+  let needsRender = true;
+  let lastOpacity = window.globeOpacity;
+
   // Animation loop
   function animate() {
     requestAnimationFrame(animate);
 
-    // Only animate camera if we have city links (standalone mode)
-    if (canvas && isAnimating) {
+    let shouldRender = false;
+
+    // Animate camera if animation is active (works in both modes)
+    if (isAnimating) {
       const speed = 0.05;
       const dx = targetHorizontal - currentHorizontal;
       const dy = targetVertical - currentVertical;
@@ -303,47 +341,67 @@ async function initGlobe() {
       if (currentHorizontal < 0) currentHorizontal += 360;
       if (currentHorizontal >= 360) currentHorizontal -= 360;
 
-      const pos = getCameraPosition(currentHorizontal, currentVertical, CAMERA_DISTANCE);
-      camera.position.set(pos.x, pos.y, pos.z);
-      camera.lookAt(0, 0, 0);
-
       if (Math.abs(shortestDx) < 0.1 && Math.abs(dy) < 0.1) {
         isAnimating = false;
       }
+
+      shouldRender = true;
     }
 
-    // Update globe opacity and rotation if embedded
+    // Always use currentHorizontal/currentVertical for camera position
+    // This ensures camera stays where animation left it
+    const pos = getCameraPosition(
+      currentHorizontal,
+      currentVertical,
+      CAMERA_DISTANCE,
+    );
+    camera.position.set(pos.x, pos.y, pos.z);
+    camera.lookAt(0, 0, 0);
+
+    // Update globe opacity if embedded
     if (container) {
       updateGlobeOpacity();
-      updateGlobeRotation();
+      // Check if opacity changed
+      if (lastOpacity !== window.globeOpacity) {
+        lastOpacity = window.globeOpacity;
+        shouldRender = true;
+      }
     }
 
-    renderer.render(scene, camera);
+    // Only render when something has changed
+    if (needsRender || shouldRender) {
+      renderer.render(scene, camera);
+      needsRender = false;
+    }
   }
 
   animate();
 
-  // City navigation click handlers (only for standalone mode)
-  if (canvas) {
-    document.querySelectorAll('.city-link').forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const citySlug = link.getAttribute('data-city');
-        animateToCity(citySlug);
-      });
+  // Request render when needed
+  window.requestGlobeRender = () => {
+    needsRender = true;
+  };
+
+  // City navigation click handlers (works in both standalone and embedded modes)
+  document.querySelectorAll(".city-link").forEach((link) => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      const citySlug = link.getAttribute("data-city");
+      animateToCity(citySlug);
     });
-  }
+  });
 
   // Handle resize
-  window.addEventListener('resize', () => {
+  window.addEventListener("resize", () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
+    needsRender = true;
   });
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initGlobe);
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initGlobe);
 } else {
   initGlobe();
 }

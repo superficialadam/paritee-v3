@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Globe with Generic Background</title>
+
+        <!-- Background system CSS -->
+        <link rel="stylesheet" href="generic-back.css" />
+
+        <style>
+            /* Override background light layer to be semi-transparent */
+            .bg-light {
+                opacity: 0.3 !important;
+            }
+
+            /* Globe-specific layer */
+            #globe-canvas {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100vh;
+                z-index: 1 !important;
+                pointer-events: none;
+                mix-blend-mode: screen;
+            }
+
+            /* Ensure dotmatrix is visible */
+            #dotmatrix {
+                z-index: 2 !important;
+                mix-blend-mode: plus-lighter;
+            }
+
+            /* Parallax circles should be behind globe */
+            .bg-circles {
+                z-index: 0 !important;
+            }
+
+            /* Content styles */
+            .content {
+                position: relative;
+                z-index: 10;
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 100px 40px;
+            }
+
+            .demo-section {
+                min-height: 100vh;
+                padding: 60px 0;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+
+            h1 {
+                font-size: 3rem;
+                margin-bottom: 1rem;
+                font-weight: 700;
+                color: #fff;
+            }
+
+            h2 {
+                font-size: 2rem;
+                margin-bottom: 1rem;
+                font-weight: 600;
+                color: #fff;
+            }
+
+            p {
+                font-size: 1.1rem;
+                line-height: 1.6;
+                margin-bottom: 1rem;
+                max-width: 700px;
+                color: rgba(255, 255, 255, 0.9);
+            }
+
+            .spacer {
+                height: 100vh;
+            }
+
+            /* City navigation */
+            #city-nav {
+                position: fixed;
+                bottom: 40px;
+                left: 50%;
+                transform: translateX(-50%);
+                display: flex;
+                gap: 24px;
+                flex-wrap: wrap;
+                justify-content: center;
+                max-width: 90%;
+                z-index: 10;
+            }
+
+            .city-link {
+                color: #fff;
+                text-decoration: none;
+                font-size: 14px;
+                cursor: pointer;
+                opacity: 0.6;
+                transition: opacity 0.3s;
+                user-select: none;
+            }
+
+            .city-link:hover {
+                opacity: 1;
+            }
+        </style>
+    </head>
+
+    <body>
+        <!-- Background layers (from generic-back.html) -->
+        <div class="bg-dark"></div>
+        <div class="bg-light"></div>
+
+        <!-- Dot matrix canvas (will be created by dotmatrix.js) -->
+        <canvas id="dotmatrix"></canvas>
+
+        <!-- Parallax circles container (will be populated by generic-parallax-circles.js) -->
+        <div class="bg-circles"></div>
+
+        <!-- Globe container (globe.js will inject canvas here) -->
+        <div class="bg-globe"></div>
+
+        <!-- Page content -->
+        <div class="content">
+            <section class="demo-section">
+                <h1>Globe with Generic Background</h1>
+                <p>
+                    This page combines the WebGL globe with the animated
+                    background system featuring parallax circles and dot matrix
+                    effects.
+                </p>
+                <p>
+                    The globe sits on top of the background layers but below the
+                    content, creating a multi-layered depth effect.
+                </p>
+            </section>
+
+            <section class="demo-section">
+                <h2>Interactive Globe</h2>
+                <p>
+                    Click the city names below to animate the camera to
+                    different locations around the globe.
+                </p>
+                <p>
+                    The globe is fully responsive and adapts to window resizing.
+                </p>
+            </section>
+
+            <section class="demo-section">
+                <h2>Layered Effects</h2>
+                <p>
+                    As you scroll, the parallax circles move at different
+                    speeds, creating depth behind the globe.
+                </p>
+                <p>
+                    The dot matrix adds texture and visual interest throughout
+                    the page.
+                </p>
+            </section>
+
+            <div class="spacer"></div>
+
+            <section class="demo-section">
+                <h2>Seamless Integration</h2>
+                <p>
+                    All effects are GPU-accelerated for smooth 60fps performance
+                    across the entire page.
+                </p>
+                <p>
+                    The globe uses additive blending to integrate naturally with
+                    the background layers.
+                </p>
+            </section>
+
+            <div class="spacer"></div>
+
+            <section class="demo-section">
+                <h2>Scroll to Explore</h2>
+                <p>
+                    The background system automatically fills any page height
+                    with randomized circles and effects.
+                </p>
+                <p>
+                    Perfect for creating immersive landing pages and subpages.
+                </p>
+            </section>
+        </div>
+
+        <!-- City navigation -->
+        <div id="city-nav">
+            <a class="city-link" data-city="copenhagen">Copenhagen</a>
+            <a class="city-link" data-city="oslo">Oslo</a>
+            <a class="city-link" data-city="stockholm">Stockholm</a>
+            <a class="city-link" data-city="berlin">Berlin</a>
+            <a class="city-link" data-city="brussels">Brussels</a>
+            <a class="city-link" data-city="frankfurt">Frankfurt</a>
+            <a class="city-link" data-city="munich">Munich</a>
+            <a class="city-link" data-city="paris">Paris</a>
+            <a class="city-link" data-city="madrid">Madrid</a>
+            <a class="city-link" data-city="dubai">Dubai</a>
+            <a class="city-link" data-city="london">London</a>
+            <a class="city-link" data-city="dublin">Dublin</a>
+            <a class="city-link" data-city="newyork">New York</a>
+            <a class="city-link" data-city="minneapolis">Minneapolis</a>
+            <a class="city-link" data-city="washington">Washington D.C</a>
+            <a class="city-link" data-city="sanfrancisco">San Francisco</a>
+        </div>
+
+        <!-- Three.js import map (required) -->
+        <script type="importmap">
+            {
+                "imports": {
+                    "three": "https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.module.js"
+                }
+            }
+        </script>
+
+        <!-- Stats.js for performance monitoring -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/stats.js/r17/Stats.min.js"></script>
+        <script>
+            // Add performance stats overlay
+            window.addEventListener("load", function () {
+                const stats = new Stats();
+                stats.showPanel(0); // 0: fps, 1: ms, 2: mb
+                stats.dom.style.position = "fixed";
+                stats.dom.style.left = "0";
+                stats.dom.style.top = "0";
+                stats.dom.style.zIndex = "1000";
+                document.body.appendChild(stats.dom);
+
+                function animate() {
+                    stats.begin();
+                    stats.end();
+                    requestAnimationFrame(animate);
+                }
+                requestAnimationFrame(animate);
+            });
+        </script>
+
+        <!-- Background system scripts (in order) -->
+        <script type="module" src="dotmatrix.js"></script>
+        <script type="module" src="generic-parallax-circles.js"></script>
+        <script src="generic-back-init.js"></script>
+
+        <!-- Globe script (will detect .bg-globe container) -->
+        <script type="module" src="globe.js"></script>
+    </body>
+</html>
