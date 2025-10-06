@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generic Background - Paritee V3</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      color: #1A1A2E;
+      overflow-x: hidden;
+    }
+
+    /* Background Layers */
+    .bg-dark {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      background: linear-gradient(to right, #0B111D, #0A1D40);
+      z-index: -3;
+    }
+
+    .bg-light {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      background: linear-gradient(to right, #FAFBFF, #FFF9FE);
+      opacity: 1;
+      z-index: -2;
+    }
+
+    /* Dot matrix canvas layer */
+    #dotmatrix {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+      mix-blend-mode: plus-lighter;
+    }
+
+    /* Parallax circles container */
+    .bg-circles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      z-index: -1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    /* Content layer */
+    .content {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 100px 40px;
+    }
+
+    .demo-section {
+      min-height: 100vh;
+      padding: 60px 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+
+    h2 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+
+    p {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      margin-bottom: 1rem;
+      max-width: 700px;
+    }
+
+    .spacer {
+      height: 100vh;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Background layers -->
+  <div class="bg-dark"></div>
+  <div class="bg-light"></div>
+
+  <!-- Dot matrix canvas (will be created by dotmatrix.js) -->
+  <canvas id="dotmatrix"></canvas>
+
+  <!-- Parallax circles container (will be populated by generic-parallax-circles.js) -->
+  <div class="bg-circles"></div>
+
+  <!-- Page content -->
+  <div class="content">
+    <section class="demo-section">
+      <h1>Generic Background System</h1>
+      <p>This is a reusable background system featuring animated parallax circles and dot matrix noise effects.</p>
+      <p>The circles move with scroll in different layers, creating depth. The dot matrix uses the standard noise settings from main.js.</p>
+    </section>
+
+    <section class="demo-section">
+      <h2>Scroll to See Effects</h2>
+      <p>As you scroll, the circles will move at different speeds based on their layer depth.</p>
+      <p>The system automatically fills any page height with randomized circles in multiple layers.</p>
+    </section>
+
+    <section class="demo-section">
+      <h2>Section Three</h2>
+      <p>The background continues seamlessly across any number of sections.</p>
+      <p>Circles are generated dynamically to cover the entire scrollable area.</p>
+    </section>
+
+    <div class="spacer"></div>
+
+    <section class="demo-section">
+      <h2>Section Four</h2>
+      <p>The dot matrix maintains consistent noise patterns throughout the page.</p>
+      <p>All effects are GPU-accelerated for smooth 60fps performance.</p>
+    </section>
+
+    <div class="spacer"></div>
+
+    <section class="demo-section">
+      <h2>Final Section</h2>
+      <p>This generic background can be used on any subpage.</p>
+      <p>Simply include the required scripts and HTML structure.</p>
+    </section>
+  </div>
+
+  <!-- Scripts -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.module.js"
+      }
+    }
+  </script>
+
+  <script type="module" src="dotmatrix.js"></script>
+  <script type="module" src="generic-parallax-circles.js"></script>
+
+  <script type="module">
+    // Initialize dot matrix with standard scroll mode settings
+    window.addEventListener('load', function() {
+      if (window.dotMatrixParams) {
+        // Camera
+        dotMatrixParams.cameraOffsetX = 0.0;
+        dotMatrixParams.cameraOffsetY = 0.0;
+        dotMatrixParams.cameraOffsetZ = 6.0;
+        dotMatrixParams.cameraFOV = 70;
+
+        // Dot Matrix
+        dotMatrixParams.gridResolution = 80;
+        dotMatrixParams.sizeBlack = 0.5;
+        dotMatrixParams.sizeWhite = 16;
+        dotMatrixParams.pointMargin = 1.0;
+        dotMatrixParams.pointOpacity = 1.0;
+
+        // Main Noise - Standard settings
+        dotMatrixParams.mainNoiseEnabled = true;
+        dotMatrixParams.noiseAnimated = true;
+        dotMatrixParams.noiseScale = 80.0;
+        dotMatrixParams.noiseSpeed = 20.0;
+        dotMatrixParams.noiseOffsetX = -0.9;
+        dotMatrixParams.noiseOffsetY = 0.0;
+        dotMatrixParams.noiseOffsetZ = 0.0;
+        dotMatrixParams.noiseEvolution = 0.0;
+        dotMatrixParams.noiseOctaves = 4;
+        dotMatrixParams.noiseLacunarity = 2.0;
+        dotMatrixParams.noiseGain = 0.673;
+        dotMatrixParams.noiseThreshold = 0.3;
+        dotMatrixParams.noiseIslandSize = 0.8937;
+        dotMatrixParams.noiseExposure = 0.742;
+        dotMatrixParams.noiseGamma = 0.5;
+        dotMatrixParams.noiseMultiplier = 0.4;
+
+        // Influence Zone 1 - Disabled for generic background
+        dotMatrixParams.influence1Enabled = false;
+        dotMatrixParams.influence1Intensity = 0.0;
+
+        // Influence Zone 2 - Disabled
+        dotMatrixParams.influence2Enabled = false;
+        dotMatrixParams.influence2Intensity = 0.0;
+
+        // Sync settings
+        setTimeout(() => {
+          if (window.syncParamsToUniforms) {
+            window.syncParamsToUniforms();
+          }
+        }, 100);
+      }
+    });
+  </script>
+</body>
+
+</html>
