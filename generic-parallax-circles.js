@@ -325,11 +325,17 @@ function updateMeshes(time) {
   });
 }
 
+// Global control for rendering
+window.parallaxCirclesEnabled = true;
+
 function animate() {
+  requestAnimationFrame(animate);
+
+  if (!window.parallaxCirclesEnabled) return; // Skip rendering if disabled
+
   const time = performance.now() * 0.001;
   updateMeshes(time);
   renderer.render(scene, camera);
-  requestAnimationFrame(animate);
 }
 
 function handleResize() {

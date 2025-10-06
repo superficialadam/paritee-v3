@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Globe with Generic Background</title>
+        <title>Globe with Background - Paritee V3</title>
 
         <!-- Background system CSS -->
         <link rel="stylesheet" href="generic-back.css" />
@@ -44,40 +44,6 @@
                 max-width: 1200px;
                 margin: 0 auto;
                 padding: 100px 40px;
-            }
-
-            .demo-section {
-                min-height: 100vh;
-                padding: 60px 0;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-            }
-
-            h1 {
-                font-size: 3rem;
-                margin-bottom: 1rem;
-                font-weight: 700;
-                color: #fff;
-            }
-
-            h2 {
-                font-size: 2rem;
-                margin-bottom: 1rem;
-                font-weight: 600;
-                color: #fff;
-            }
-
-            p {
-                font-size: 1.1rem;
-                line-height: 1.6;
-                margin-bottom: 1rem;
-                max-width: 700px;
-                color: rgba(255, 255, 255, 0.9);
-            }
-
-            .spacer {
-                height: 100vh;
             }
 
             /* City navigation */
@@ -123,72 +89,6 @@
 
         <!-- Globe container (globe.js will inject canvas here) -->
         <div class="bg-globe"></div>
-
-        <!-- Page content -->
-        <div class="content">
-            <section class="demo-section">
-                <h1>Globe with Generic Background</h1>
-                <p>
-                    This page combines the WebGL globe with the animated
-                    background system featuring parallax circles and dot matrix
-                    effects.
-                </p>
-                <p>
-                    The globe sits on top of the background layers but below the
-                    content, creating a multi-layered depth effect.
-                </p>
-            </section>
-
-            <section class="demo-section">
-                <h2>Interactive Globe</h2>
-                <p>
-                    Click the city names below to animate the camera to
-                    different locations around the globe.
-                </p>
-                <p>
-                    The globe is fully responsive and adapts to window resizing.
-                </p>
-            </section>
-
-            <section class="demo-section">
-                <h2>Layered Effects</h2>
-                <p>
-                    As you scroll, the parallax circles move at different
-                    speeds, creating depth behind the globe.
-                </p>
-                <p>
-                    The dot matrix adds texture and visual interest throughout
-                    the page.
-                </p>
-            </section>
-
-            <div class="spacer"></div>
-
-            <section class="demo-section">
-                <h2>Seamless Integration</h2>
-                <p>
-                    All effects are GPU-accelerated for smooth 60fps performance
-                    across the entire page.
-                </p>
-                <p>
-                    The globe uses additive blending to integrate naturally with
-                    the background layers.
-                </p>
-            </section>
-
-            <div class="spacer"></div>
-
-            <section class="demo-section">
-                <h2>Scroll to Explore</h2>
-                <p>
-                    The background system automatically fills any page height
-                    with randomized circles and effects.
-                </p>
-                <p>
-                    Perfect for creating immersive landing pages and subpages.
-                </p>
-            </section>
-        </div>
 
         <!-- City navigation -->
         <div id="city-nav">

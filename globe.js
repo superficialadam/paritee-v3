@@ -109,9 +109,21 @@ async function initGlobe() {
     1000,
   );
 
+  // Point camera at Frankfurt on load
+  const frankfurtCity = CITIES.find((c) => c.slug === "frankfurt");
+  const frankfurtPos = latLonToPosition(frankfurtCity.lat, frankfurtCity.lon);
+  const targetCameraPos = frankfurtPos
+    .normalize()
+    .multiplyScalar(CAMERA_DISTANCE);
+  window.frankfurtAngles = cartesianToAngles(
+    targetCameraPos.x,
+    targetCameraPos.y,
+    targetCameraPos.z,
+  );
+
   const cameraPos = getCameraPosition(
-    CAMERA_HORIZONTAL_ROTATION,
-    CAMERA_VERTICAL_ROTATION,
+    window.frankfurtAngles.horizontal,
+    window.frankfurtAngles.vertical,
     CAMERA_DISTANCE,
   );
   camera.position.set(cameraPos.x, cameraPos.y, cameraPos.z);
@@ -270,8 +282,8 @@ async function initGlobe() {
   `;
 
   // In standalone mode (canvas), globe should be visible by default
-  // In embedded mode (container), globe should be visible unless main.js sets it to 0
-  const initialOpacity = canvas ? 1 : 1;
+  // In embedded mode (container), globe should start hidden (opacity 0) until scrolled to
+  const initialOpacity = canvas ? 1 : 0;
 
   const material = new THREE.ShaderMaterial({
     vertexShader,
@@ -311,10 +323,11 @@ async function initGlobe() {
   }
 
   // Camera animation state (only for standalone with city links)
-  let currentHorizontal = CAMERA_HORIZONTAL_ROTATION;
-  let currentVertical = CAMERA_VERTICAL_ROTATION;
-  let targetHorizontal = CAMERA_HORIZONTAL_ROTATION;
-  let targetVertical = CAMERA_VERTICAL_ROTATION;
+  // Initialize to Frankfurt position
+  let currentHorizontal = window.frankfurtAngles.horizontal;
+  let currentVertical = window.frankfurtAngles.vertical;
+  let targetHorizontal = window.frankfurtAngles.horizontal;
+  let targetVertical = window.frankfurtAngles.vertical;
   let isAnimating = false;
 
   // Convert cartesian to spherical camera angles
@@ -346,6 +359,28 @@ async function initGlobe() {
   // Track if we need to render
   let needsRender = true;
   let lastOpacity = window.globeOpacity;
+  let globeEnabled = true;
+
+  // Setup toggle button
+  const toggleButton = document.getElementById("globe-toggle");
+  if (toggleButton) {
+    toggleButton.addEventListener("click", () => {
+      globeEnabled = !globeEnabled;
+      toggleButton.textContent = globeEnabled
+        ? "Disable Globe"
+        : "Enable Globe";
+      toggleButton.classList.toggle("disabled", !globeEnabled);
+
+      // Hide/show the canvas element
+      renderer.domElement.style.display = globeEnabled ? "" : "none";
+
+      if (globeEnabled) {
+        needsRender = true; // Trigger one render when re-enabled
+      }
+
+      console.log(`Globe rendering: ${globeEnabled ? "ENABLED" : "DISABLED"}`);
+    });
+  }
 
   // Animation loop
   function animate() {
@@ -377,11 +412,21 @@ async function initGlobe() {
       shouldRender = true;
     }
 
-    // Always use currentHorizontal/currentVertical for camera position
-    // This ensures camera stays where animation left it
+    // In embedded mode, use window.globeRotation for scroll-based rotation
+    // In standalone mode, use currentHorizontal/currentVertical for city animations
+    let cameraHorizontal = currentHorizontal;
+    let cameraVertical = currentVertical;
+
+    if (container && window.globeRotation !== undefined) {
+      // Embedded mode: use scroll-based rotation from main.js
+      cameraHorizontal = window.globeRotation;
+      cameraVertical = CAMERA_VERTICAL_ROTATION;
+      shouldRender = true; // Always render in embedded mode to catch scroll updates
+    }
+
     const pos = getCameraPosition(
-      currentHorizontal,
-      currentVertical,
+      cameraHorizontal,
+      cameraVertical,
       CAMERA_DISTANCE,
     );
     camera.position.set(pos.x, pos.y, pos.z);
@@ -397,8 +442,8 @@ async function initGlobe() {
       }
     }
 
-    // Only render when something has changed
-    if (needsRender || shouldRender) {
+    // Only render when something has changed AND globe is enabled
+    if (globeEnabled && (needsRender || shouldRender)) {
       renderer.render(scene, camera);
       needsRender = false;
     }

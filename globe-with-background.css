@@ -1,0 +1,116 @@
+/* Globe with Background System CSS */
+/* Include this stylesheet for the globe background system */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    color: #1A1A2E;
+    overflow-x: hidden;
+}
+
+/* Background Layers */
+.bg-dark {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: linear-gradient(to right, #0B111D, #0A1D40);
+    z-index: -3;
+}
+
+.bg-light {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: linear-gradient(to right, #FAFBFF, #FFF9FE);
+    opacity: 0.3;
+    z-index: -2;
+}
+
+/* Dot matrix canvas layer */
+#dotmatrix {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 2;
+    pointer-events: none;
+    mix-blend-mode: plus-lighter;
+}
+
+/* Parallax circles container */
+.bg-circles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+/* Globe container */
+.bg-globe {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* Globe canvas (created by globe.js) */
+#globe-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    pointer-events: none;
+    mix-blend-mode: screen;
+}
+
+/* Content layer - ensure your content sits above the background */
+.content {
+    position: relative;
+    z-index: 10;
+}
+
+/* City navigation (optional - for demo/testing) */
+#city-nav {
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 90%;
+    z-index: 100;
+}
+
+.city-link {
+    color: #fff;
+    text-decoration: none;
+    font-size: 14px;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.3s;
+    user-select: none;
+}
+
+.city-link:hover {
+    opacity: 1;
+}
