@@ -5,11 +5,37 @@ const DOT_SIZE = 4.0; // Size of each dot
 const DOT_DENSITY = 120; // Dots per latitude row (REDUCED from 250 for performance)
 const CITY_DOT_SIZE = 20.0; // Size of city dots
 const GLOBE_RADIUS = 1;
-const CAMERA_FOV = 45; // Camera field of view
+const CAMERA_DISTANCE = 2.3; // Fixed camera distance
 const CAMERA_HORIZONTAL_ROTATION = 130; // Horizontal rotation in degrees (0-360)
 const CAMERA_VERTICAL_ROTATION = 40; // Vertical rotation in degrees (-90 to 90)
-const CAMERA_DISTANCE = 2.3; // Distance from globe center
+const GLOBE_TARGET_WIDTH_RATIO = 0.8; // Globe should occupy 80% of window width (10% margin each side)
+const REFERENCE_WIDTH = 1920; // Reference width where globe looks good
+const BASE_FOV = 45; // Base FOV at reference width
 // ======================
+
+// Calculate responsive FOV to maintain globe at 80% of window width
+function getResponsiveFOV() {
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  const aspect = width / height;
+
+  // Calculate FOV to keep globe at consistent screen width percentage
+  // Globe diameter in world units = 2 (radius = 1)
+  // We want it to occupy 80% of screen width
+  const globeVisibleWidth = 2 * GLOBE_RADIUS;
+  const targetScreenRatio = GLOBE_TARGET_WIDTH_RATIO; // 0.8
+
+  // How much total visible width we need at the camera distance
+  const desiredVisibleWidth = globeVisibleWidth / targetScreenRatio;
+
+  // Calculate vertical FOV: visibleWidth = 2 * distance * tan(vFOV/2) * aspect
+  const vFOV =
+    2 * Math.atan(desiredVisibleWidth / (2 * CAMERA_DISTANCE * aspect));
+  const vFOVDegrees = vFOV * (180 / Math.PI);
+
+  console.log(`Window: ${width}×${height}px, FOV: ${vFOVDegrees.toFixed(1)}°`);
+  return vFOVDegrees;
+}
 
 // Cities with lat/long coordinates
 const CITIES = [
@@ -73,8 +99,11 @@ async function initGlobe() {
   }
 
   scene = new THREE.Scene();
+
+  // Use responsive FOV to maintain globe at 80% of window width
+  const fov = getResponsiveFOV();
   camera = new THREE.PerspectiveCamera(
-    CAMERA_FOV,
+    fov,
     window.innerWidth / window.innerHeight,
     0.1,
     1000,
@@ -393,9 +422,12 @@ async function initGlobe() {
 
   // Handle resize
   window.addEventListener("resize", () => {
+    // Update FOV to maintain globe at 80% of window width
+    camera.fov = getResponsiveFOV();
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
+
     needsRender = true;
   });
 }
