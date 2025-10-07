@@ -8,8 +8,10 @@
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    color: #1A1A2E;
+    font-family:
+        -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+        Cantarell, sans-serif;
+    color: #1a1a2e;
     overflow-x: hidden;
 }
 
@@ -20,7 +22,7 @@ body {
     left: 0;
     width: 100%;
     height: 100vh;
-    background: linear-gradient(to right, #0B111D, #0A1D40);
+    background: linear-gradient(to right, #0b111d, #0a1d40);
     z-index: -3;
 }
 
@@ -30,7 +32,7 @@ body {
     left: 0;
     width: 100%;
     height: 100vh;
-    background: linear-gradient(to right, #FAFBFF, #FFF9FE);
+    background: linear-gradient(to right, #fafbff, #fff9fe);
     opacity: 0.3;
     z-index: -2;
 }
@@ -68,6 +70,17 @@ body {
     height: 100vh;
     z-index: 1;
     pointer-events: none;
+}
+
+/* Globe wrapper - 50% viewport size, follows scroll */
+#globeWrapper {
+    position: relative;
+    width: 50vw;
+    height: 50vh;
+    margin: 0 auto;
+    z-index: 10;
+    pointer-events: none;
+    overflow: hidden;
 }
 
 /* Globe canvas (created by globe.js) */

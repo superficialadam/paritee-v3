@@ -210,8 +210,8 @@ function createCircleDefinitions() {
     // Random size within layer range
     const size = randomBetween(layer.sizeRange[0], layer.sizeRange[1]);
 
-    // Opacity varies by layer and position (half transparency for fainter effect)
-    const opacity = (0.15 + Math.random() * 0.35) * 0.5;
+    // Opacity varies by layer and position (matching dark sections in index.html: 0.3-0.45)
+    const opacity = 0.3 + Math.random() * 0.15;
 
     // Noise parameters for animation
     const baseAmplitude =
