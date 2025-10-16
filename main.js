@@ -122,6 +122,10 @@ window.addEventListener("load", function () {
 
   // Block scroll events (unless skipping intro)
   if (!SKIP_INTRO_ANIMATIONS) {
+    console.log(
+      "=== ADDING scroll block listeners, scrollBlocked =",
+      scrollBlocked,
+    );
     window.addEventListener("scroll", blockScroll, { passive: false });
     window.addEventListener("wheel", blockScroll, { passive: false });
     window.addEventListener("touchmove", blockScroll, { passive: false });
@@ -706,11 +710,17 @@ window.addEventListener("load", function () {
     autoplay: true,
     delay: 6000,
     onComplete: function () {
+      console.log("=== heroHeadingTimeline COMPLETE!");
+      console.log("=== BEFORE: scrollBlocked =", scrollBlocked);
+      console.log("=== SKIP_INTRO_ANIMATIONS =", SKIP_INTRO_ANIMATIONS);
       scrollBlocked = false;
+      console.log("=== AFTER: scrollBlocked =", scrollBlocked);
       if (!SKIP_INTRO_ANIMATIONS) {
+        console.log("=== REMOVING scroll block listeners");
         window.removeEventListener("scroll", blockScroll);
         window.removeEventListener("wheel", blockScroll);
         window.removeEventListener("touchmove", blockScroll);
+        console.log("=== Listeners removed, scroll should be unlocked!");
       }
     },
   });
