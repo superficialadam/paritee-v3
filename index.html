@@ -78,6 +78,48 @@
             }
         </style>
         <link rel="stylesheet" href="style.css" />
+        <!-- SKIP setting - must be in head to run before body renders -->
+        <script>
+            // DEVELOPER SWITCH: Set to true to skip logo and theme animations
+            var SKIP_INTRO_ANIMATIONS = false;
+        </script>
+        <!-- Hide elements initially that will be animated from opacity 0 -->
+        <style>
+            /* Hide logos until anime.js sets their initial state (no !important so anime can override) */
+            .paritee-logo {
+                opacity: 0;
+            }
+            /* Hide dotmatrix canvas initially until params are set to starting values */
+            #dotmatrix {
+                opacity: 0;
+            }
+            /* Show canvas when skip class is added OR when ready class is added */
+            body.skip-intro #dotmatrix,
+            body.dotmatrix-ready #dotmatrix {
+                opacity: 1;
+            }
+        </style>
+        <!-- White overlay CSS - will be controlled by script -->
+        <style>
+            #white-overlay-initial {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: white;
+                z-index: 9999;
+                pointer-events: none;
+                opacity: 0;
+                display: none;
+            }
+            /* Only show overlay when skip class is added */
+            body.skip-intro #white-overlay-initial {
+                opacity: 1;
+                display: block;
+            }
+        </style>
+
         <!-- Import map for Three.js modules -->
         <script type="importmap">
             {
@@ -89,59 +131,52 @@
         </script>
     </head>
     <body>
+        <!-- Add skip class IMMEDIATELY inline if SKIP is true -->
+        <script>
+            if (
+                typeof SKIP_INTRO_ANIMATIONS !== "undefined" &&
+                SKIP_INTRO_ANIMATIONS === true
+            ) {
+                document.body.classList.add("skip-intro");
+            }
+        </script>
+
+        <!-- White overlay div - present from frame 0 -->
+        <div id="white-overlay-initial"></div>
+
         <!-- Script to handle white overlay fade -->
         <script>
-            // Check if we should show white overlay (only when skipping intro)
-            // Wait for main.js to load (it's loaded at the bottom of the page)
+            // Handle overlay fade after page fully loads
             window.addEventListener("load", function () {
-                function initWhiteOverlay() {
-                    // Check if SKIP_INTRO_ANIMATIONS is true
-                    if (
-                        typeof SKIP_INTRO_ANIMATIONS !== "undefined" &&
-                        SKIP_INTRO_ANIMATIONS === true
-                    ) {
-                        // Create white overlay only when SKIP is true
-                        const overlay = document.createElement("div");
-                        overlay.id = "white-overlay-initial";
-                        overlay.style.cssText = `
-                            position: fixed;
-                            top: 0;
-                            left: 0;
-                            width: 100%;
-                            height: 100%;
-                            background: white;
-                            z-index: 9999;
-                            pointer-events: none;
-                            opacity: 1;
-                        `;
-                        // Insert at the very beginning of body
-                        document.body.insertBefore(
-                            overlay,
-                            document.body.firstChild,
-                        );
+                const overlay = document.getElementById(
+                    "white-overlay-initial",
+                );
 
-                        // Wait a couple frames, then start 1 second fade
+                // Check if SKIP_INTRO_ANIMATIONS is true
+                if (
+                    typeof SKIP_INTRO_ANIMATIONS !== "undefined" &&
+                    SKIP_INTRO_ANIMATIONS === true
+                ) {
+                    // SKIP is true - fade out the overlay over 1 second
+                    // Wait a couple frames, then start 1 second fade
+                    requestAnimationFrame(() => {
                         requestAnimationFrame(() => {
-                            requestAnimationFrame(() => {
-                                // Add transition
-                                overlay.style.transition =
-                                    "opacity 1s ease-out";
-                                // Trigger fade
-                                setTimeout(() => {
-                                    overlay.style.opacity = "0";
-                                }, 10);
+                            // Add transition
+                            overlay.style.transition = "opacity 1s ease-out";
+                            // Trigger fade
+                            setTimeout(() => {
+                                overlay.style.opacity = "0";
+                            }, 10);
 
-                                // Remove after fade completes
-                                setTimeout(() => {
-                                    overlay.remove();
-                                }, 1010);
-                            });
+                            // Remove after fade completes
+                            setTimeout(() => {
+                                overlay.remove();
+                                document.body.classList.remove("skip-intro");
+                            }, 1010);
                         });
-                    }
-                    // If SKIP is false, do nothing - no overlay to remove
+                    });
                 }
-
-                initWhiteOverlay();
+                // If SKIP is false, overlay stays hidden (CSS keeps it display: none)
             });
         </script>
 

@@ -1,5 +1,5 @@
-// DEVELOPER SWITCH: Set to true to skip logo and theme animations
-let SKIP_INTRO_ANIMATIONS = true;
+// DEVELOPER SWITCH is now in index.html <head>
+// let SKIP_INTRO_ANIMATIONS = false; // Moved to HTML
 const SKIP_LOGS = true;
 
 function logger(msg) {
@@ -89,15 +89,20 @@ window.addEventListener("load", function () {
     dotMatrixParams.influence2EdgeExposure = 0.0;
     dotMatrixParams.influence2EdgeGamma = 1.0;
 
-    // Defer sync to ensure dotMatrix is fully initialized
-    setTimeout(() => {
-      if (window.syncParamsToUniforms) {
-        window.syncParamsToUniforms();
-        setTimeout(() => {
+    // Sync params immediately to prevent flash of default values
+    if (window.syncParamsToUniforms) {
+      window.syncParamsToUniforms();
+      // Mark dotmatrix as ready so CSS shows it
+      document.body.classList.add("dotmatrix-ready");
+    } else {
+      // If sync function doesn't exist yet, wait for it
+      setTimeout(() => {
+        if (window.syncParamsToUniforms) {
           window.syncParamsToUniforms();
-        }, 50);
-      }
-    }, 100);
+          document.body.classList.add("dotmatrix-ready");
+        }
+      }, 100);
+    }
   }
 
   // Check if anime is loaded (v4 should use global anime object)
