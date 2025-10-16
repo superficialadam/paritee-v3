@@ -1,5 +1,5 @@
 // DEVELOPER SWITCH: Set to true to skip logo and theme animations
-const SKIP_INTRO_ANIMATIONS = false;
+let SKIP_INTRO_ANIMATIONS = true;
 const SKIP_LOGS = true;
 
 function logger(msg) {
@@ -192,16 +192,17 @@ window.addEventListener("load", function () {
     utils.set(".circle-5", { translateX: -150, translateY: -100, scale: 0.9 });
     utils.set(".circle-5 circle", { fill: "#C8DDFF" });
 
-    // Set dotMatrix to final state (no influence zones visible)
+    // Set dotMatrix to final state (what the heroLogoRevealTl timeline ends on)
     if (window.dotMatrixParams) {
+      // These are the values that the timeline animates TO (final state)
+      dotMatrixParams.noiseMultiplier = 0.4;
+      dotMatrixParams.influence1EdgeThreshold = 0.8;
+      dotMatrixParams.influence1RadiusX = 2.0;
+      dotMatrixParams.influence1RadiusY = 2.0;
+      dotMatrixParams.influence1Falloff = 0.1;
+      dotMatrixParams.influence1EdgeScale = 50;
       dotMatrixParams.influence1Intensity = 0.0;
       dotMatrixParams.influence2Intensity = 0.0;
-      dotMatrixParams.influence1RadiusX = 0.02;
-      dotMatrixParams.influence1RadiusY = 0.02;
-      dotMatrixParams.influence1Falloff = 2.0;
-      dotMatrixParams.influence2RadiusX = 0.05;
-      dotMatrixParams.influence2RadiusY = 0.05;
-      dotMatrixParams.influence2Falloff = 1.5;
 
       // Sync these changes to the shader uniforms
       if (window.syncParamsToUniforms) {

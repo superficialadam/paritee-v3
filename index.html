@@ -1,255 +1,405 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Paritee V3</title>
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Styles -->
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Paritee V3</title>
+        <!-- Google Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <!-- Styles -->
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
 
-      html {
-        scroll-behavior: smooth;
-      }
+            html {
+                scroll-behavior: smooth;
+            }
 
-      body {
-        margin: 0;
-        font-family: 'Inter', system-ui, -apple-system, sans-serif;
-        overflow-x: hidden;
-        position: relative;
-      }
+            body {
+                margin: 0;
+                font-family:
+                    "Inter",
+                    system-ui,
+                    -apple-system,
+                    sans-serif;
+                overflow-x: hidden;
+                position: relative;
+            }
 
-      .section {
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: flex-start;
-        position: relative;
-        padding-left: 5rem;
-        /* Removed z-index to allow blend modes to work with background */
-      }
+            .section {
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: flex-start;
+                position: relative;
+                padding-left: 5rem;
+                /* Removed z-index to allow blend modes to work with background */
+            }
 
-      .heading-container {
-        position: relative;
-        width: 100%;
-      }
+            .heading-container {
+                position: relative;
+                width: 100%;
+            }
 
-      .homeContent {
-        text-align: left;
-        background-color: rgba(255, 255, 255, 0.1); /* 10% white background */
-        padding: 2rem;
-        border-radius: 8px;
-        max-width: 600px;
-        margin-top: 8rem; /* Add spacing from the heading above */
-        margin-right: auto; /* This pushes the div to the left */
-      }
+            .homeContent {
+                text-align: left;
+                background-color: rgba(
+                    255,
+                    255,
+                    255,
+                    0.1
+                ); /* 10% white background */
+                padding: 2rem;
+                border-radius: 8px;
+                max-width: 600px;
+                margin-top: 8rem; /* Add spacing from the heading above */
+                margin-right: auto; /* This pushes the div to the left */
+            }
 
-      @media (max-width: 768px) {
-        .section h1 {
-          font-size: 2.5rem;
-        }
-      }
+            @media (max-width: 768px) {
+                .section h1 {
+                    font-size: 2.5rem;
+                }
+            }
 
-      @media (max-width: 480px) {
-        .section h1 {
-          font-size: 2rem;
-        }
-      }
-    </style>
-    <link rel="stylesheet" href="style.css">
-    <!-- Import map for Three.js modules -->
-    <script type="importmap">
-      {
-        "imports": {
-            "three": "https://unpkg.com/three@0.157.0/build/three.module.js",
-            "three/addons/": "https://unpkg.com/three@0.157.0/examples/jsm/"
-        }
-    }
-    </script>
-  </head>
-  <body>
+            @media (max-width: 480px) {
+                .section h1 {
+                    font-size: 2rem;
+                }
+            }
+        </style>
+        <link rel="stylesheet" href="style.css" />
+        <!-- Import map for Three.js modules -->
+        <script type="importmap">
+            {
+                "imports": {
+                    "three": "https://unpkg.com/three@0.157.0/build/three.module.js",
+                    "three/addons/": "https://unpkg.com/three@0.157.0/examples/jsm/"
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <!-- White overlay for SKIP_INTRO_ANIMATIONS (fades out over 1 second) -->
+        <script type="module">
+            // Check if we should show white overlay (only when skipping intro)
+            import("./main.js").then((module) => {
+                // Wait for DOM to be ready
+                if (document.readyState === "loading") {
+                    document.addEventListener(
+                        "DOMContentLoaded",
+                        initWhiteOverlay,
+                    );
+                } else {
+                    initWhiteOverlay();
+                }
 
-    <!-- Background gradients -->
-    <div class="bg-dark"></div>
-    <div class="bg-light"></div>
-    <!-- Dot matrix canvas (above background, below content) -->
-    <canvas id="dotmatrix"></canvas>
-    <!-- Globe container -->
-    <div class="bg-globe"></div>
-    <!-- Paritee Logos -->
-    <div class="paritee-logo cyan"></div>
-    <div class="paritee-logo purple"></div>
-    <div class="paritee-logo yellow"></div>
+                function initWhiteOverlay() {
+                    // Only create overlay if SKIP_INTRO_ANIMATIONS is true
+                    // We check the global variable set in main.js
+                    if (
+                        typeof SKIP_INTRO_ANIMATIONS !== "undefined" &&
+                        SKIP_INTRO_ANIMATIONS === true
+                    ) {
+                        const overlay = document.createElement("div");
+                        overlay.id = "white-overlay";
+                        overlay.style.cssText = `
+              position: fixed;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              background: white;
+              z-index: 9999;
+              pointer-events: none;
+              opacity: 1;
+              transition: opacity 1s ease-out;
+            `;
+                        document.body.appendChild(overlay);
 
-    <!-- Background blur circles with parallax layers -->
-    <div class="bg-circles">
-      <!-- Background layer (slowest) -->
-      <div class="parallax-background">
-        <svg class="circle-1" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="100" cy="100" r="100" fill="#0E2683"/>
-        </svg>
-        <svg class="circle-3" viewBox="0 0 250 250" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="125" cy="125" r="125" fill="#0E2683"/>
-        </svg>
-      </div>
-      <!-- Middle layer -->
-      <div class="parallax-middle">
-        <svg class="circle-2" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="150" cy="150" r="150" fill="#3B167A"/>
-        </svg>
-        <svg class="circle-5" viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="110" cy="110" r="110" fill="#0E2683"/>
-        </svg>
-      </div>
-      <!-- Foreground layers (three speeds) -->
-      <div class="parallax-foreground-slow">
-        <svg class="circle-4" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="90" cy="90" r="90" fill="#3B167A"/>
-        </svg>
-      </div>
-      <div class="parallax-foreground-medium">
-      </div>
-      <div class="parallax-foreground-fast">
-      </div>
-    </div>
-    <section id="hero" class="section">
-      <div class="heading-container">
-        <h1 class="heading-prism cyan">When you've outgrown the old model,<br/> we're what's next</h1>
-        <h1 class="heading-prism purple">When you've outgrown the old model,<br/> we're what's next</h1>
-        <h1 class="heading-prism yellow">When you've outgrown the old model,<br/> we're what's next</h1>
-        <h1 class="heading-main">When you've outgrown the old model,<br/> we're what's next</h1>
-      </div>
-      <div class="homeContent">
-        <p>llorem ipsum lorem ipsumlorem ipsum lorem ipsumlorem ipsum <br/> lorem ipsumlorem ipsum lorem ipsumlorem ipsum lorem <br/>ipsumlorem ipsum lorem ipsumorem ipsum lorem ipsum</p>
-      </div>
+                        // Fade out after a couple frames
+                        requestAnimationFrame(() => {
+                            requestAnimationFrame(() => {
+                                overlay.style.opacity = "0";
+                                // Remove after fade completes
+                                setTimeout(() => {
+                                    overlay.remove();
+                                }, 1000);
+                            });
+                        });
+                    }
+                }
+            });
+        </script>
 
-    </section>
-    <section id="section1" class="section">
-      <div class="heading-container">
-        <h1 class="heading-prism cyan">The best of two worlds</h1>
-        <h1 class="heading-prism purple">The best of two worlds</h1>
-        <h1 class="heading-prism yellow">The best of two worlds</h1>
-        <h1 class="heading-main">The best of two worlds</h1>
-      </div>
-      <div class="homeContent">
-        <p>llorem ipsum lorem ipsumlorem ipsum lorem ipsumlorem ipsum <br/> lorem ipsumlorem ipsum lorem ipsumlorem ipsum lorem <br/>ipsumlorem ipsum lorem ipsumorem ipsum lorem ipsum</p>
-      </div>
-    </section>
-    <section id="section2" class="section">
-      <div class="heading-container">
-        <h1 class="heading-prism cyan">Expect more. Accept less.</h1>
-        <h1 class="heading-prism purple">Expect more. Accept less.</h1>
-        <h1 class="heading-prism yellow">Expect more. Accept less.</h1>
-        <h1 class="heading-main">Expect more. Accept less.</h1>
-      </div>
-      <div class="homeContent">
-        <p>llorem ipsum lorem ipsumlorem ipsum lorem ipsumlorem ipsum <br/> lorem ipsumlorem ipsum lorem ipsumlorem ipsum lorem <br/>ipsumlorem ipsum lorem ipsumorem ipsum lorem ipsum</p>
-      </div>
-    </section>
-    <section id="section3" class="section">
-      <div class="heading-container">
-        <h1 class="heading-prism cyan">Purpose-Driven. Partnership-Led.<br/>Performance-Obsessed.</h1>
-        <h1 class="heading-prism purple">Purpose-Driven. Partnership-Led.<br/>Performance-Obsessed.</h1>
-        <h1 class="heading-prism yellow">Purpose-Driven. Partnership-Led.<br/>Performance-Obsessed.</h1>
-        <h1 class="heading-main">Purpose-Driven. Partnership-Led.<br/>Performance-Obsessed.</h1>
-      </div>
-      <div class="homeContent">
-        <p>llorem ipsum lorem ipsumlorem ipsum lorem ipsumlorem ipsum <br/> lorem ipsumlorem ipsum lorem ipsumlorem ipsum lorem <br/>ipsumlorem ipsum lorem ipsumorem ipsum lorem ipsum</p>
-      </div>
-    </section>
-    <section id="section4" class="section dark">
-      <div class="heading-container">
-        <h1 class="heading-prism cyan">Section 4</h1>
-        <h1 class="heading-prism purple">Section 4</h1>
-        <h1 class="heading-prism yellow">Section 4</h1>
-        <h1 class="heading-main">Section 4</h1>
-      </div>
-    </section>
-    <section id="section5" class="section">
-      <div class="heading-container">
-        <h1 class="heading-prism cyan">Innovation at Scale</h1>
-        <h1 class="heading-prism purple">Innovation at Scale</h1>
-        <h1 class="heading-prism yellow">Innovation at Scale</h1>
-        <h1 class="heading-main">Innovation at Scale</h1>
-      </div>
-      <div class="homeContent">
-        <p>lorem ipsum lorem ipsumlorem ipsum lorem ipsumlorem ipsum <br/> lorem ipsumlorem ipsum lorem ipsumlorem ipsum lorem <br/>ipsumlorem ipsum lorem ipsumorem ipsum lorem ipsum</p>
-      </div>
-    </section>
-    <section id="section6" class="section dark">
-      <div class="heading-container">
-        <h1 class="heading-prism cyan">Beyond Boundaries</h1>
-        <h1 class="heading-prism purple">Beyond Boundaries</h1>
-        <h1 class="heading-prism yellow">Beyond Boundaries</h1>
-        <h1 class="heading-main">Beyond Boundaries</h1>
-      </div>
-      <div class="homeContent">
-        <p>lorem ipsum lorem ipsumlorem ipsum lorem ipsumlorem ipsum <br/> lorem ipsumlorem ipsum lorem ipsumlorem ipsum lorem <br/>ipsumlorem ipsum lorem ipsumorem ipsum lorem ipsum</p>
-      </div>
-    </section>
-    <section id="section7" class="section">
-      <div class="heading-container">
-        <h1 class="heading-prism cyan">Future Forward</h1>
-        <h1 class="heading-prism purple">Future Forward</h1>
-        <h1 class="heading-prism yellow">Future Forward</h1>
-        <h1 class="heading-main">Future Forward</h1>
-      </div>
-      <div class="homeContent">
-        <p>lorem ipsum lorem ipsumlorem ipsum lorem ipsumlorem ipsum <br/> lorem ipsumlorem ipsum lorem ipsumlorem ipsum lorem <br/>ipsumlorem ipsum lorem ipsumorem ipsum lorem ipsum</p>
-      </div>
-    </section>
-    <section id="section8" class="section globe">
-      <div class="heading-container">
-        <h1 class="heading-prism cyan">Transform Tomorrow</h1>
-        <h1 class="heading-prism purple">Transform Tomorrow</h1>
-        <h1 class="heading-prism yellow">Transform Tomorrow</h1>
-        <h1 class="heading-main">Transform Tomorrow</h1>
-      </div>
-      <div class="homeContent">
-        <p>lorem ipsum lorem ipsumlorem ipsum lorem ipsumlorem ipsum <br/> lorem ipsumlorem ipsum lorem ipsumlorem ipsum lorem <br/>ipsumlorem ipsum lorem ipsumorem ipsum lorem ipsum</p>
-      </div>
-    </section>
-    <section id="section9" class="section dark">
-      <div class="heading-container">
-        <h1 class="heading-prism cyan">Transform Tomorrow</h1>
-        <h1 class="heading-prism purple">Transform Tomorrow</h1>
-        <h1 class="heading-prism yellow">Transform Tomorrow</h1>
-        <h1 class="heading-main">Transform Tomorrow</h1>
-      </div>
-      <div class="homeContent">
-        <p>lorem ipsum lorem ipsumlorem ipsum lorem ipsumlorem ipsum <br/> lorem ipsumlorem ipsum lorem ipsumlorem ipsum lorem <br/>ipsumlorem ipsum lorem ipsumorem ipsum lorem ipsum</p>
-      </div>
-    </section>
-    <section id="section10" class="section">
-      <div class="heading-container">
-        <h1 class="heading-prism cyan">Transform Tomorrow</h1>
-        <h1 class="heading-prism purple">Transform Tomorrow</h1>
-        <h1 class="heading-prism yellow">Transform Tomorrow</h1>
-        <h1 class="heading-main">Transform Tomorrow</h1>
-      </div>
-      <div class="homeContent">
-        <p>lorem ipsum lorem ipsumlorem ipsum lorem ipsumlorem ipsum <br/> lorem ipsumlorem ipsum lorem ipsumlorem ipsum lorem <br/>ipsumlorem ipsum lorem ipsumorem ipsum lorem ipsum</p>
-      </div>
-    </section>
-    
-    <!-- Load anime.js locally -->
-    <script src="anime.min.js"></script>
-    <!-- Dot matrix module -->
-    <script type="module" src="dotmatrix.js"></script>
-    <!-- Globe module -->
-    <script type="module" src="globe.js"></script>
-    <!-- Three.js parallax circles -->
-    <script type="module" src="parallax-circles.js"></script>
-    <!-- Main JavaScript file -->
-    <script src="main.js"></script>
-  </body>
+        <!-- Background gradients -->
+        <div class="bg-dark"></div>
+        <div class="bg-light"></div>
+        <!-- Dot matrix canvas (above background, below content) -->
+        <canvas id="dotmatrix"></canvas>
+        <!-- Globe container -->
+        <div class="bg-globe"></div>
+        <!-- Paritee Logos -->
+        <div class="paritee-logo cyan"></div>
+        <div class="paritee-logo purple"></div>
+        <div class="paritee-logo yellow"></div>
+
+        <!-- Background blur circles with parallax layers -->
+        <div class="bg-circles">
+            <!-- Background layer (slowest) -->
+            <div class="parallax-background">
+                <svg
+                    class="circle-1"
+                    viewBox="0 0 200 200"
+                    xmlns="http://www.w3.org/2000/svg"
+                >
+                    <circle cx="100" cy="100" r="100" fill="#0E2683" />
+                </svg>
+                <svg
+                    class="circle-3"
+                    viewBox="0 0 250 250"
+                    xmlns="http://www.w3.org/2000/svg"
+                >
+                    <circle cx="125" cy="125" r="125" fill="#0E2683" />
+                </svg>
+            </div>
+            <!-- Middle layer -->
+            <div class="parallax-middle">
+                <svg
+                    class="circle-2"
+                    viewBox="0 0 300 300"
+                    xmlns="http://www.w3.org/2000/svg"
+                >
+                    <circle cx="150" cy="150" r="150" fill="#3B167A" />
+                </svg>
+                <svg
+                    class="circle-5"
+                    viewBox="0 0 220 220"
+                    xmlns="http://www.w3.org/2000/svg"
+                >
+                    <circle cx="110" cy="110" r="110" fill="#0E2683" />
+                </svg>
+            </div>
+            <!-- Foreground layers (three speeds) -->
+            <div class="parallax-foreground-slow">
+                <svg
+                    class="circle-4"
+                    viewBox="0 0 180 180"
+                    xmlns="http://www.w3.org/2000/svg"
+                >
+                    <circle cx="90" cy="90" r="90" fill="#3B167A" />
+                </svg>
+            </div>
+            <div class="parallax-foreground-medium"></div>
+            <div class="parallax-foreground-fast"></div>
+        </div>
+        <section id="hero" class="section">
+            <div class="heading-container">
+                <h1 class="heading-prism cyan">
+                    When you've outgrown the old model,<br />
+                    we're what's next
+                </h1>
+                <h1 class="heading-prism purple">
+                    When you've outgrown the old model,<br />
+                    we're what's next
+                </h1>
+                <h1 class="heading-prism yellow">
+                    When you've outgrown the old model,<br />
+                    we're what's next
+                </h1>
+                <h1 class="heading-main">
+                    When you've outgrown the old model,<br />
+                    we're what's next
+                </h1>
+            </div>
+            <div class="homeContent">
+                <p>
+                    llorem ipsum lorem ipsumlorem ipsum lorem ipsumlorem ipsum
+                    <br />
+                    lorem ipsumlorem ipsum lorem ipsumlorem ipsum lorem
+                    <br />ipsumlorem ipsum lorem ipsumorem ipsum lorem ipsum
+                </p>
+            </div>
+        </section>
+        <section id="section1" class="section">
+            <div class="heading-container">
+                <h1 class="heading-prism cyan">The best of two worlds</h1>
+                <h1 class="heading-prism purple">The best of two worlds</h1>
+                <h1 class="heading-prism yellow">The best of two worlds</h1>
+                <h1 class="heading-main">The best of two worlds</h1>
+            </div>
+            <div class="homeContent">
+                <p>
+                    llorem ipsum lorem ipsumlorem ipsum lorem ipsumlorem ipsum
+                    <br />
+                    lorem ipsumlorem ipsum lorem ipsumlorem ipsum lorem
+                    <br />ipsumlorem ipsum lorem ipsumorem ipsum lorem ipsum
+                </p>
+            </div>
+        </section>
+        <section id="section2" class="section">
+            <div class="heading-container">
+                <h1 class="heading-prism cyan">Expect more. Accept less.</h1>
+                <h1 class="heading-prism purple">Expect more. Accept less.</h1>
+                <h1 class="heading-prism yellow">Expect more. Accept less.</h1>
+                <h1 class="heading-main">Expect more. Accept less.</h1>
+            </div>
+            <div class="homeContent">
+                <p>
+                    llorem ipsum lorem ipsumlorem ipsum lorem ipsumlorem ipsum
+                    <br />
+                    lorem ipsumlorem ipsum lorem ipsumlorem ipsum lorem
+                    <br />ipsumlorem ipsum lorem ipsumorem ipsum lorem ipsum
+                </p>
+            </div>
+        </section>
+        <section id="section3" class="section">
+            <div class="heading-container">
+                <h1 class="heading-prism cyan">
+                    Purpose-Driven. Partnership-Led.<br />Performance-Obsessed.
+                </h1>
+                <h1 class="heading-prism purple">
+                    Purpose-Driven. Partnership-Led.<br />Performance-Obsessed.
+                </h1>
+                <h1 class="heading-prism yellow">
+                    Purpose-Driven. Partnership-Led.<br />Performance-Obsessed.
+                </h1>
+                <h1 class="heading-main">
+                    Purpose-Driven. Partnership-Led.<br />Performance-Obsessed.
+                </h1>
+            </div>
+            <div class="homeContent">
+                <p>
+                    llorem ipsum lorem ipsumlorem ipsum lorem ipsumlorem ipsum
+                    <br />
+                    lorem ipsumlorem ipsum lorem ipsumlorem ipsum lorem
+                    <br />ipsumlorem ipsum lorem ipsumorem ipsum lorem ipsum
+                </p>
+            </div>
+        </section>
+        <section id="section4" class="section dark">
+            <div class="heading-container">
+                <h1 class="heading-prism cyan">Section 4</h1>
+                <h1 class="heading-prism purple">Section 4</h1>
+                <h1 class="heading-prism yellow">Section 4</h1>
+                <h1 class="heading-main">Section 4</h1>
+            </div>
+        </section>
+        <section id="section5" class="section">
+            <div class="heading-container">
+                <h1 class="heading-prism cyan">Innovation at Scale</h1>
+                <h1 class="heading-prism purple">Innovation at Scale</h1>
+                <h1 class="heading-prism yellow">Innovation at Scale</h1>
+                <h1 class="heading-main">Innovation at Scale</h1>
+            </div>
+            <div class="homeContent">
+                <p>
+                    lorem ipsum lorem ipsumlorem ipsum lorem ipsumlorem ipsum
+                    <br />
+                    lorem ipsumlorem ipsum lorem ipsumlorem ipsum lorem
+                    <br />ipsumlorem ipsum lorem ipsumorem ipsum lorem ipsum
+                </p>
+            </div>
+        </section>
+        <section id="section6" class="section dark">
+            <div class="heading-container">
+                <h1 class="heading-prism cyan">Beyond Boundaries</h1>
+                <h1 class="heading-prism purple">Beyond Boundaries</h1>
+                <h1 class="heading-prism yellow">Beyond Boundaries</h1>
+                <h1 class="heading-main">Beyond Boundaries</h1>
+            </div>
+            <div class="homeContent">
+                <p>
+                    lorem ipsum lorem ipsumlorem ipsum lorem ipsumlorem ipsum
+                    <br />
+                    lorem ipsumlorem ipsum lorem ipsumlorem ipsum lorem
+                    <br />ipsumlorem ipsum lorem ipsumorem ipsum lorem ipsum
+                </p>
+            </div>
+        </section>
+        <section id="section7" class="section">
+            <div class="heading-container">
+                <h1 class="heading-prism cyan">Future Forward</h1>
+                <h1 class="heading-prism purple">Future Forward</h1>
+                <h1 class="heading-prism yellow">Future Forward</h1>
+                <h1 class="heading-main">Future Forward</h1>
+            </div>
+            <div class="homeContent">
+                <p>
+                    lorem ipsum lorem ipsumlorem ipsum lorem ipsumlorem ipsum
+                    <br />
+                    lorem ipsumlorem ipsum lorem ipsumlorem ipsum lorem
+                    <br />ipsumlorem ipsum lorem ipsumorem ipsum lorem ipsum
+                </p>
+            </div>
+        </section>
+        <section id="section8" class="section globe">
+            <div class="heading-container">
+                <h1 class="heading-prism cyan">Transform Tomorrow</h1>
+                <h1 class="heading-prism purple">Transform Tomorrow</h1>
+                <h1 class="heading-prism yellow">Transform Tomorrow</h1>
+                <h1 class="heading-main">Transform Tomorrow</h1>
+            </div>
+            <div class="homeContent">
+                <p>
+                    lorem ipsum lorem ipsumlorem ipsum lorem ipsumlorem ipsum
+                    <br />
+                    lorem ipsumlorem ipsum lorem ipsumlorem ipsum lorem
+                    <br />ipsumlorem ipsum lorem ipsumorem ipsum lorem ipsum
+                </p>
+            </div>
+        </section>
+        <section id="section9" class="section dark">
+            <div class="heading-container">
+                <h1 class="heading-prism cyan">Transform Tomorrow</h1>
+                <h1 class="heading-prism purple">Transform Tomorrow</h1>
+                <h1 class="heading-prism yellow">Transform Tomorrow</h1>
+                <h1 class="heading-main">Transform Tomorrow</h1>
+            </div>
+            <div class="homeContent">
+                <p>
+                    lorem ipsum lorem ipsumlorem ipsum lorem ipsumlorem ipsum
+                    <br />
+                    lorem ipsumlorem ipsum lorem ipsumlorem ipsum lorem
+                    <br />ipsumlorem ipsum lorem ipsumorem ipsum lorem ipsum
+                </p>
+            </div>
+        </section>
+        <section id="section10" class="section">
+            <div class="heading-container">
+                <h1 class="heading-prism cyan">Transform Tomorrow</h1>
+                <h1 class="heading-prism purple">Transform Tomorrow</h1>
+                <h1 class="heading-prism yellow">Transform Tomorrow</h1>
+                <h1 class="heading-main">Transform Tomorrow</h1>
+            </div>
+            <div class="homeContent">
+                <p>
+                    lorem ipsum lorem ipsumlorem ipsum lorem ipsumlorem ipsum
+                    <br />
+                    lorem ipsumlorem ipsum lorem ipsumlorem ipsum lorem
+                    <br />ipsumlorem ipsum lorem ipsumorem ipsum lorem ipsum
+                </p>
+            </div>
+        </section>
+
+        <!-- Load anime.js locally -->
+        <script src="anime.min.js"></script>
+        <!-- Dot matrix module -->
+        <script type="module" src="dotmatrix.js"></script>
+        <!-- Globe module -->
+        <script type="module" src="globe.js"></script>
+        <!-- Three.js parallax circles -->
+        <script type="module" src="parallax-circles.js"></script>
+        <!-- Main JavaScript file -->
+        <script src="main.js"></script>
+    </body>
 </html>
