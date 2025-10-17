@@ -352,12 +352,14 @@ function handleResize() {
 }
 
 // Rebuild circles when document height changes (e.g., dynamic content)
+// DISABLED: This causes circles to jump to new random positions during initialization
+// The 2-second interval was catching height changes during page load, causing repositioning
 let lastDocHeight = 0;
 function checkDocumentHeight() {
   const currentHeight = getDocumentHeight();
   if (currentHeight !== lastDocHeight) {
     lastDocHeight = currentHeight;
-    buildAllCircles();
+    // buildAllCircles(); // DISABLED to prevent repositioning glitch
   }
 }
 

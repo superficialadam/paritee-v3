@@ -1,55 +1,40 @@
 // Generic Background Initialization
 // This file configures the dot matrix and scroll behavior for the generic background system
-// To use: Include dotmatrix.js and generic-parallax-circles.js modules, then include this script
+// To use: Include dotmatrix-background.js and generic-parallax-circles.js modules, then include this script
 
 window.addEventListener('load', function() {
-  if (window.dotMatrixParams) {
-    // Camera
-    dotMatrixParams.cameraOffsetX = 0.0;
-    dotMatrixParams.cameraOffsetY = 0.0;
-    dotMatrixParams.cameraOffsetZ = 6.0;
-    dotMatrixParams.cameraFOV = 70;
+  // Disable circle height checking temporarily to prevent rebuild during fade-in
+  let heightCheckEnabled = false;
 
-    // Dot Matrix
-    dotMatrixParams.gridResolution = 80;
-    dotMatrixParams.sizeBlack = 0.5;
-    dotMatrixParams.sizeWhite = 16;
-    dotMatrixParams.pointMargin = 1.0;
-    dotMatrixParams.pointOpacity = 1.0;
+  // Wait for all scripts to initialize and layout to settle before fading in
+  // This prevents the glitch where circles reposition after becoming visible
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        const dotmatrix = document.getElementById('dotmatrix');
+        const circles = document.querySelector('.bg-circles');
+        const globeCanvas = document.getElementById('globe-canvas');
 
-    // Main Noise - Slower animation with scroll-linked offset
-    dotMatrixParams.mainNoiseEnabled = true;
-    dotMatrixParams.noiseAnimated = true;
-    dotMatrixParams.noiseScale = 80.0;
-    dotMatrixParams.noiseSpeed = 4.0; // Slower animation
-    dotMatrixParams.noiseOffsetX = -0.9;
-    dotMatrixParams.noiseOffsetY = 0.0;
-    dotMatrixParams.noiseOffsetZ = 0.0;
-    dotMatrixParams.noiseEvolution = 0.0;
-    dotMatrixParams.noiseOctaves = 4;
-    dotMatrixParams.noiseLacunarity = 2.0;
-    dotMatrixParams.noiseGain = 0.673;
-    dotMatrixParams.noiseThreshold = 0.4;
-    dotMatrixParams.noiseIslandSize = 0.8937;
-    dotMatrixParams.noiseExposure = 0.742;
-    dotMatrixParams.noiseGamma = 0.5;
-    dotMatrixParams.noiseMultiplier = 0.4;
+        if (dotmatrix) {
+          dotmatrix.style.opacity = '1';
+        }
+        if (circles) {
+          circles.style.opacity = '1';
+        }
+        if (globeCanvas) {
+          globeCanvas.style.opacity = '1';
+        }
 
-    // Influence Zone 1 - Disabled for generic background
-    dotMatrixParams.influence1Enabled = false;
-    dotMatrixParams.influence1Intensity = 0.0;
+        // Re-enable height checking after fade-in is complete
+        setTimeout(() => {
+          heightCheckEnabled = true;
+        }, 1000);
+      }, 100);
+    });
+  });
 
-    // Influence Zone 2 - Disabled
-    dotMatrixParams.influence2Enabled = false;
-    dotMatrixParams.influence2Intensity = 0.0;
-
-    // Sync settings
-    setTimeout(() => {
-      if (window.syncParamsToUniforms) {
-        window.syncParamsToUniforms();
-      }
-    }, 100);
-  }
+  // Note: Settings are now baked into dotmatrix-background.js defaults
+  // No need to override them here unless customizing
 
   // Connect scroll to noise offset Y (inverted with small multiplier)
   const scrollMultiplier = 0.0005; // Small multiplier for subtle effect

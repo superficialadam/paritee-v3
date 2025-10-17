@@ -45,6 +45,8 @@ body {
   z-index: 0;
   pointer-events: none;
   mix-blend-mode: plus-lighter;
+  opacity: 0;
+  transition: opacity 0.3s ease-in;
 }
 
 /* Parallax circles container */
@@ -57,6 +59,8 @@ body {
   z-index: -1;
   pointer-events: none;
   overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.3s ease-in;
 }
 
 /* Content layer - ensure your content sits above the background */

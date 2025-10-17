@@ -58,7 +58,7 @@
         <div class="bg-dark"></div>
         <div class="bg-light"></div>
 
-        <!-- Dot matrix canvas (will be created by dotmatrix.js) -->
+        <!-- Dot matrix canvas (will be created by dotmatrix-background.js if showDotMatrix is true) -->
         <canvas id="dotmatrix"></canvas>
 
         <!-- Parallax circles container (will be populated by generic-parallax-circles.js) -->
@@ -67,6 +67,9 @@
         <!-- ========================================
              WORDPRESS DEVELOPER: COPY TO HERE
              Place this code at the start of <body>
+
+             Note: Canvas starts hidden (opacity: 0) and fades in after page load.
+             See generic-back.css for styling.
              ======================================== -->
 
         <!-- Your page content goes here (wrap in .content class) -->
@@ -135,6 +138,11 @@
              WORDPRESS DEVELOPER: COPY FROM HERE
              ======================================== -->
 
+        <!-- Configuration: Set to false to disable dotmatrix -->
+        <script>
+            window.showDotMatrix = true; // Set to false to disable dotmatrix
+        </script>
+
         <!-- Three.js import map (required) -->
         <script type="importmap">
             {
@@ -145,13 +153,27 @@
         </script>
 
         <!-- Background system scripts (in this order) -->
-        <script type="module" src="dotmatrix.js"></script>
+        <script type="module">
+            // Conditionally load dotmatrix based on showDotMatrix variable
+            if (window.showDotMatrix) {
+                import("./dotmatrix-background.js");
+            }
+        </script>
         <script type="module" src="generic-parallax-circles.js"></script>
         <script src="generic-back-init.js"></script>
 
         <!-- ========================================
              WORDPRESS DEVELOPER: COPY TO HERE
              Place this code before </body>
+
+             Required files:
+             - generic-back.css (background styling)
+             - dotmatrix-background.js (optional, controlled by showDotMatrix)
+             - generic-parallax-circles.js (animated circles)
+             - generic-back-init.js (initialization & fade-in)
+
+             Configuration:
+             - Set window.showDotMatrix = false to disable dotmatrix effect
              ======================================== -->
     </body>
 </html>

@@ -66,18 +66,21 @@
         <div class="bg-dark"></div>
         <div class="bg-light"></div>
 
-        <!-- Dot matrix canvas (will be created by dotmatrix.js) -->
+        <!-- Dot matrix canvas (will be created by dotmatrix-background.js) -->
         <canvas id="dotmatrix"></canvas>
 
         <!-- Parallax circles container (will be populated by generic-parallax-circles.js) -->
         <div class="bg-circles"></div>
 
-        <!-- Globe container (globe.js will inject canvas here) -->
+        <!-- Globe container (globe-background.js will inject canvas here) -->
         <div class="bg-globe"></div>
 
         <!-- ========================================
          WORDPRESS DEVELOPER: COPY TO HERE
          Place this code at the start of <body>
+
+         Note: Elements start hidden (opacity: 0) and fade in after page load.
+         See globe-with-background.css for styling.
          ======================================== -->
 
         <!-- Your page content goes here (wrap in .content class) -->
@@ -176,7 +179,7 @@
         </script>
 
         <!-- Background system scripts (in this order) -->
-        <script type="module" src="dotmatrix.js"></script>
+        <script type="module" src="dotmatrix-background.js"></script>
         <script type="module" src="generic-parallax-circles.js"></script>
         <script src="generic-back-init.js"></script>
 
@@ -186,6 +189,18 @@
         <!-- ========================================
          WORDPRESS DEVELOPER: COPY TO HERE
          Place this code before </body>
+
+         Required files:
+         - globe-with-background.css (background styling with CSS variables)
+         - dotmatrix-background.js (dot matrix with baked-in settings)
+         - generic-parallax-circles.js (animated circles)
+         - generic-back-init.js (initialization & fade-in)
+         - globe-background.js (WebGL globe with city dots)
+
+         Features:
+         - City dots are colored using --city-dot-color CSS variable
+         - City dot size scales with FOV (12px max at narrow, 10px at wide)
+         - All elements fade in smoothly (0.3s) after page load
          ======================================== -->
     </body>
 </html>
