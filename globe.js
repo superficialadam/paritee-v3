@@ -3,7 +3,6 @@ import * as THREE from "three";
 // ===== PARAMETERS =====
 const DOT_SIZE = 4.0; // Size of each dot
 const DOT_DENSITY = 120; // Dots per latitude row (REDUCED from 250 for performance)
-const CITY_DOT_SIZE = 20.0; // Size of city dots
 const GLOBE_RADIUS = 1;
 const CAMERA_DISTANCE = 2.3; // Fixed camera distance
 const CAMERA_HORIZONTAL_ROTATION = 130; // Horizontal rotation in degrees (0-360)
@@ -12,6 +11,21 @@ const GLOBE_TARGET_WIDTH_RATIO = 0.8; // Globe should occupy 80% of window width
 const REFERENCE_WIDTH = 1920; // Reference width where globe looks good
 const BASE_FOV = 45; // Base FOV at reference width
 // ======================
+
+// Calculate city dot size based on FOV
+// FOV <= 42: 15px, FOV >= 65: 10px, linear interpolation in between
+function getCityDotSize(fov) {
+  const MAX_SIZE = 15.0;
+  const MIN_SIZE = 10.0;
+  const MIN_FOV = 42;
+  const MAX_FOV = 65;
+
+  if (fov <= MIN_FOV) return MAX_SIZE;
+  if (fov >= MAX_FOV) return MIN_SIZE;
+
+  // Linear interpolation
+  return MAX_SIZE - ((fov - MIN_FOV) / (MAX_FOV - MIN_FOV)) * (MAX_SIZE - MIN_SIZE);
+}
 
 // Calculate responsive FOV to maintain globe at 80% of window width
 function getResponsiveFOV() {
@@ -179,6 +193,7 @@ async function initGlobe() {
 
   const positions = [];
   const sizes = [];
+  const isCityDot = []; // 1.0 for city dots, 0.0 for regular dots
   const dotPositions = [];
 
   // Sample texture to get land data
@@ -209,10 +224,18 @@ async function initGlobe() {
 
         positions.push(px, py, pz);
         sizes.push(DOT_SIZE);
+        isCityDot.push(0.0); // Regular dot
         dotPositions.push(new THREE.Vector3(px, py, pz));
       }
     }
   }
+
+  // Calculate city dot size based on current FOV
+  const cityDotSize = getCityDotSize(fov);
+  console.log(`City dot size at FOV ${fov.toFixed(1)}°: ${cityDotSize.toFixed(1)}px`);
+
+  // Store city dot indices for resize updates
+  const cityDotIndices = [];
 
   // Find closest dot to each city and make it larger
   // Optimized: use squared distance to avoid expensive sqrt() calls
@@ -233,12 +256,31 @@ async function initGlobe() {
     });
 
     if (closestDotIndex !== -1) {
-      sizes[closestDotIndex] = CITY_DOT_SIZE;
+      sizes[closestDotIndex] = cityDotSize;
+      isCityDot[closestDotIndex] = 1.0; // Mark as city dot
+      cityDotIndices.push(closestDotIndex);
     }
   });
 
   // Log actual point count for performance monitoring
   console.log(`Globe rendered with ${positions.length / 3} points`);
+
+  // Fetch city dot color from CSS variable
+  const cityDotColor = getComputedStyle(document.documentElement)
+    .getPropertyValue('--city-dot-color')
+    .trim();
+
+  // Convert hex to RGB (e.g., #B8A6E0 -> [0.722, 0.651, 0.878])
+  const hexToRgb = (hex) => {
+    const cleanHex = hex.replace('#', '');
+    const r = parseInt(cleanHex.substring(0, 2), 16) / 255;
+    const g = parseInt(cleanHex.substring(2, 4), 16) / 255;
+    const b = parseInt(cleanHex.substring(4, 6), 16) / 255;
+    return { r, g, b };
+  };
+
+  const cityColor = hexToRgb(cityDotColor);
+  console.log(`City dot color: ${cityDotColor} -> RGB(${cityColor.r.toFixed(3)}, ${cityColor.g.toFixed(3)}, ${cityColor.b.toFixed(3)})`);
 
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute(
@@ -246,11 +288,14 @@ async function initGlobe() {
     new THREE.Float32BufferAttribute(positions, 3),
   );
   geometry.setAttribute("size", new THREE.Float32BufferAttribute(sizes, 1));
+  geometry.setAttribute("isCityDot", new THREE.Float32BufferAttribute(isCityDot, 1));
 
   // Custom shader material for backface culling
   const vertexShader = `
     attribute float size;
+    attribute float isCityDot;
     varying float vVisible;
+    varying float vIsCityDot;
 
     void main() {
       vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
@@ -262,12 +307,15 @@ async function initGlobe() {
       float facing = dot(worldNormal, viewDirection);
 
       vVisible = step(0.0, facing);
+      vIsCityDot = isCityDot;
     }
   `;
 
   const fragmentShader = `
     uniform float uGlobeOpacity;
+    uniform vec3 uCityDotColor;
     varying float vVisible;
+    varying float vIsCityDot;
 
     void main() {
       if (vVisible < 0.5) discard;
@@ -277,7 +325,11 @@ async function initGlobe() {
       if (dist > 0.5) discard;
 
       float alpha = 1.0 - smoothstep(0.4, 0.5, dist);
-      gl_FragColor = vec4(1.0, 1.0, 1.0, alpha * uGlobeOpacity);
+
+      // Use city color if it's a city dot, otherwise white
+      vec3 color = mix(vec3(1.0, 1.0, 1.0), uCityDotColor, vIsCityDot);
+
+      gl_FragColor = vec4(color, alpha * uGlobeOpacity);
     }
   `;
 
@@ -290,6 +342,7 @@ async function initGlobe() {
     fragmentShader,
     uniforms: {
       uGlobeOpacity: { value: initialOpacity },
+      uCityDotColor: { value: new THREE.Vector3(cityColor.r, cityColor.g, cityColor.b) },
     },
     transparent: true,
     depthWrite: false,
@@ -472,6 +525,15 @@ async function initGlobe() {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
+
+    // Update city dot sizes based on new FOV
+    const newCityDotSize = getCityDotSize(camera.fov);
+    const sizeAttribute = geometry.getAttribute("size");
+    cityDotIndices.forEach((index) => {
+      sizeAttribute.array[index] = newCityDotSize;
+    });
+    sizeAttribute.needsUpdate = true;
+    console.log(`Resize: City dot size updated to ${newCityDotSize.toFixed(1)}px at FOV ${camera.fov.toFixed(1)}°`);
 
     needsRender = true;
   });

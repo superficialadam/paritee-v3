@@ -1,61 +1,64 @@
+:root {
+    --city-dot-color: #00ffff; /* Cyan color */
+}
 
-      .bg-dark {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100vh;
-        background: linear-gradient(to right, #0B111D, #0A1D40);
-        z-index: -3;
-      }
+.bg-dark {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: linear-gradient(to right, #0b111d, #0a1d40);
+    z-index: -3;
+}
 
-      .bg-light {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100vh;
-        background: linear-gradient(to right, #FAFBFF, #FFF9FE);
-        opacity: 0;
-        z-index: -2;
-      }
+.bg-light {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: linear-gradient(to right, #fafbff, #fff9fe);
+    opacity: 0;
+    z-index: -2;
+}
 /* Dot matrix canvas layer */
 #dotmatrix {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 0; /* Above backgrounds but below content */
-  pointer-events: none;
-  mix-blend-mode: plus-lighter;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0; /* Above backgrounds but below content */
+    pointer-events: none;
+    mix-blend-mode: plus-lighter;
 }
 
 /* Globe canvas layer - same as dotmatrix */
 .bg-globe {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100vh;
-  z-index: 0; /* Same as dotmatrix */
-  pointer-events: none;
-  overflow: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: 0; /* Same as dotmatrix */
+    pointer-events: none;
+    overflow: hidden;
 }
 
 #globe-canvas {
-  mix-blend-mode: plus-lighter;
+    mix-blend-mode: plus-lighter;
 }
 
 .bg-circles {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100vh;
-  z-index: -1;
-  pointer-events: none;
-  overflow: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
 }
 
 /* Parallax layers */
@@ -64,127 +67,126 @@
 .parallax-foreground-slow,
 .parallax-foreground-medium,
 .parallax-foreground-fast {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
 }
 
 .bg-circles svg {
-  position: absolute;
-  filter: blur(50px);
+    position: absolute;
+    filter: blur(50px);
 }
 
 .bg-circles .circle-1 {
-  width: 400px;
-  height: 400px;
-  top: -100px;
-  left: -100px;
-  opacity: 0.4;
+    width: 400px;
+    height: 400px;
+    top: -100px;
+    left: -100px;
+    opacity: 0.4;
 }
 
 .bg-circles .circle-2 {
-  width: 600px;
-  height: 600px;
-  top: 20%;
-  right: -200px;
-  opacity: 0.3;
+    width: 600px;
+    height: 600px;
+    top: 20%;
+    right: -200px;
+    opacity: 0.3;
 }
 
 .bg-circles .circle-3 {
-  width: 500px;
-  height: 500px;
-  bottom: -150px;
-  left: 30%;
-  opacity: 0.35;
+    width: 500px;
+    height: 500px;
+    bottom: -150px;
+    left: 30%;
+    opacity: 0.35;
 }
 
 .bg-circles .circle-4 {
-  width: 360px;
-  height: 360px;
-  top: 50%;
-  left: 10%;
-  opacity: 0.45;
+    width: 360px;
+    height: 360px;
+    top: 50%;
+    left: 10%;
+    opacity: 0.45;
 }
 
 .bg-circles .circle-5 {
-  width: 440px;
-  height: 440px;
-  bottom: 10%;
-  right: 20%;
-  opacity: 0.3;
+    width: 440px;
+    height: 440px;
+    bottom: 10%;
+    right: 20%;
+    opacity: 0.3;
 }
 
 #hero h1 {
-  /* your styles here */
-  font-family: 'Montserrat', sans-serif;
-  font-size: 42px;
-  font-weight: 700;
-  text-align: left;
-  margin: 0;
+    /* your styles here */
+    font-family: "Montserrat", sans-serif;
+    font-size: 42px;
+    font-weight: 700;
+    text-align: left;
+    margin: 0;
 }
 
 .section h1 {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 35px;
-  font-weight: 700;
-  text-align: left;
-  margin: 0;
+    font-family: "Montserrat", sans-serif;
+    font-size: 35px;
+    font-weight: 700;
+    text-align: left;
+    margin: 0;
 }
 
 .heading-prism {
-  position: absolute;
-  opacity: 0;
-  mix-blend-mode: screen; /* Screen blend mode for additive effect */
-  filter: blur(5px);
+    position: absolute;
+    opacity: 0;
+    mix-blend-mode: screen; /* Screen blend mode for additive effect */
+    filter: blur(5px);
 }
 
 .cyan {
-  color: #00FFFF; /* Full saturated cyan */
+    color: #00ffff; /* Full saturated cyan */
 }
 
 .purple {
-  color: #FF00FF; /* Full saturated magenta */
+    color: #ff00ff; /* Full saturated magenta */
 }
 
 .yellow {
-  color: #FF0066; /* Saturated red-pink */
+    color: #ff0066; /* Saturated red-pink */
 }
 
 .heading-main {
-  position: absolute;
-  top: 0;
-  left: 0;
-  color: #333333;
-  opacity: 0;
-  text-align: left;
+    position: absolute;
+    top: 0;
+    left: 0;
+    color: #333333;
+    opacity: 0;
+    text-align: left;
 }
 /* Paritee Logos */
 .paritee-logo {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 200px; /* Adjust size as needed */
-  height: 200px; /* Set height for mask */
-  z-index: 999; /* High z-index to appear above everything */
-  pointer-events: none;
-  opacity: 0.8;
-  mix-blend-mode: plus-lighter; /* CSS equivalent to "add" blend mode */
-  -webkit-mask: url('pariteeLogo.png') no-repeat center / contain;
-  mask: url('pariteeLogo.png') no-repeat center / contain;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px; /* Adjust size as needed */
+    height: 200px; /* Set height for mask */
+    z-index: 999; /* High z-index to appear above everything */
+    pointer-events: none;
+    opacity: 0.8;
+    mix-blend-mode: plus-lighter; /* CSS equivalent to "add" blend mode */
+    -webkit-mask: url("pariteeLogo.png") no-repeat center / contain;
+    mask: url("pariteeLogo.png") no-repeat center / contain;
 }
 
 .paritee-logo.cyan {
-  background-color: #00FFFF;
+    background-color: #00ffff;
 }
 
 .paritee-logo.purple {
-  background-color: #FF00FF;
+    background-color: #ff00ff;
 }
 
 .paritee-logo.yellow {
-  background-color: #FF0066;
+    background-color: #ff0066;
 }
-

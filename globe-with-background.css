@@ -1,6 +1,10 @@
 /* Globe with Background System CSS */
 /* Include this stylesheet for the globe background system */
 
+:root {
+    --city-dot-color: #00ffff; /* Saturated purple for city dots */
+}
+
 * {
     margin: 0;
     padding: 0;
